@@ -1924,7 +1924,9 @@ int main()
 #endif
   wdt_disable();
 
-  boardInit();
+  //boardInit();
+
+#if 0
 
 #if defined(PCBX7)
   bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE);   //BT is turn on for a brief period to differentiate X7 and X7S
@@ -1973,6 +1975,8 @@ int main()
 #endif
 
   tasksStart();
+
+#endif
 }
 
 #if !defined(SIMU)

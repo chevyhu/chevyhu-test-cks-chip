@@ -189,7 +189,7 @@ void boardInit()
 
   TRACE("\nHorus board started :)");
   TRACE("RCC->CSR = %08x", RCC->CSR);
-
+#if 0
   audioInit();
 
   // we need to initialize g_FATFS_Obj here, because it is in .ram section (because of DMA access) 
@@ -233,6 +233,8 @@ void boardInit()
 #endif
 
   ledBlue();
+#endif
+
 #endif
 }
 
