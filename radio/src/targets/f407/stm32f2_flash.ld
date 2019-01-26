@@ -1,10 +1,10 @@
 /*
 *****************************************************************************
 **
-**  File        : stm32f4_flash.ld
+**  File        : stm32f2_flash.ld
 **
-**  Abstract    : Linker script for STM32F407 Device with
-**                0.5MByte FLASH, 128KByte SRAM, 64KByte CCM
+**  Abstract    : Linker script for STM32F205 Device with
+**                0.5MByte FLASH, 128KByte SRAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
@@ -20,8 +20,7 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = 0x10010000;    /* end of 64K CCM */
-_heap_end = 0x20020000;  /* end of 128K SRAM */
+_estack = 0x20020000;    /* end of 128K SRAM */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
@@ -29,13 +28,13 @@ _Main_Stack_Size = 1024; /* required amount of stack for interrupt stack (Main s
 
 /* Main stack end */
 _main_stack_start = _estack - _Main_Stack_Size;
+_heap_end = _main_stack_start;
 
 /* Specify the memory areas */
 MEMORY
 {
   FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
-  CCM (xrw)       : ORIGIN = 0x10000000, LENGTH = 64K
   MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
 }
 
@@ -53,9 +52,9 @@ SECTIONS
 
     KEEP(*(.bootloader)) /* Bootloader code */
       
-    . = 0x8000;          /* Set the start of the main program */
+    . = 32768;           /* Set the start of the main program */
     _stext = .;          /* Provide the name for the start of this section */
-    . = ALIGN(4);
+	 . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     KEEP(*(.fwversiondata))
     *(.text)           /* .text sections (code) */
@@ -64,7 +63,7 @@ SECTIONS
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     *(.glue_7)         /* glue arm to thumb code */
     *(.glue_7t)        /* glue thumb to arm code */
-    *(.eh_frame)
+	*(.eh_frame)
 
     KEEP (*(.init))
     KEEP (*(.fini))
@@ -115,7 +114,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >CCM
+  } >RAM
 
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -123,30 +122,18 @@ SECTIONS
   {
     /* This is used by the startup in order to initialize the .bss secion */
     _sbss = .;         /* define a global symbol at bss start */
-    /* __bss_start__ = _sbss; */
+    __bss_start__ = _sbss;
     *(.bss)
     *(.bss*)
     *(COMMON)
 
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
-    /* __bss_end__ = _ebss; */
-  } >CCM
-
-  /* collect all uninitialized .ccm sections */
-  .ram (NOLOAD) :
-  {
-    . = ALIGN(4);
-    _sram = .;
-    /* __ccm_start__ = _sccm; */
-    *(.ram)
-    . = ALIGN(4);
-    _eram = .;
-    /* __ccm_end__ = _eccm; */
+    __bss_end__ = _ebss;
   } >RAM
-  
-  PROVIDE ( end = _eram );
-  PROVIDE ( _end = _eram );
+
+  PROVIDE ( end = _ebss );
+  PROVIDE ( _end = _ebss );
 
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
@@ -166,7 +153,7 @@ SECTIONS
     *(.mb1rodata)      /* read-only data (constants) */
     *(.mb1rodata*)
   } >MEMORY_B1
-  
+
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {
