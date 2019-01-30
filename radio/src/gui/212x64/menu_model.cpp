@@ -21,8 +21,8 @@
 #include "opentx.h"
 
 const MenuHandlerFunc menuTabModel[] = {
-  menuModelSelect,
-  menuModelSetup,
+  //menuModelSelect,
+  //menuModelSetup,
   CASE_HELI(menuModelHeli)
   CASE_FLIGHT_MODES(menuModelFlightModesAll)
   menuModelExposAll,

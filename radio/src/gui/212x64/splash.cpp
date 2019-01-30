@@ -23,7 +23,11 @@
 #if defined(SPLASH)
 const unsigned char splashdata[]  = {
   'S','P','S',0,
+#if defined(PCBTANGO)
+  #include "bitmaps/tango/splash.lbm"
+#else
   #include "bitmaps/212x64/splash.lbm"
+#endif
   'S','P','E',0 };
 const unsigned char * const splash_lbm = splashdata+4;
 

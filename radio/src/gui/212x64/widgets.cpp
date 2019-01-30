@@ -21,7 +21,11 @@
 #include "opentx.h"
 
 const unsigned char SLEEP_BITMAP[]  = {
+#if defined(PCBTANGO)
+  #include "../../bitmaps/tango/sleep.lbm"
+#else
   #include "../../bitmaps/212x64/sleep.lbm"
+#endif
 };
 
 #define SLEEP_BITMAP_WIDTH             60
@@ -35,7 +39,11 @@ void drawSleepBitmap()
 
 #if defined(PWR_BUTTON_PRESS)
 const unsigned char SHUTDOWN_BITMAP[]  = {
+#if defined(PCBTANGO)
+  #include "../../bitmaps/tango/shutdown.lbm"
+#else
   #include "../../bitmaps/212x64/shutdown.lbm"
+#endif
 };
 
 #define SHUTDOWN_BITMAP_WIDTH          60

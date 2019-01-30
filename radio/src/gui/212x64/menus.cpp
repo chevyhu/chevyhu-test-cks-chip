@@ -49,8 +49,8 @@ void pushMenu(MenuHandlerFunc newMenu)
   if (menuLevel == 0) {
     if (newMenu == menuRadioSetup)
       menuVerticalPositions[0] = 1;
-    if (newMenu == menuModelSelect)
-      menuVerticalPositions[0] = 0;
+    //if (newMenu == menuModelSelect)
+      //menuVerticalPositions[0] = 0;
   }
   else {
     menuVerticalPositions[menuLevel] = menuVerticalPosition;

@@ -207,10 +207,12 @@ void storageReadAll()
 
   // Wipe models list in case
   // it's being reloaded after USB connection
+#if !defined(PCBTANGO)
   modelslist.clear();
 
   // and reload the list
   modelslist.load();
+#endif
 }
 
 void storageCreateModelsList()
