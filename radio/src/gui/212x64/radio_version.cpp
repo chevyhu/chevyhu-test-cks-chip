@@ -41,11 +41,12 @@ void menuRadioVersion(event_t event)
   lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+5*FH+1, STR_EEBACKUP);
   lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+6*FH+1, STR_FACTORYRESET);
   lcdDrawFilledRect(0, MENU_HEADER_HEIGHT+5*FH, LCD_W, 2*FH+1, SOLID);
-
+#if !defined(PCBTANGO)
   if (event == EVT_KEY_LONG(KEY_ENTER)) {
     eepromBackup();
   }
   else if (event == EVT_KEY_LONG(KEY_MENU)) {
     POPUP_CONFIRMATION(STR_CONFIRMRESET);
   }
+#endif
 }

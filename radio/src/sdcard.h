@@ -50,7 +50,7 @@
 
 #define LEN_FILE_PATH_MAX   (sizeof(SCRIPTS_TELEM_PATH)+1)  // longest + "/"
 
-#if defined(COLORLCD)
+#if defined(COLORLCD) || defined(PCBTANGO)
 const char RADIO_MODELSLIST_PATH[] = RADIO_PATH "/models.txt";
 const char RADIO_SETTINGS_PATH[] = RADIO_PATH "/radio.bin";
 #define    SPLASH_FILE             "splash.png"

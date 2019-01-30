@@ -125,8 +125,10 @@ void onSdManagerMenu(const char * result)
   }
 #if LCD_DEPTH > 1
   else if (result == STR_ASSIGN_BITMAP) {
+#if !defined(PCBTANGO)
     strAppendFilename(g_model.header.bitmap, line, sizeof(g_model.header.bitmap));
     memcpy(modelHeaders[g_eeGeneral.currModel].bitmap, g_model.header.bitmap, sizeof(g_model.header.bitmap));
+#endif
     storageDirty(EE_MODEL);
   }
 #endif

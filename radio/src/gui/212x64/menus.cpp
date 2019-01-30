@@ -68,6 +68,18 @@ void pushMenu(MenuHandlerFunc newMenu)
 
 void menuModelNotes(event_t event)
 {
+#if defined(PCBTANGO)
+  if (event == EVT_ENTRY) {
+    strcpy(s_text_file, MODELS_PATH "/");
+    char *buf = strcat_currentmodelname(&s_text_file[sizeof(MODELS_PATH)]);
+    strcpy(buf, TEXT_EXT);
+    if (!isFileAvailable(s_text_file)) {
+      char *buf = strAppendFilename(&s_text_file[sizeof(MODELS_PATH)], g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME);
+      strcpy(buf, TEXT_EXT);
+    }
+  }
+  menuTextView(event);
+#else
   if (event == EVT_ENTRY) {
     strcpy(s_text_file, MODELS_PATH "/");
     char *buf = strcat_modelname(&s_text_file[sizeof(MODELS_PATH)], g_eeGeneral.currModel);
@@ -75,6 +87,7 @@ void menuModelNotes(event_t event)
   }
 
   menuTextView(event);
+#endif
 }
 
 void pushModelNotes()

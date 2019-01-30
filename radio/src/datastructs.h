@@ -668,6 +668,7 @@ PACK(struct TrainerData {
     swconfig_t switchConfig; \
     char switchNames[NUM_SWITCHES][LEN_SWITCH_NAME]; \
     char anaNames[NUM_STICKS+NUM_POTS+NUM_SLIDERS][LEN_ANA_NAME]; \
+    NOBACKUP(char currModelFilename[LEN_MODEL_FILENAME+1]); \
     BLUETOOTH_FIELDS
 #elif defined(PCBSKY9X)
   #define EXTRA_GENERAL_FIELDS \
@@ -875,8 +876,11 @@ static inline void check_struct()
 #elif defined(PCBX7)
   CHKSIZE(RadioData, 850);
   CHKSIZE(ModelData, 6025);
-#elif defined(PCBX9E)
+#elif defined(PCBX9E) && !defined(PCBTANGO)
   CHKSIZE(RadioData, 952);
+  CHKSIZE(ModelData, 6520);
+#elif defined(PCBTANGO)
+  CHKSIZE(RadioData, 969);
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);

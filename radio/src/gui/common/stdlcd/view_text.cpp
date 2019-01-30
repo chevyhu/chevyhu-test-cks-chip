@@ -107,9 +107,12 @@ void readModelNotes()
   LED_ERROR_BEGIN();
 
   strcpy(s_text_file, MODELS_PATH "/");
+#if !defined(PCBTANGO)
   char *buf = strcat_modelname(&s_text_file[sizeof(MODELS_PATH)], g_eeGeneral.currModel);
-  strcpy(buf, TEXT_EXT);
-
+    strcpy(buf, TEXT_EXT);
+#else
+  strcat_currentmodelname(&s_text_file[sizeof(MODELS_PATH)]);
+#endif
   clearKeyEvents();
   event_t event = EVT_ENTRY;
   while (event != EVT_KEY_BREAK(KEY_EXIT)) {

@@ -110,8 +110,8 @@ set(FATFS_SRC
 
 if(PCB STREQUAL X12S OR PCB STREQUAL X10)
   include(targets/horus/CMakeLists.txt)
-elseif(PCB STREQUAL F407)
-  include(targets/f407/CMakeLists.txt)
+elseif(PCB STREQUAL TANGO)
+  include(targets/tango/CMakeLists.txt)
 elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X9D OR PCB STREQUAL X7 OR PCB STREQUAL XLITE)
   include(targets/taranis/CMakeLists.txt)
 elseif(PCB STREQUAL SKY9X OR PCB STREQUAL 9XRPRO OR PCB STREQUAL AR9X)
@@ -178,7 +178,7 @@ else()
   add_definitions(-DEEPROM -DEEPROM_RAW)
 endif()
 
-if(ARCH STREQUAL ARM AND NOT PCB STREQUAL X12S AND NOT PCB STREQUAL X10 AND NOT PCB STREQUAL XLITE)
+if(ARCH STREQUAL ARM AND NOT PCB STREQUAL X12S AND NOT PCB STREQUAL X10 AND NOT PCB STREQUAL XLITE AND NOT PCB STREQUAL TANGO)
   add_definitions(-DEEPROM_CONVERSIONS)
   set(SRC ${SRC} storage/eeprom_conversions.cpp)
 endif()
@@ -189,7 +189,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 if(PCB STREQUAL TANGO)
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${BITMAPS_TARGET_DIR})
-else()
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${GUI_DIR})
 endif()
 
@@ -205,8 +204,8 @@ endif()
 if(PCB STREQUAL TANGO)
   if(TEMPLATES)
     add_definitions(-DTEMPLATES)
-    set(SRC ${SRC} templates.cpp)
-    set(GUI_SRC ${GUI_SRC} model_templates.cpp)
+    #set(SRC ${SRC} templates.cpp)
+    #set(GUI_SRC ${GUI_SRC} model_templates.cpp)
   endif()
 endif()
 
@@ -395,7 +394,8 @@ if(PCB STREQUAL TANGO)
           switches.cpp
           mixer.cpp
           stamp.cpp
-          opentx_timers.cpp
+          #opentx_timers.cpp
+          timers.cpp
           trainer_input.cpp
           )
 else()
@@ -537,7 +537,7 @@ if(NOT MSVC)
       set(SRC ${SRC} bin_allocator.cpp)
     endif()
 
-    if(PCB STREQUAL XLITE OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X10 OR PCB STREQUAL X12S OR PCB STREQUAL F407)
+    if(PCB STREQUAL XLITE OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X10 OR PCB STREQUAL X12S OR PCB STREQUAL PCBTANGO)
       add_subdirectory(targets/common/arm/stm32/bootloader)
       include_directories(${CMAKE_CURRENT_BINARY_DIR}/targets/common/arm/stm32/bootloader)
       set(FIRMWARE_DEPENDENCIES ${FIRMWARE_DEPENDENCIES} bootloader)

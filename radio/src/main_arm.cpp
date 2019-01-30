@@ -442,7 +442,7 @@ void perMain()
 #if !defined(EEPROM)
   // In case the SD card is removed during the session
   if (!SD_CARD_PRESENT() && !unexpectedShutdown) {
-    drawFatalErrorScreen(STR_NO_SDCARD);
+    //drawFatalErrorScreen(STR_NO_SDCARD);
     return;
   }
 #endif
