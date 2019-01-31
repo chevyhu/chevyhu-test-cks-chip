@@ -199,9 +199,9 @@ void boardInit()
 #endif
 
   sdInit();
-  //storageReadAll();
+  storageReadAll();
 
-  while (1); //logsWrite();
+  //while (1); //logsWrite();
 
 #if defined(HAPTIC)
   hapticInit();

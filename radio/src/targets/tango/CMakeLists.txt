@@ -1,3 +1,4 @@
+option(DISK_CACHE "Enable SD card disk cache" YES)
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
 option(LCD_DUAL_BUFFER "Dual LCD Buffer" OFF)
 option(TARANIS_INTERNAL_PPM "Taranis internal module hack to output PPM" OFF)
@@ -165,6 +166,11 @@ set(GUI_SRC ${GUI_SRC}
   ../screenshot.cpp
   )
 
+if(DISK_CACHE)
+  set(SRC ${SRC} disk_cache.cpp)
+  add_definitions(-DDISK_CACHE)
+endif()
+
 if(PCB STREQUAL X7 OR PCB STREQUAL XLITE)
   set(LED_DRIVER led_driver.cpp)
 endif()
@@ -191,6 +197,7 @@ set(FIRMWARE_TARGET_SRC
   ${LCD_DRIVER}
   i2c_driver.cpp
   pwr_driver.cpp
+  ../common/arm/stm32/sdio_sd.c
   ../common/arm/loadboot.cpp
   )
 
@@ -205,5 +212,12 @@ endif()
 if(USEHORUSBT)
   add_definitions(-DUSEHORUSBT)
 endif(USEHORUSBT)
+
+set(STM32LIB_SRC
+        STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sdio.c
+        #STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fmc.c
+        STM32F4xx_StdPeriph_Driver/src/stm32f4xx_ltdc.c
+        STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c
+        )
 
 set(FIRMWARE_DEPENDENCIES ${FIRMWARE_DEPENDENCIES} ${BITMAPS_TARGET})

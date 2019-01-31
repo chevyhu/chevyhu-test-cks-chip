@@ -48,6 +48,7 @@ extern "C" {
   #include "STM32F4xx_DSP_StdPeriph_Lib_V1.4.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_dma.h"
   #include "STM32F4xx_DSP_StdPeriph_Lib_V1.4.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_usart.h"
   #include "STM32F4xx_DSP_StdPeriph_Lib_V1.4.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_flash.h"
+  #include "STM32F4xx_DSP_StdPeriph_Lib_V1.4.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_sdio.h"
   #include "STM32F4xx_DSP_StdPeriph_Lib_V1.4.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_dbgmcu.h"
   #include "STM32F4xx_DSP_StdPeriph_Lib_V1.4.0/Libraries/STM32F4xx_StdPeriph_Driver/inc/misc.h"
 #else
@@ -140,8 +141,16 @@ uint32_t sdGetSpeed(void);
 #define SD_IS_HC()                      (0)
 #define SD_GET_SPEED()                  (0)
 #endif
-#define __disk_read                     disk_read
-#define __disk_write                    disk_write
+
+#if defined(DISK_CACHE)
+#include "diskio.h"
+DRESULT __disk_read(BYTE drv, BYTE * buff, DWORD sector, UINT count);
+DRESULT __disk_write(BYTE drv, const BYTE * buff, DWORD sector, UINT count);
+#else
+#define __disk_read                    disk_read
+#define __disk_write                   disk_write
+#endif
+
 #if defined(SIMU)
   #if !defined(SIMU_DISKIO)
     #define sdInit()
@@ -155,7 +164,7 @@ void sdMount(void);
 void sdDone(void);
 void sdPoll10ms(void);
 uint32_t sdMounted(void);
-#define SD_CARD_PRESENT()               ((SD_GPIO_PRESENT_GPIO->IDR & SD_GPIO_PRESENT_GPIO_PIN) == 0)
+#define SD_CARD_PRESENT()               (true)//((SD_GPIO_PRESENT_GPIO->IDR & SD_GPIO_PRESENT_GPIO_PIN) == 0)
 #endif
 
 // Flash Write driver

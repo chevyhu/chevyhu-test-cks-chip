@@ -26,6 +26,8 @@ elseif(PCB STREQUAL X9E OR PCB STREQUAL TANGO)
     ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c
     ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c
     ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.c
+    ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c
+    ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sdio.c
     ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/misc.c
     )
 else()
@@ -79,13 +81,22 @@ set(BOOTLOADER_SRC
   )
 
 if(NOT (PCB STREQUAL X10 OR PCB STREQUAL X12S))
-  set(BOOTLOADER_SRC
-    ${BOOTLOADER_SRC}
-    ../../../../../targets/${TARGET_DIR}/i2c_driver.cpp
-    )
+  if (PCB STREQUAL TANGO)
+    set(BOOTLOADER_SRC
+            ${BOOTLOADER_SRC}
+            ../../../../../targets/${TARGET_DIR}/i2c_driver.cpp
+            ../../../../../targets/common/arm/stm32/sdio_sd.c
+            )
 
-  remove_definitions(-DDEBUG)
+    remove_definitions(-DDEBUG)
+  else()
+    set(BOOTLOADER_SRC
+      ${BOOTLOADER_SRC}
+      ../../../../../targets/${TARGET_DIR}/i2c_driver.cpp
+      )
 
+    remove_definitions(-DDEBUG)
+  endif()
 else()
   set(BOOTLOADER_SRC
     ${BOOTLOADER_SRC}
