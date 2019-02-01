@@ -1,4 +1,4 @@
-option(DISK_CACHE "Enable SD card disk cache" YES)
+option(DISK_CACHE "Enable SD card disk cache" OFF)
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
 option(LCD_DUAL_BUFFER "Dual LCD Buffer" OFF)
 option(TARANIS_INTERNAL_PPM "Taranis internal module hack to output PPM" OFF)
@@ -166,10 +166,10 @@ set(GUI_SRC ${GUI_SRC}
   ../screenshot.cpp
   )
 
-if(DISK_CACHE)
-  set(SRC ${SRC} disk_cache.cpp)
-  add_definitions(-DDISK_CACHE)
-endif()
+#if(DISK_CACHE)
+#  set(SRC ${SRC} disk_cache.cpp)
+#  add_definitions(-DDISK_CACHE)
+#endif()
 
 if(PCB STREQUAL X7 OR PCB STREQUAL XLITE)
   set(LED_DRIVER led_driver.cpp)

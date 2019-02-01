@@ -499,6 +499,7 @@ use_cxx11()  # ensure gnu++11 in CXX_FLAGS with CMake < 3.1
 find_program(BASH bash HINTS "c:/cygwin/bin/" "c:/msys/bin/" DOC "bash shell for firmware size report (eg. c:/cygwin/bin/bash.exe on Windows).")
 
 if(NOT MSVC)
+  #set(OPT s)
   set(OPT s)
 
   if(ARCH STREQUAL ARM)
