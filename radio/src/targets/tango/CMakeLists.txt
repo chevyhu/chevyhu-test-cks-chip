@@ -1,4 +1,4 @@
-option(DISK_CACHE "Enable SD card disk cache" OFF)
+option(DISK_CACHE "Enable SD card disk cache" ON)
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
 option(LCD_DUAL_BUFFER "Dual LCD Buffer" OFF)
 option(TARANIS_INTERNAL_PPM "Taranis internal module hack to output PPM" OFF)

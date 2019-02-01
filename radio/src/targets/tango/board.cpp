@@ -198,8 +198,8 @@ void boardInit()
   TRACE("\nTaranis board started :)");
 #endif
 
-  sdInit();
-  storageReadAll();
+  //sdInit();
+  //storageReadAll();
 
   //while (1); //logsWrite();
 
