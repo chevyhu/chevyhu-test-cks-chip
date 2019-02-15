@@ -103,6 +103,19 @@ void lcdHardwareInit()
   LCD_DMA_Stream->FCR = 0x05; // DMA_SxFCR_DMDIS | DMA_SxFCR_FTH_0;
 
   NVIC_EnableIRQ(LCD_DMA_Stream_IRQn);
+
+  /* Do some testings */
+  LCD_CSBOff();
+  LCD_CSBOn();
+  LCD_CSBOff();
+
+  LCD_DCOff();
+  LCD_DCOn();
+  LCD_DCOff();
+
+  LCD_RSTBOff();
+  LCD_RSTBOn();
+  LCD_RSTBOff();
 }
 
 #if LCD_W == 128

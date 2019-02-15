@@ -409,7 +409,7 @@ void perMain()
   checkEeprom();
   logsWrite();
   handleUsbConnection();
-  checkTrainerSettings();
+  //checkTrainerSettings();
   periodicTick();
   DEBUG_TIMER_STOP(debugTimerPerMain1);
 

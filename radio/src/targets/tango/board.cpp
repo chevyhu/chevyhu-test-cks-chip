@@ -195,13 +195,8 @@ void boardInit()
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
-  TRACE("\nTaranis board started :)");
+  TRACE("\nTango board started :)");
 #endif
-
-  //sdInit();
-  //storageReadAll();
-
-  //while (1); //logsWrite();
 
 #if defined(HAPTIC)
   hapticInit();
