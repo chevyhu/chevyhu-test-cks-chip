@@ -16,7 +16,7 @@ if(PCB STREQUAL X9E OR PCB STREQUAL TANGO)
   set(FLAVOUR tango)
   add_definitions(-DSTM32F40_41xxx -DPCBX9E -DPCBX9 -DPCBTANGO)
   add_definitions(-DEEPROM_VARIANT=0x8000)
-  add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
+  #add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
     top_lcd_driver.cpp

@@ -727,13 +727,13 @@
   #define SERIAL_RCC_APB1Periph         0
 #else
   #define TRAINER_BATTERY_COMPARTMENT
-  #define SERIAL_RCC_AHB1Periph         (RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_DMA1)
+  #define SERIAL_RCC_AHB1Periph         (RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA1)
   #define SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART3
-  #define SERIAL_GPIO                   GPIOB
-  #define SERIAL_GPIO_PIN_TX            GPIO_Pin_10 // PB.10
-  #define SERIAL_GPIO_PIN_RX            GPIO_Pin_11 // PB.11
-  #define SERIAL_GPIO_PinSource_TX      GPIO_PinSource10
-  #define SERIAL_GPIO_PinSource_RX      GPIO_PinSource11
+  #define SERIAL_GPIO                   GPIOD
+  #define SERIAL_GPIO_PIN_TX            GPIO_Pin_8 // PD.8
+  #define SERIAL_GPIO_PIN_RX            GPIO_Pin_9 // PD.9
+  #define SERIAL_GPIO_PinSource_TX      GPIO_PinSource8
+  #define SERIAL_GPIO_PinSource_RX      GPIO_PinSource9
   #define SERIAL_GPIO_AF                GPIO_AF_USART3
   #define SERIAL_USART                  USART3
   #define SERIAL_USART_IRQHandler       USART3_IRQHandler
@@ -899,16 +899,17 @@
 #if defined(PCBX9E)
   #define LCD_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA1)
   #define LCD_RCC_APB1Periph            RCC_APB1Periph_SPI3
-  #define LCD_SPI_GPIO                  GPIOC
-  #define LCD_MOSI_GPIO_PIN             GPIO_Pin_12 // PC.12
-  #define LCD_MOSI_GPIO_PinSource       GPIO_PinSource12
-  #define LCD_CLK_GPIO_PIN              GPIO_Pin_10 // PC.10
-  #define LCD_CLK_GPIO_PinSource        GPIO_PinSource10
-  #define LCD_A0_GPIO_PIN               GPIO_Pin_11 // PC.11
-  #define LCD_NCS_GPIO                  GPIOA
-  #define LCD_NCS_GPIO_PIN              GPIO_Pin_15 // PA.15
+  #define LCD_SPI_GPIO                  GPIOB
+  #define LCD_MOSI_GPIO_PIN             GPIO_Pin_5 // PB.5
+  #define LCD_MOSI_GPIO_PinSource       GPIO_PinSource5
+  #define LCD_CLK_GPIO_PIN              GPIO_Pin_3 // PB.3
+  #define LCD_CLK_GPIO_PinSource        GPIO_PinSource3
+  #define LCD_NCS_GPIO                  GPIOD
+  #define LCD_NCS_GPIO_PIN              GPIO_Pin_1 // PD.1
   #define LCD_RST_GPIO                  GPIOD
-  #define LCD_RST_GPIO_PIN              GPIO_Pin_15 // PD.15
+  #define LCD_RST_GPIO_PIN              GPIO_Pin_3 // PD.3
+  #define LCD_DC_GPIO                   GPIOD
+  #define LCD_DC_GPIO_PIN               GPIO_Pin_6 // PD.6
   #define LCD_DMA                       DMA1
   #define LCD_DMA_Stream                DMA1_Stream7
   #define LCD_DMA_Stream_IRQn           DMA1_Stream7_IRQn
@@ -941,16 +942,15 @@
 #elif defined(PCBX9DP) || defined(PCBX7)
   #define LCD_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA1)
   #define LCD_RCC_APB1Periph            RCC_APB1Periph_SPI3
-  #define LCD_SPI_GPIO                  GPIOC
-  #define LCD_MOSI_GPIO_PIN             GPIO_Pin_12 // PC.12
-  #define LCD_MOSI_GPIO_PinSource       GPIO_PinSource12
-  #define LCD_CLK_GPIO_PIN              GPIO_Pin_10 // PC.10
-  #define LCD_CLK_GPIO_PinSource        GPIO_PinSource10
-  #define LCD_A0_GPIO_PIN               GPIO_Pin_11 // PC.11
-  #define LCD_NCS_GPIO                  GPIOA
-  #define LCD_NCS_GPIO_PIN              GPIO_Pin_15 // PA.15
+  #define LCD_SPI_GPIO                  GPIOB
+  #define LCD_MOSI_GPIO_PIN             GPIO_Pin_5 // PB.5
+  #define LCD_MOSI_GPIO_PinSource       GPIO_PinSource5
+  #define LCD_CLK_GPIO_PIN              GPIO_Pin_3 // PB.3
+  #define LCD_CLK_GPIO_PinSource        GPIO_PinSource3
+  #define LCD_NCS_GPIO                  GPIOD
+  #define LCD_NCS_GPIO_PIN              GPIO_Pin_1 // PD.1
   #define LCD_RST_GPIO                  GPIOD
-  #define LCD_RST_GPIO_PIN              GPIO_Pin_12 // PD.12
+  #define LCD_RST_GPIO_PIN              GPIO_Pin_3 // PD.3
   #define LCD_DMA                       DMA1
   #define LCD_DMA_Stream                DMA1_Stream7
   #define LCD_DMA_Stream_IRQn           DMA1_Stream7_IRQn
@@ -1011,6 +1011,7 @@
   #define SD_RCC_APB1Periph               0
   #define SD_PRESENT_GPIO                 GPIOC
   #define SD_PRESENT_GPIO_PIN             GPIO_Pin_5  // PC.05
+#if 1
   #define SD_SDIO_DMA_STREAM              DMA2_Stream3
   #define SD_SDIO_DMA_CHANNEL             DMA_Channel_4
   #define SD_SDIO_DMA_FLAG_FEIF           DMA_FLAG_FEIF3
@@ -1020,6 +1021,17 @@
   #define SD_SDIO_DMA_FLAG_TCIF           DMA_FLAG_TCIF3
   #define SD_SDIO_DMA_IRQn                DMA2_Stream3_IRQn
   #define SD_SDIO_DMA_IRQHANDLER          DMA2_Stream3_IRQHandler
+#else
+  #define SD_SDIO_DMA_STREAM              DMA2_Stream6
+  #define SD_SDIO_DMA_CHANNEL             DMA_Channel_4
+  #define SD_SDIO_DMA_FLAG_FEIF           DMA_FLAG_FEIF6
+  #define SD_SDIO_DMA_FLAG_DMEIF          DMA_FLAG_DMEIF6
+  #define SD_SDIO_DMA_FLAG_TEIF           DMA_FLAG_TEIF6
+  #define SD_SDIO_DMA_FLAG_HTIF           DMA_FLAG_HTIF6
+  #define SD_SDIO_DMA_FLAG_TCIF           DMA_FLAG_TCIF6
+  #define SD_SDIO_DMA_IRQn                DMA2_Stream6_IRQn
+  #define SD_SDIO_DMA_IRQHANDLER          DMA2_Stream6_IRQHandler
+#endif
   #define SD_SDIO_FIFO_ADDRESS            ((uint32_t)0x40012C80)
   #define SD_SDIO_CLK_DIV(fq)             ((48000000 / (fq)) - 2)
   #define SD_SDIO_INIT_CLK_DIV            SD_SDIO_CLK_DIV(400000)
