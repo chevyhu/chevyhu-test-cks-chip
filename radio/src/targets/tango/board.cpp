@@ -190,7 +190,7 @@ void boardInit()
   init2MhzTimer();
   init5msTimer();
   __enable_irq();
-  i2cInit();
+  //i2cInit();
   usbInit();
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)

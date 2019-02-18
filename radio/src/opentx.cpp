@@ -121,7 +121,7 @@ void per10ms()
   }
 #endif
 
-  readKeysAndTrims();
+  //readKeysAndTrims();
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
   if (IS_ROTARY_ENCODER_NAVIGATION_ENABLE()) {
@@ -1860,11 +1860,11 @@ void opentxInit(OPENTX_INIT_ARGS)
   #if !defined(SOFTWARE_VOLUME)
     setScaledVolume(currentSpeakerVolume);
   #endif
-
+    
   referenceSystemAudioFiles();
   audioQueue.start();
   BACKLIGHT_ENABLE();
-
+  
 #if defined(PCBSKY9X)
   // Set ADC gains here
   setSticksGain(g_eeGeneral.sticksGain);
@@ -1904,7 +1904,7 @@ void opentxInit(OPENTX_INIT_ARGS)
 #endif
 
 
-  startPulses();
+  //startPulses();
 
   wdt_enable(WDTO_500MS);
 }

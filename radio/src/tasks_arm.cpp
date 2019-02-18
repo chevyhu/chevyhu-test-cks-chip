@@ -174,7 +174,20 @@ bool perMainEnabled = true;
 
 TASK_FUNCTION(menusTask)
 {
-  opentxInit();
+  int test = 86;
+    opentxInit();
+
+    if (test == 86){
+        lcdClear();
+        lcdDrawSizedText(20, 20, "Chevy Hu", 8, WARNING_INFO_FLAGS);
+
+        lcdRefresh();
+        lcdSetContrast();
+        clearKeyEvents();
+        backlightOn();
+        checkBacklight();
+    }
+
 
 #if defined(PWR_BUTTON_PRESS)
   while (1) {
@@ -187,7 +200,8 @@ TASK_FUNCTION(menusTask)
       continue;
     }
 #else
-  while (pwrCheck() != e_power_off) {
+  //while (pwrCheck() != e_power_off) {
+  while (1) {
 #endif
     uint32_t start = (uint32_t)RTOS_GET_TIME();
     DEBUG_TIMER_START(debugTimerPerMain);

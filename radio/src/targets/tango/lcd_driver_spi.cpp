@@ -73,7 +73,7 @@ void lcdHardwareInit()
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_Init(LCD_NCS_GPIO, &GPIO_InitStructure);
 
   GPIO_InitStructure.GPIO_Pin = LCD_RST_GPIO_PIN;
@@ -104,6 +104,7 @@ void lcdHardwareInit()
 
   NVIC_EnableIRQ(LCD_DMA_Stream_IRQn);
 
+#if 0
   /* Do some testings */
   LCD_CSBOff();
   LCD_CSBOn();
@@ -116,6 +117,7 @@ void lcdHardwareInit()
   LCD_RSTBOff();
   LCD_RSTBOn();
   LCD_RSTBOff();
+#endif
 }
 
 #if LCD_W == 128
@@ -289,6 +291,7 @@ void lcdDisplayInit(void)
 
 void lcdReset()
 {
+  TRACE("LCD reset\r\n");
   LCD_RSTBOn();
   delay_ms(50);
   LCD_RSTBOff(); // module reset
