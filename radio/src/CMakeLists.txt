@@ -187,11 +187,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
-if(PCB STREQUAL TANGO)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${BITMAPS_TARGET_DIR})
-#else()
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${GUI_DIR})
-endif()
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${GUI_DIR})
 
 add_subdirectory(lua)
 include(gui/CMakeLists.txt)

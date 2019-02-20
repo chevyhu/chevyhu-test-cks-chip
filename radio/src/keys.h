@@ -103,10 +103,20 @@ class Key
 extern Key keys[NUM_KEYS];
 extern event_t s_evt;
 
+#if defined(PCBTANGO)
+extern uint8_t s_evt_value;
+inline void putEvent(event_t evt, uint8_t value=1)
+{
+  TRACE("putevent %x %d", evt, value);
+  s_evt = evt;
+  s_evt_value = value;
+}
+#else
 inline void putEvent(event_t evt)
 {
   s_evt = evt;
 }
+#endif
 
 void pauseEvents(event_t event);
 void killEvents(event_t event);

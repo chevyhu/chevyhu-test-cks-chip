@@ -800,19 +800,19 @@ static inline void check_struct()
   CHKSIZE(ModelHeader, 12);
   CHKSIZE(CurveData, 4);
 #elif defined(PCBTARANIS)
-  CHKSIZE(MixData, 22);
-  CHKSIZE(ExpoData, 19);
-  CHKSIZE(LimitData, 13);
+  CHKSIZE(MixData, 20);
+  CHKSIZE(ExpoData, 17);
+  CHKSIZE(LimitData, 11);
   CHKSIZE(LogicalSwitchData, 9);
   CHKSIZE(CustomFunctionData, 11);
-  CHKSIZE(FlightModeData, 40);
-  CHKSIZE(TimerData, 16);
+  CHKSIZE(FlightModeData, 36);
+  CHKSIZE(TimerData, 11);
   CHKSIZE(SwashRingData, 8);
   CHKSIZE(FrSkyBarData, 6);
-  CHKSIZE(FrSkyLineData, 6);
+  CHKSIZE(FrSkyLineData, 4);
   CHKTYPE(union FrSkyScreenData, 24);
   CHKSIZE(FrSkyTelemetryData, 104);
-  CHKSIZE(ModelHeader, 24);
+  CHKSIZE(ModelHeader, 12);
   CHKSIZE(CurveData, 4);
 #elif defined(PCBHORUS)
   CHKSIZE(MixData, 20);
@@ -881,7 +881,7 @@ static inline void check_struct()
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBTANGO)
   CHKSIZE(RadioData, 969);
-  CHKSIZE(ModelData, 6520);
+  CHKSIZE(ModelData, 6041);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);

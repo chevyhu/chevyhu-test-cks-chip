@@ -237,6 +237,7 @@ void disable_module_timer( uint32_t module_index);
 // SBUS
 int sbusGetByte(uint8_t * byte);
 
+#if 0
 // Keys driver
 enum EnumKeys
 {
@@ -271,8 +272,38 @@ enum EnumKeys
 
   NUM_KEYS
 };
+#else
+// Keys driver
+enum EnumKeys
+{
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_UP,
+    KEY_DOWN,
+    KEY_ENTER,
+    KEY_EXIT,
+    //for temporary
+    KEY_MENU,
 
-#if defined(PCBX9E) && !defined(SIMU)
+    TRM_BASE,
+    TRM_LH_DWN = TRM_BASE,
+    TRM_LH_UP,
+    TRM_LV_DWN,
+    TRM_LV_UP,
+    TRM_RV_DWN,
+    TRM_RV_UP,
+    TRM_RH_DWN,
+    TRM_RH_UP,
+    TRM_LAST = TRM_RH_UP,
+
+    NUM_KEYS
+};
+#endif
+
+
+
+
+#if defined(PCBX9E) && !defined(SIMU) && !defined(PCBTANGO)
   #define KEY_UP                        KEY_MINUS
   #define KEY_DOWN                      KEY_PLUS
   #define KEY_RIGHT                     KEY_PLUS
@@ -281,10 +312,10 @@ enum EnumKeys
   #define KEY_PLUS                      KEY_RIGHT
   #define KEY_MINUS                     KEY_LEFT
 #else
-  #define KEY_UP                        KEY_PLUS
-  #define KEY_DOWN                      KEY_MINUS
-  #define KEY_RIGHT                     KEY_MINUS
-  #define KEY_LEFT                      KEY_PLUS
+  #define KEY_UP                        KEY_UP
+  #define KEY_DOWN                      KEY_DOWN
+  #define KEY_RIGHT                     KEY_RIGHT
+  #define KEY_LEFT                      KEY_LEFT
 #endif
 
 #if defined(KEYS_GPIO_PIN_SHIFT)
@@ -668,14 +699,14 @@ void ledBlue(void);
 #define LCD_CONTRAST_MAX                30
 #define LCD_CONTRAST_DEFAULT            20
 #else
-#define LCD_W                           212
-#define LCD_H                           64
+#define LCD_W                           128
+#define LCD_H                           96
 #define LCD_DEPTH                       4
 //#define IS_LCD_RESET_NEEDED()           (!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE())
 #define IS_LCD_RESET_NEEDED()           true
 #define LCD_CONTRAST_MIN                0
 #define LCD_CONTRAST_MAX                45
-#define LCD_CONTRAST_DEFAULT            25
+#define LCD_CONTRAST_DEFAULT            20
 #endif
 void lcdInit(void);
 void lcdInitFinish(void);
@@ -726,5 +757,7 @@ void checkTrainerSettings(void);
 extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 extern DMAFifo<32> serial2RxFifo;
 #endif
+
+#define DISPLAY_PROGRESS_BAR(...) do{} while(0)
 
 #endif // _BOARD_H_

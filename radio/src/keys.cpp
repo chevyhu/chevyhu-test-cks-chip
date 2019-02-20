@@ -42,6 +42,10 @@ event_t s_evt;
 struct t_inactivity inactivity = {0};
 Key keys[NUM_KEYS];
 
+#if defined(PCBTANGO)
+uint8_t s_evt_value;
+#endif
+
 event_t getEvent(bool trim)
 {
   event_t evt = s_evt;

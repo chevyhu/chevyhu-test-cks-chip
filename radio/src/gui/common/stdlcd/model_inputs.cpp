@@ -378,7 +378,7 @@ void menuModelExposAll(event_t event)
 #if LCD_DEPTH > 1
   // Gauge
   if (!s_currCh) {
-    drawGauge(127, 1, 58, 6, anas[index], 1024);
+    //drawGauge(127, 1, 58, 6, anas[index], 1024);
   }
 #endif
   

@@ -32,13 +32,13 @@ uint32_t readKeys()
     result |= 1 << KEY_ENTER;
 
 #if defined(KEYS_GPIO_PIN_MENU)
-  if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU)
-    result |= 1 << KEY_MENU;
+  //if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU)
+    //result |= 1 << KEY_MENU;
 #endif
 
 #if defined(KEYS_GPIO_PIN_PAGE)
-  if (~KEYS_GPIO_REG_PAGE & KEYS_GPIO_PIN_PAGE)
-    result |= 1 << KEY_PAGE;
+  //if (~KEYS_GPIO_REG_PAGE & KEYS_GPIO_PIN_PAGE)
+    //result |= 1 << KEY_PAGE;
 #endif
 
   if (~KEYS_GPIO_REG_EXIT & KEYS_GPIO_PIN_EXIT)

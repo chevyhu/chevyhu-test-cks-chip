@@ -1,0 +1,5 @@
+string(TOLOWER "${FONT}" FONT_DIR)
+add_bitmaps_target(tango_xbm_1bit ${RADIO_SRC_DIRECTORY}/bitmaps/sticks.xbm 128 1bit 4)
+add_bitmaps_target(tango_fonts_1bit ${RADIO_SRC_DIRECTORY}/fonts/${FONT_DIR}/*.png 128 "")
+add_bitmaps_target(tango_bitmaps ${RADIO_SRC_DIRECTORY}/bitmaps/128x64/*.png 128 1bit)
+add_dependencies(tango_bitmaps tango_fonts_1bit tango_xbm_1bit)

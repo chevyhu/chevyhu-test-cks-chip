@@ -257,6 +257,7 @@ void menuRadioSdManager(event_t _event)
           if (!strcasecmp(ext, SOUNDS_EXT)) {
             POPUP_MENU_ADD_ITEM(STR_PLAY_FILE);
           }
+#if 0
 #if LCD_DEPTH > 1
           else if (isExtensionMatching(ext, BITMAPS_EXT)) {
             if (!READ_ONLY() && (ext-line) <= (int)sizeof(g_model.header.bitmap)) {
@@ -264,6 +265,8 @@ void menuRadioSdManager(event_t _event)
             }
           }
 #endif
+#endif
+
           else if (!strcasecmp(ext, TEXT_EXT)) {
             POPUP_MENU_ADD_ITEM(STR_VIEW_TEXT);
           }
@@ -418,7 +421,7 @@ void menuRadioSdManager(event_t _event)
       }
     }
   }
-
+#if 0
 #if LCD_DEPTH > 1
   const char * ext = getFileExtension(reusableBuffer.sdmanager.lines[index]);
   if (ext && isExtensionMatching(ext, BITMAPS_EXT)) {
@@ -429,5 +432,6 @@ void menuRadioSdManager(event_t _event)
     }
     lcdDrawBitmap(22*FW+2, 2*FH+FH/2, modelBitmap);
   }
+#endif
 #endif
 }

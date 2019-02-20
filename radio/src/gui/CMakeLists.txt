@@ -21,7 +21,7 @@ set(GUI_SRC
   view_statistics.cpp
   )
 
-if(GUI_DIR STREQUAL 128x64)
+if(GUI_DIR STREQUAL 128x64 OR GUI_DIR STREQUAL 128x96)
    set(GUI_SRC
       ${GUI_SRC}
       model_outputs_arm.cpp
@@ -42,7 +42,7 @@ set(SRC
 
 include_directories(gui gui/${GUI_DIR})
 
-if(GUI_DIR STREQUAL 128x64 OR GUI_DIR STREQUAL 212x64)
+if(GUI_DIR STREQUAL 128x64 OR GUI_DIR STREQUAL 128x96 OR GUI_DIR STREQUAL 212x64)
   include(gui/common/stdlcd/CMakeLists.txt)
 endif()
 
