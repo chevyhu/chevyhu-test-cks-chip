@@ -96,6 +96,8 @@
 
   typedef uint32_t LcdFlags;
 
+#define COLOUR_MASK(x)                 ((x) & 0x0F0000)
+
 #define display_t                      uint8_t
 #define DISPLAY_BUFFER_SIZE            (LCD_W*((LCD_H+7)/8))
 

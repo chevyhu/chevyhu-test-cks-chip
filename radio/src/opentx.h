@@ -213,6 +213,18 @@
 
 #if defined(DISK_CACHE)
   #include "disk_cache.h"
+#elif !defined(CPUAVR)
+  typedef const unsigned char pm_uchar;
+  typedef const char pm_char;  // TODO not here!
+  typedef const uint16_t pm_uint16_t;
+  typedef const uint8_t pm_uint8_t;
+  typedef const int16_t pm_int16_t;
+  typedef const int8_t pm_int8_t;
+  #define pgm_read_byte(address_short) (*(uint8_t*)(address_short))
+  #define PSTR(adr) adr
+  #define pgm_read_adr(x)              *(x)
+  #define cli()
+  #define sei()
 #endif
 
 #if defined(SIMU)

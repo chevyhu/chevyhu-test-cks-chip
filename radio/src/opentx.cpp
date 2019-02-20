@@ -1765,6 +1765,10 @@ void opentxInit(OPENTX_INIT_ARGS)
 {
   TRACE("opentxInit");
 
+  //ALERT(STR_STORAGE_WARNING, "Chevy debugging", AU_NONE);
+
+  //while (1);
+
 #if defined(GUI)
   menuHandlers[0] = menuMainView;
   #if MENUS_LOCK != 2/*no menus*/
