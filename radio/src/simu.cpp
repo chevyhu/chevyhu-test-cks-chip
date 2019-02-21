@@ -261,12 +261,19 @@ void Open9xSim::updateKeysAndSwitches(bool start)
 #elif defined(PCBTARANIS)
     KEY_Page_Up,   KEY_MENU,
   #if defined(KEYS_GPIO_REG_PAGE)
-    KEY_Page_Down, KEY_PAGE,
+    //KEY_Page_Down, KEY_PAGE,
   #endif
     KEY_Return,    KEY_ENTER,
     KEY_BackSpace, KEY_EXIT,
-    KEY_Up,        KEY_PLUS,
-    KEY_Down,      KEY_MINUS,
+    //KEY_Up,        KEY_PLUS,
+    //KEY_Down,      KEY_MINUS,
+#elif defined(PCBTANGO)
+  KEY_BackSpace, KEY_EXIT,
+    KEY_Return,    KEY_ENTER,
+    KEY_Right,     KEY_RIGHT,
+    KEY_Left,      KEY_LEFT,
+    KEY_Up,        KEY_UP,
+    KEY_Down,      KEY_DOWN,
 #else
     KEY_Return,    KEY_MENU,
     KEY_BackSpace, KEY_EXIT,
@@ -483,6 +490,19 @@ void Open9xSim::refreshDisplay()
 #elif LCD_W >= 212
         display_t * p = &simuLcdBuf[y / 2 * LCD_W + x];
         uint8_t z = (y & 1) ? (*p >> 4) : (*p & 0x0F);
+        if (z) {
+          FXColor color;
+          if (isBacklightEnabled())
+            color = FXRGB(47-(z*47)/15, 123-(z*123)/15, 227-(z*227)/15);
+          else
+            color = FXRGB(200-(z*200)/15, 200-(z*200)/15, 200-(z*200)/15);
+          setPixel(x, y, color);
+        }
+#elif defined(PCBTANGO)
+        coord_t xx = LCD_W - x - 1;
+        coord_t yy = LCD_H - y - 1;
+        display_t * p = &simuLcdBuf[yy * (LCD_W / 2) + (xx / 2)];
+        uint8_t z = (xx & 1) ? (*p & 0x0F) : (*p >> 4);
         if (z) {
           FXColor color;
           if (isBacklightEnabled())

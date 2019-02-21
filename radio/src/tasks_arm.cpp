@@ -174,20 +174,7 @@ bool perMainEnabled = true;
 
 TASK_FUNCTION(menusTask)
 {
-  int test = 86;
     opentxInit();
-
-    if (test == 86){
-        lcdClear();
-        lcdDrawSizedText(20, 20, "Chevy Hu", 8, WARNING_INFO_FLAGS);
-
-        lcdRefresh();
-        lcdSetContrast();
-        clearKeyEvents();
-        backlightOn();
-        checkBacklight();
-    }
-
 
 #if defined(PWR_BUTTON_PRESS)
   while (1) {

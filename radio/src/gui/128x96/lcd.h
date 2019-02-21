@@ -39,7 +39,6 @@
 #define LCD_LINES                      (LCD_H/FH)
 #define LCD_COLS                       (LCD_W/FW)
 
-#define BITMAP_BUFFER_SIZE(w, h)       (2 + (w) * (((h)+7)/8))
 
 /* lcd common flags */
 #define BLINK                          0x01
@@ -99,7 +98,15 @@
 #define COLOUR_MASK(x)                 ((x) & 0x0F0000)
 
 #define display_t                      uint8_t
+
+#if LCD_DEPTH == 1
 #define DISPLAY_BUFFER_SIZE            (LCD_W*((LCD_H+7)/8))
+#define BITMAP_BUFFER_SIZE(w, h)       (2 + (w) * (((h)+7)/8))
+#elif LCD_DEPTH == 4
+#define DISPLAY_BUFFER_SIZE            (LCD_W*LCD_H*4/8)
+#define BITMAP_BUFFER_SIZE(w, h)       (2 + (w) * (((h)+7)/8)*4)
+#endif
+
 
 extern display_t displayBuf[DISPLAY_BUFFER_SIZE];
 

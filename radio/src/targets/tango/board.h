@@ -446,33 +446,32 @@ void watchdogInit(unsigned int duration);
 
 // ADC driver
 enum Analogs {
-  STICK1,
-  STICK2,
-  STICK3,
-  STICK4,
-  POT_FIRST,
-  POT1 = POT_FIRST,
-  POT2,
+    STICK1,
+    STICK2,
+    STICK3,
+    STICK4,
+    POT_FIRST,
+    POT1 = POT_FIRST,
+    POT2,
 #if defined(PCBX7) || defined(PCBXLITE)
-  POT_LAST = POT2,
-#elif defined(PCBX9E)
-  POT3,
-  POT4,
-  POT_LAST = POT4,
-  SLIDER1,
-  SLIDER2,
-  SLIDER3,
-  SLIDER4,
+    POT_LAST = POT2,
+#elif defined(PCBX9E) && !defined(PCBTANGO)
+    POT3,
+    POT4,
+    POT_LAST = POT4,
+    SLIDER1,
+    SLIDER2,
+    SLIDER3,
+    SLIDER4,
 #else
-  POT3,
-  POT_LAST = POT3,
-  SLIDER1,
-  SLIDER2,
+    POT3,
+    POT_LAST = POT3,
+    SLIDER1,
+    SLIDER2,
 #endif
-  TX_VOLTAGE,
-  NUM_ANALOGS
+    TX_VOLTAGE,
+    NUM_ANALOGS
 };
-
 #define NUM_POTS                        (POT_LAST-POT_FIRST+1)
 #define NUM_XPOTS                       NUM_POTS
 #define NUM_SLIDERS                     (TX_VOLTAGE-POT_LAST-1)

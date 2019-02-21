@@ -880,8 +880,8 @@ static inline void check_struct()
   CHKSIZE(RadioData, 952);
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBTANGO)
-  CHKSIZE(RadioData, 969);
-  CHKSIZE(ModelData, 6041);
+  CHKSIZE(RadioData, 942);
+  CHKSIZE(ModelData, 6038);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);

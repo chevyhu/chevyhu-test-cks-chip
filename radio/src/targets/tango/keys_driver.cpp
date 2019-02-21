@@ -46,9 +46,9 @@ uint32_t readKeys()
 
 #if defined(KEYS_GPIO_PIN_PLUS)
   if (~KEYS_GPIO_REG_PLUS & KEYS_GPIO_PIN_PLUS)
-    result |= 1 << KEY_PLUS;
+    //result |= 1 << KEY_PLUS;
   if (~KEYS_GPIO_REG_MINUS & KEYS_GPIO_PIN_MINUS)
-    result |= 1 << KEY_MINUS;
+    //result |= 1 << KEY_MINUS;
 #endif
 
 #if defined(KEYS_GPIO_PIN_LEFT)
