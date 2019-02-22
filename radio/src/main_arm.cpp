@@ -470,7 +470,7 @@ void perMain()
   }
 #endif
 
-#if defined(PCBX9E) && !defined(SIMU)
+#if defined(PCBX9E) && !defined(SIMU) && !defined(PCBTANGO)
   toplcdRefreshStart();
   setTopFirstTimer(getValue(MIXSRC_FIRST_TIMER+g_model.toplcdTimer));
   setTopSecondTimer(g_eeGeneral.globalTimer + sessionTimer);

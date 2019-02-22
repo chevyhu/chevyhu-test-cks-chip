@@ -19,7 +19,7 @@ if(PCB STREQUAL X9E OR PCB STREQUAL TANGO)
   #add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
-    top_lcd_driver.cpp
+    #top_lcd_driver.cpp
     startup_stm32f40_41xxx.s
     )
   set(SERIAL2_DRIVER ../common/arm/stm32/serial2_driver.cpp)
