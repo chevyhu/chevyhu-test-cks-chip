@@ -20,6 +20,8 @@
 
 #include "opentx.h"
 
+#if 0
+
 #if defined(ROTARY_ENCODER_NAVIGATION)
 uint32_t rotencPosition;
 #endif
@@ -288,3 +290,7 @@ void keysInit()
   rotencPosition = ROTARY_ENCODER_POSITION();
 #endif
 }
+#else
+
+#endif
+

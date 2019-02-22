@@ -234,6 +234,9 @@ extern char * main_thread_error;
 
 static inline void getADC() { }
 
+#define SIMU_SLEEP(x) do { sleep(x/*ms*/); } while (0)
+#define SIMU_SLEEP_NORET(x) do { sleep(x/*ms*/); } while (0)
+
 uint64_t simuTimerMicros(void);
 
 void simuInit();

@@ -237,53 +237,15 @@ void disable_module_timer( uint32_t module_index);
 // SBUS
 int sbusGetByte(uint8_t * byte);
 
-#if 0
 // Keys driver
 enum EnumKeys
 {
-#if defined(PCBXLITE)
-  KEY_SHIFT,
-#else
-  KEY_MENU,
-#endif
-  KEY_EXIT,
-  KEY_ENTER,
-#if defined(PCBXLITE)
-  KEY_DOWN,
-  KEY_UP,
-  KEY_RIGHT,
   KEY_LEFT,
-#else
-  KEY_PAGE,
-  KEY_PLUS,
-  KEY_MINUS,
-#endif
-
-  TRM_BASE,
-  TRM_LH_DWN = TRM_BASE,
-  TRM_LH_UP,
-  TRM_LV_DWN,
-  TRM_LV_UP,
-  TRM_RV_DWN,
-  TRM_RV_UP,
-  TRM_RH_DWN,
-  TRM_RH_UP,
-  TRM_LAST = TRM_RH_UP,
-
-  NUM_KEYS
-};
-#else
-// Keys driver
-enum EnumKeys
-{
-    KEY_LEFT,
-    KEY_RIGHT,
-    KEY_UP,
-    KEY_DOWN,
-    KEY_ENTER,
-    KEY_EXIT,
-    //for temporary
-    KEY_MENU,
+  KEY_RIGHT,
+  KEY_UP,
+  KEY_DOWN,
+  KEY_ENTER,
+  KEY_EXIT,
 
     TRM_BASE,
     TRM_LH_DWN = TRM_BASE,
@@ -298,8 +260,6 @@ enum EnumKeys
 
     NUM_KEYS
 };
-#endif
-
 
 
 
@@ -423,7 +383,7 @@ uint32_t readTrims(void);
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
-#if defined(PCBX9E) || defined(PCBX7)
+#if defined(PCBX9E) && !defined(PCBTANGO) || defined(PCBX7)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
 void checkRotaryEncoder(void);
@@ -453,25 +413,15 @@ enum Analogs {
     POT_FIRST,
     POT1 = POT_FIRST,
     POT2,
-#if defined(PCBX7) || defined(PCBXLITE)
     POT_LAST = POT2,
-#elif defined(PCBX9E) && !defined(PCBTANGO)
-    POT3,
-    POT4,
-    POT_LAST = POT4,
-    SLIDER1,
-    SLIDER2,
-    SLIDER3,
-    SLIDER4,
-#else
-    POT3,
-    POT_LAST = POT3,
-    SLIDER1,
-    SLIDER2,
-#endif
+    ADC_ANALOGS_FIRST,
+    THREE_POS_L = ADC_ANALOGS_FIRST,
+    THREE_POS_R,
     TX_VOLTAGE,
+    ADC_ANALOGS_LAST = TX_VOLTAGE,
     NUM_ANALOGS
 };
+
 #define NUM_POTS                        (POT_LAST-POT_FIRST+1)
 #define NUM_XPOTS                       NUM_POTS
 #define NUM_SLIDERS                     (TX_VOLTAGE-POT_LAST-1)

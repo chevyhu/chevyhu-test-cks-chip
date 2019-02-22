@@ -212,7 +212,7 @@ TASK_FUNCTION(menusTask)
   }
 
 #if defined(PCBX9E)
-  toplcdOff();
+  //toplcdOff();
 #endif
 
 #if defined(PCBHORUS)

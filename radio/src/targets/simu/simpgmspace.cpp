@@ -18,7 +18,7 @@
  * GNU General Public License for more details.
  */
 
-  #define SIMPGMSPC_USE_QT    0
+#define SIMPGMSPC_USE_QT    0
 
 #include "opentx.h"
 #include <errno.h>
@@ -26,12 +26,12 @@
 #include <string>
 
 #if !defined (_MSC_VER) || defined (__GNUC__)
-  #include <chrono>
-  #include <sys/time.h>
+#include <chrono>
+#include <sys/time.h>
 #endif
 
 #if defined(SIMU_AUDIO)
-  #include <SDL.h>
+#include <SDL.h>
 #endif
 
 uint8_t MCUCSR, MCUSR, MCUCR;
@@ -55,6 +55,7 @@ DMA_Stream_TypeDef dma1_stream1, dma1_stream2, dma1_stream3, dma1_stream4, dma1_
 DMA_TypeDef dma2;
 USART_TypeDef Usart0, Usart1, Usart2, Usart3, Usart4;
 SysTick_Type systick;
+#elif defined(CPUPIC)
 #else
 Pio Pioa, Piob, Pioc;
 Pmc pmc;
@@ -66,13 +67,7 @@ Dacc dacc;
 Adc Adc0;
 #endif
 
-void lcdInit()
-{
-}
 
-void toplcdOff()
-{
-}
 
 uint64_t simuTimerMicros(void)
 {
@@ -163,38 +158,38 @@ void simuInit()
       if ((int)state > 0) pin |= (mask); else pin &= ~(mask); \
       break;
 
-  #if defined(PCBHORUS) || (defined(PCBTARANIS) && !defined(PCBX9E))
-    #define SWITCH_CASE    NEG_CASE
+#if defined(PCBHORUS) || (defined(PCBTARANIS) && !defined(PCBX9E))
+#define SWITCH_CASE    NEG_CASE
     #define SWITCH_INV     POS_CASE
-  #else
-    #define SWITCH_CASE    POS_CASE
-  #endif
-  #define KEY_CASE         NEG_CASE
-  #define SWITCH_3_CASE(swtch, pin1, pin2, mask1, mask2) \
+#else
+#define SWITCH_CASE    POS_CASE
+#endif
+#define KEY_CASE         NEG_CASE
+#define SWITCH_3_CASE(swtch, pin1, pin2, mask1, mask2) \
     case swtch: \
       if ((int)state < 0) pin1 &= ~(mask1); else pin1 |= (mask1); \
       if ((int)state > 0) pin2 &= ~(mask2); else pin2 |= (mask2); \
       break;
-  #define SWITCH_3_INV(swtch, pin1, pin2, mask1, mask2)  SWITCH_3_CASE(swtch, pin2, pin1, mask2, mask1)
+#define SWITCH_3_INV(swtch, pin1, pin2, mask1, mask2)  SWITCH_3_CASE(swtch, pin2, pin1, mask2, mask1)
 
 bool keysStates[NUM_KEYS] = { 0 };
 
 void simuSetKey(uint8_t key, bool state)
 {
-    keysStates[key] = state;
+  keysStates[key] = state;
 }
 
 bool trimsStates[NUM_TRIMS*2] = { 0 };
 void simuSetTrim(uint8_t trim, bool state)
 {
-    trimsStates[trim] = state;
+  trimsStates[trim] = state;
 }
 
 bool switchesStates[NUM_PSWITCH] = { 0 };
 void simuSetSwitch(uint8_t swtch, int8_t state)
 {
-    // TRACE("simuSetSwitch(%d, %d", swtch, state);
-    switchesStates[swtch] = state;
+  // TRACE("simuSetSwitch(%d, %d", swtch, state);
+  switchesStates[swtch] = state;
 }
 
 void StartSimu(bool tests, const char * sdPath, const char * settingsPath)
@@ -260,12 +255,12 @@ void StopSimu()
 }
 
 struct SimulatorAudio {
-  int volumeGain;
-  int currentVolume;
-  uint16_t leftoverData[AUDIO_BUFFER_SIZE];
-  int leftoverLen;
-  bool threadRunning;
-  pthread_t threadPid;
+    int volumeGain;
+    int currentVolume;
+    uint16_t leftoverData[AUDIO_BUFFER_SIZE];
+    int leftoverLen;
+    bool threadRunning;
+    pthread_t threadPid;
 } simuAudio;
 
 bool simuIsRunning()
@@ -438,6 +433,8 @@ void adcPrepareBandgap()
 {
 }
 
+uint8_t backlightLevel = 0;
+
 #if defined(PCBTARANIS)
 void lcdOff()
 {
@@ -475,12 +472,6 @@ int lcdRestoreBackupBuffer()
   return 1;
 }
 
-uint32_t pwrCheck()
-{
-  // TODO: ability to simulate shutdown warning for a "soft" simulator restart
-  return simu_shutdown ? e_power_off : e_power_on;
-}
-
 void pwrOff()
 {
 }
@@ -495,6 +486,68 @@ uint32_t pwrPressed()
 #else
   return false;
 #endif
+}
+
+void readKeysAndTrims()
+{
+  uint8_t index = 0;
+  uint32_t in = readKeys();
+  for (uint8_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
+    keys[index++].input(in & i);
+  }
+
+  in = readTrims();
+  for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
+    keys[index++].input(in & i);
+  }
+}
+
+uint8_t keyDown()
+{
+  return readKeys();
+}
+
+uint8_t trimDown(uint8_t idx)
+{
+  return readTrims() & (1 << idx);
+}
+
+uint32_t readKeys()
+{
+  uint32_t result = 0;
+
+  for (int i=0; i<NUM_KEYS; i++) {
+    if (keysStates[i]) {
+      // TRACE("key pressed %d", i);
+      result |= 1 << i;
+    }
+  }
+
+  return result;
+}
+
+uint32_t readTrims()
+{
+  uint32_t result = 0;
+
+  for (int i=0; i<NUM_TRIMS*2; i++) {
+    if (trimsStates[i]) {
+      // TRACE("trim pressed %d", i);
+      result |= 1 << i;
+    }
+  }
+
+  return result;
+}
+
+uint32_t switchState(uint8_t index)
+{
+  return switchesStates[index];
+}
+
+uint32_t pwrCheck()
+{
+  return 0;
 }
 
 #if defined(STM32)
@@ -568,6 +621,46 @@ uint32_t isBootloaderStart(const uint8_t * block) { return 1; }
 void LCD_ControlLight(uint16_t dutyCycle) { }
 #endif
 
+#if defined(CPUPIC)
+void serialPutc(char c)
+{
+    printf("%c", c);
+}
+
+uint16_t stackSize()
+{
+    return 0;
+}
+
+void dacInit()
+{
+}
+
+void serialInit()
+{
+}
+
+void spiInit()
+{
+}
+
+void keysInit()
+{
+}
+
+void lcdRefreshWait()
+{
+}
+
+void rtcSetTime(gtm const *)
+{
+}
+
+void systemInit()
+{
+}
+#else
 void serialPrintf(const char * format, ...) { }
 void serialCrlf() { }
 void serialPutc(char c) { }
+#endif

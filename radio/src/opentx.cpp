@@ -121,7 +121,7 @@ void per10ms()
   }
 #endif
 
-  //readKeysAndTrims();
+  readKeysAndTrims();
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
   if (IS_ROTARY_ENCODER_NAVIGATION_ENABLE()) {

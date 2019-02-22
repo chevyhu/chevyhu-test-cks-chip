@@ -1122,7 +1122,7 @@
 #endif
 
 // Top LCD on X9E
-#if defined(PCBX9E)
+#if defined(PCBX9E) && !defined(PCBTANGO)
   #define TOPLCD_RCC_AHB1Periph         RCC_AHB1Periph_GPIOG
   #define TOPLCD_GPIO                   GPIOG
   #define TOPLCD_GPIO_PIN_DATA          GPIO_Pin_5
