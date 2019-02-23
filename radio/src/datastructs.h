@@ -487,6 +487,10 @@ typedef uint32_t swarnenable_t;
 typedef uint16_t swconfig_t;
 typedef uint16_t swarnstate_t;
 typedef uint8_t swarnenable_t;
+#elif defined(PCBTANGO)
+typedef uint16_t swconfig_t;
+typedef uint16_t swarnstate_t;
+typedef uint8_t swarnenable_t;
 #else
 typedef uint8_t swarnstate_t;
 typedef uint8_t swarnenable_t;
@@ -530,6 +534,8 @@ PACK(struct CustomScreenData {
 #elif defined(PCBX10)
   #define MODELDATA_EXTRA   NOBACKUP(uint8_t spare:3); NOBACKUP(uint8_t trainerMode:3); NOBACKUP(uint8_t potsWarnMode:2); ModuleData moduleData[NUM_MODULES+1]; NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]); NOBACKUP(char inputNames[MAX_INPUTS][LEN_INPUT_NAME]); NOBACKUP(uint8_t potsWarnEnabled); NOBACKUP(int8_t potsWarnPosition[NUM_POTS+NUM_SLIDERS]); NOBACKUP(uint8_t potsWarnSpares[NUM_DUMMY_ANAS]);
 #elif defined(PCBTARANIS)
+  #define MODELDATA_EXTRA   uint8_t spare:3; uint8_t trainerMode:3; uint8_t potsWarnMode:2; ModuleData moduleData[NUM_MODULES+1]; ScriptData scriptsData[MAX_SCRIPTS]; char inputNames[MAX_INPUTS][LEN_INPUT_NAME]; uint8_t potsWarnEnabled; int8_t potsWarnPosition[NUM_POTS+NUM_SLIDERS];
+#elif defined(PCBTANGO)
   #define MODELDATA_EXTRA   uint8_t spare:3; uint8_t trainerMode:3; uint8_t potsWarnMode:2; ModuleData moduleData[NUM_MODULES+1]; ScriptData scriptsData[MAX_SCRIPTS]; char inputNames[MAX_INPUTS][LEN_INPUT_NAME]; uint8_t potsWarnEnabled; int8_t potsWarnPosition[NUM_POTS+NUM_SLIDERS];
 #elif defined(PCBSKY9X)
   #define MODELDATA_EXTRA   uint8_t spare:6; uint8_t potsWarnMode:2; ModuleData moduleData[NUM_MODULES+1]; char inputNames[MAX_INPUTS][LEN_INPUT_NAME]; uint8_t potsWarnEnabled; int8_t potsWarnPosition[NUM_POTS+NUM_SLIDERS]; uint8_t rxBattAlarms[2];
@@ -670,6 +676,26 @@ PACK(struct TrainerData {
     char anaNames[NUM_STICKS+NUM_POTS+NUM_SLIDERS][LEN_ANA_NAME]; \
     NOBACKUP(char currModelFilename[LEN_MODEL_FILENAME+1]); \
     BLUETOOTH_FIELDS
+#elif defined(PCBTANGO)
+  #if defined(BLUETOOTH)
+  #define BLUETOOTH_FIELDS \
+        uint8_t spare; \
+        char bluetoothName[LEN_BLUETOOTH_NAME];
+  #else
+  #define BLUETOOTH_FIELDS
+  #endif
+  #define EXTRA_GENERAL_FIELDS \
+      EXTRA_GENERAL_FIELDS_ARM \
+      uint8_t  serial2Mode:4; \
+      uint8_t  slidersConfig:4; \
+      uint8_t  potsConfig; /* two bits per pot */\
+      uint8_t  backlightColor; \
+      swarnstate_t switchUnlockStates; \
+      swconfig_t switchConfig; \
+      char switchNames[NUM_SWITCHES][LEN_SWITCH_NAME]; \
+      char anaNames[NUM_STICKS+NUM_POTS+NUM_SLIDERS][LEN_ANA_NAME]; \
+      NOBACKUP(char currModelFilename[LEN_MODEL_FILENAME+1]); \
+      BLUETOOTH_FIELDS
 #elif defined(PCBSKY9X)
   #define EXTRA_GENERAL_FIELDS \
     EXTRA_GENERAL_FIELDS_ARM \
@@ -842,22 +868,22 @@ static inline void check_struct()
   CHKTYPE(CurveData, 4);
 #else
   // Common for all variants
-  CHKSIZE(LimitData, 5);
-  CHKSIZE(SwashRingData, 3);
-  CHKSIZE(FrSkyBarData, 3);
+  CHKSIZE(LimitData, 11);
+  CHKSIZE(SwashRingData, 8);
+  CHKSIZE(FrSkyBarData, 5);
   CHKSIZE(FrSkyLineData, 2);
-  CHKSIZE(FrSkyTelemetryData, 43);
+  CHKSIZE(FrSkyTelemetryData, 88);
   CHKSIZE(ModelHeader, 11);
-  CHKTYPE(CurveData, 1);
+  CHKTYPE(CurveData, 4);
 
-  CHKSIZE(MixData, 9);
-  CHKSIZE(ExpoData, 4);
+  CHKSIZE(MixData, 20);
+  CHKSIZE(ExpoData, 17);
 
-  CHKSIZE(CustomFunctionData, 3);
-  CHKSIZE(TimerData, 3);
+  CHKSIZE(CustomFunctionData, 9);
+  CHKSIZE(TimerData, 11);
 
-  CHKSIZE(FlightModeData, 30);
-  CHKSIZE(RadioData, 85);
+  CHKSIZE(FlightModeData, 36);
+  CHKSIZE(RadioData, 765);
 
 #endif /* board specific ifdefs*/
 
@@ -880,8 +906,8 @@ static inline void check_struct()
   CHKSIZE(RadioData, 952);
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBTANGO)
-  CHKSIZE(RadioData, 933);
-  CHKSIZE(ModelData, 6037);
+  CHKSIZE(RadioData, 765);
+  CHKSIZE(ModelData, 5811);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);

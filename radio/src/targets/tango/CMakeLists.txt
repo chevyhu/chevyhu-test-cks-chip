@@ -5,7 +5,34 @@ option(TARANIS_INTERNAL_PPM "Taranis internal module hack to output PPM" OFF)
 option(USEHORUSBT "X9E BT module replaced by Horus BT module" OFF)
 option(MODULE_R9M_FULLSIZE "xlite option to use full size R9M instead of mini" OFF)
 
-if(PCB STREQUAL X9E OR PCB STREQUAL TANGO)
+if(PCB STREQUAL X9E)
+  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
+  set(STICKS "STANDARD" CACHE STRING "Sticks type (STANDARD/HORUS)")
+  set(CPU_TYPE STM32F4)
+  set(CPU_TYPE_FULL STM32F407xE)  # for size report
+  set(LINKER_SCRIPT targets/taranis/stm32f4_flash.ld)
+  set(HAPTIC YES)
+  set(LUA_EXPORT lua_export_x9e)
+  set(FLAVOUR x9e)
+  add_definitions(-DSTM32F40_41xxx -DPCBX9E -DPCBX9)
+  add_definitions(-DEEPROM_VARIANT=0x8000)
+  add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
+  set(FIRMWARE_TARGET_SRC
+          ${FIRMWARE_TARGET_SRC}
+          top_lcd_driver.cpp
+          startup_stm32f40_41xxx.s
+          )
+  set(SERIAL2_DRIVER ../common/arm/stm32/serial2_driver.cpp)
+  if(STICKS STREQUAL HORUS)
+    add_definitions(-DHORUS_STICKS)
+  endif()
+  set(GUI_DIR 212x64)
+  set(NAVIGATION_TYPE x9d)
+  set(BITMAPS_TARGET taranis_bitmaps)
+  set(FONTS_TARGET taranis_fonts)
+  set(LCD_DRIVER lcd_driver_spi.cpp)
+  set(GVAR_SCREEN model_gvars.cpp)
+elseif(PCB STREQUAL TANGO)
   set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   set(STICKS "STANDARD" CACHE STRING "Sticks type (STANDARD/HORUS)")
   set(CPU_TYPE STM32F4)
@@ -14,21 +41,23 @@ if(PCB STREQUAL X9E OR PCB STREQUAL TANGO)
   set(HAPTIC YES)
   set(LUA_EXPORT lua_export_x9e)
   set(FLAVOUR tango)
-  add_definitions(-DSTM32F40_41xxx -DPCBX9E -DPCBX9 -DPCBTANGO)
+  add_definitions(-DSTM32F40_41xxx -DPCBTANGO)
   add_definitions(-DEEPROM_VARIANT=0x8000)
   #add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
+
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
     #top_lcd_driver.cpp
     startup_stm32f40_41xxx.s
     )
+
   set(SERIAL2_DRIVER ../common/arm/stm32/serial2_driver.cpp)
+
   if(STICKS STREQUAL HORUS)
     add_definitions(-DHORUS_STICKS)
   endif()
-  #set(GUI_DIR 212x64)
+
   set(GUI_DIR 128x96)
-  #set(NAVIGATION_TYPE x9d)
   set(NAVIGATION_TYPE tango)
   set(BITMAPS_TARGET tango_bitmaps)
   set(BITMAPS_TARGET_DIR tango)
@@ -151,7 +180,6 @@ if(SPLASH STREQUAL OFF)
   message(FATAL_ERROR "Option SPLASH=OFF not supported on Taranis")
 endif()
 
-add_definitions(-DPCBTARANIS)
 add_definitions(-DAUDIO -DVOICE -DRTCLOCK)
 
 set(GUI_SRC ${GUI_SRC}

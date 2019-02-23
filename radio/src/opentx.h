@@ -445,7 +445,7 @@ int zchar2str(char *dest, const char *src, int size);
 #include "keys.h"
 #include "pwr.h"
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
 div_t switchInfo(int switchPosition);
 extern uint8_t potsPos[NUM_XPOTS];
 #endif

@@ -57,8 +57,8 @@ LogicalSwitchesFlightModeContext lswFm[MAX_FLIGHT_MODES];
 #define LS_LAST_VALUE(fm, idx) lswFm[fm].lsw[idx].lastValue
 
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
-#if defined(PCBX9E)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
+#if defined(PCBX9E) || defined(PCBTANGO)
 tmr10ms_t switchesMidposStart[16];
 #else
 tmr10ms_t switchesMidposStart[6]; // TODO constant
@@ -145,7 +145,7 @@ void getSwitchesPosition(bool startup)
 #if !defined(PCBXLITE)
   CHECK_2POS(SW_SH);
 #endif
-#if defined(PCBX9E)
+#if defined(PCBX9E)  || defined(PCBTANGO)
   CHECK_3POS(6, SW_SI);
   CHECK_3POS(7, SW_SJ);
   CHECK_3POS(8, SW_SK);

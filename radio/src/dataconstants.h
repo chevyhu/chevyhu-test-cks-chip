@@ -58,6 +58,18 @@
   #define MAX_INPUTS                   32
   #define MAX_TRAINER_CHANNELS         16
   #define MAX_TELEMETRY_SENSORS        32
+#elif defined(PCBTANGO)
+  #define MAX_MODELS                   60
+  #define MAX_OUTPUT_CHANNELS          32 // number of real output channels CH1-CH32
+  #define MAX_FLIGHT_MODES             9
+  #define MAX_MIXERS                   64
+  #define MAX_EXPOS                    64
+  #define MAX_LOGICAL_SWITCHES         64
+  #define MAX_SPECIAL_FUNCTIONS        64 // number of functions assigned to switches
+  #define MAX_SCRIPTS                  7
+  #define MAX_INPUTS                   32
+  #define MAX_TRAINER_CHANNELS         16
+  #define MAX_TELEMETRY_SENSORS        32
 #elif defined(PCBSKY9X)
   #define MAX_MODELS                   60
   #define MAX_OUTPUT_CHANNELS          32 // number of real output channels CH1-CH32
@@ -207,6 +219,25 @@ enum BeeperMode {
     TRAINER_MODE_SLAVE_BLUETOOTH,
 #endif
   };
+#elif defined(PCBTANGO)
+  enum ModuleIndex {
+      INTERNAL_MODULE,
+      EXTERNAL_MODULE,
+      TRAINER_MODULE,
+      FLASHING_MODULE,
+  };
+  enum TrainerMode {
+      TRAINER_MODE_MASTER_TRAINER_JACK,
+      TRAINER_MODE_SLAVE,
+      TRAINER_MODE_MASTER_SBUS_EXTERNAL_MODULE,
+      TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE,
+
+      TRAINER_MODE_MASTER_BATTERY_COMPARTMENT,
+  #if defined(BLUETOOTH)
+      TRAINER_MODE_MASTER_BLUETOOTH,
+      TRAINER_MODE_SLAVE_BLUETOOTH,
+  #endif
+  };
 #elif defined(PCBSKY9X)
   enum ModuleIndex {
     EXTERNAL_MODULE,
@@ -224,7 +255,9 @@ enum BeeperMode {
 #endif
 
 #if defined(PCBTARANIS) || defined(PCBHORUS)
-#define IS_INTERNAL_MODULE_ENABLED() (g_model.moduleData[INTERNAL_MODULE].type != MODULE_TYPE_NONE)
+  #define IS_INTERNAL_MODULE_ENABLED() (g_model.moduleData[INTERNAL_MODULE].type != MODULE_TYPE_NONE)
+#elif defined(PCBTANGO)
+  #define IS_INTERNAL_MODULE_ENABLED() (g_model.moduleData[INTERNAL_MODULE].type != MODULE_TYPE_NONE)
 #elif defined(PCBSKY9X)
   #define IS_INTERNAL_MODULE_ENABLED() (false)
 #endif

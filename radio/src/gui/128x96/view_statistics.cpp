@@ -47,7 +47,7 @@ void menuStatisticsView(event_t event)
 #endif
       break;
 
-#if !defined(PCBTARANIS)
+#if !defined(PCBTARANIS) && !defined(PCBTANGO)
     case EVT_KEY_LONG(KEY_MENU): // historical
 #endif
 #if !defined(PCBSKY9X)
