@@ -123,9 +123,9 @@ uint64_t check3PosSwitchPosition(uint8_t idx, uint8_t sw, bool startup)
   return result;
 }
 
-#define CHECK_2POS(sw)       newPos |= check2PosSwitchPosition(sw ## 0)
-#define CHECK_3POS(idx, sw)  newPos |= check3PosSwitchPosition(idx, sw ## 0, startup)
-
+//#define CHECK_2POS(sw)       newPos |= check2PosSwitchPosition(sw ## 0)
+//#define CHECK_3POS(idx, sw)  newPos |= check3PosSwitchPosition(idx, sw ## 0, startup)
+#if 0
 void getSwitchesPosition(bool startup)
 {
   uint64_t newPos = 0;
@@ -136,6 +136,7 @@ void getSwitchesPosition(bool startup)
 #if !defined(PCBX7) && !defined(PCBXLITE)
   CHECK_3POS(4, SW_SE);
 #endif
+
 #if !defined(PCBXLITE)
   CHECK_2POS(SW_SF);
 #endif
@@ -185,6 +186,7 @@ void getSwitchesPosition(bool startup)
     }
   }
 }
+#endif
 
 
 getvalue_t getValueForLogicalSwitch(mixsrc_t i)

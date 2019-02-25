@@ -942,3 +942,16 @@ void putsModelName(coord_t x, coord_t y, char *name, uint8_t id, LcdFlags att)
     lcdDrawSizedText(x, y, name, sizeof(g_model.header.name), ZCHAR|att);
   }
 }
+
+void drawShortTrimMode(coord_t x, coord_t y, uint8_t fm, uint8_t idx, LcdFlags att)
+{
+  trim_t v = getRawTrimValue(fm, idx);
+  uint8_t mode = v.mode;
+  uint8_t p = v.mode >> 1;
+  if (mode == TRIM_MODE_NONE) {
+    putsChnLetter(x, y, idx+1, att);
+  }
+  else {
+    lcdDrawChar(x, y, '0'+p, att);
+  }
+}

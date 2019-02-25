@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 
-#if defined(PCBSKY9X)
+#if defined(PCBSKY9X) || defined(PCBTANGO)
 #define HW_SETTINGS_COLUMN (2+(15*FW))
 enum MenuRadioHardwareItems {
   ITEM_RADIO_HARDWARE_OPTREX_DISPLAY,
