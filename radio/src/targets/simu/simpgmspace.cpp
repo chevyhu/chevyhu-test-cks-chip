@@ -68,6 +68,11 @@ Adc Adc0;
 #endif
 
 
+void lcdInit()
+{
+}
+
+
 
 uint64_t simuTimerMicros(void)
 {
@@ -435,7 +440,7 @@ void adcPrepareBandgap()
 
 uint8_t backlightLevel = 0;
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBTANGO)
 void lcdOff()
 {
 }

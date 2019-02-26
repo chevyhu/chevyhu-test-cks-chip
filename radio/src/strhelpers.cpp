@@ -229,6 +229,7 @@ char * getGVarString(char * dest, int idx)
 char * getSwitchString(char * dest, swsrc_t idx)
 {
   if (idx == SWSRC_NONE) {
+    TRACE("STR_VSWITCHES = %s\n", STR_VSWITCHES);
     return getStringAtIndex(dest, STR_VSWITCHES, 0);
   }
   else if (idx == SWSRC_OFF) {

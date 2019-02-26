@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 
-#if defined(PCBSKY9X) || defined(PCBTANGO)
+#if defined(PCBSKY9X)
 #define HW_SETTINGS_COLUMN (2+(15*FW))
 enum MenuRadioHardwareItems {
   ITEM_RADIO_HARDWARE_OPTREX_DISPLAY,
@@ -94,7 +94,7 @@ void menuRadioHardware(event_t event)
 }
 #endif // PCBSKY9X
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBTANGO)
 enum MenuRadioHardwareItems {
   ITEM_RADIO_HARDWARE_LABEL_STICKS,
   ITEM_RADIO_HARDWARE_STICK1,
@@ -140,7 +140,7 @@ enum MenuRadioHardwareItems {
 #else
 #define BLUETOOTH_ROWS
 #endif
-#if defined(PCBXLITE)
+#if defined(PCBXLITE) || defined(PCBTANGO)
 #define SWITCH_TYPE_MAX(sw)            (SWITCH_3POS)
 #else
 #define SWITCH_TYPE_MAX(sw)            ((MIXSRC_SF-MIXSRC_FIRST_SWITCH == sw || MIXSRC_SH-MIXSRC_FIRST_SWITCH == sw) ? SWITCH_2POS : SWITCH_3POS)

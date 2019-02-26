@@ -47,7 +47,7 @@ inline bool isModuleMultimoduleDSM2(uint8_t)
 }
 #endif
 
-#if defined(PCBHORUS) || defined(PCBTARANIS)
+#if defined(PCBHORUS) || defined(PCBTARANIS) || defined(PCBTANGO)
 inline bool isModuleXJT(uint8_t idx)
 {
   return g_model.moduleData[idx].type == MODULE_TYPE_XJT;

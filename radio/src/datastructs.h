@@ -873,7 +873,7 @@ static inline void check_struct()
   CHKSIZE(FrSkyBarData, 5);
   CHKSIZE(FrSkyLineData, 2);
   CHKSIZE(FrSkyTelemetryData, 88);
-  CHKSIZE(ModelHeader, 11);
+  CHKSIZE(ModelHeader, 12);
   CHKTYPE(CurveData, 4);
 
   CHKSIZE(MixData, 20);
@@ -907,7 +907,7 @@ static inline void check_struct()
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBTANGO)
   CHKSIZE(RadioData, 765);
-  CHKSIZE(ModelData, 5811);
+  CHKSIZE(ModelData, 5882);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);

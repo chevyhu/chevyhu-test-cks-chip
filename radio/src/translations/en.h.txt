@@ -461,7 +461,7 @@
 
 #define TR_ON_ONE_SWITCHES             "ON\0""One"
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
   // only special switches here
   #define TR_VSWITCHES                 "---" TR_TRIMS_SWITCHES TR_ON_ONE_SWITCHES
 #elif defined(PCBSKY9X)
@@ -683,6 +683,13 @@
   #define TR_SETMIDPOINT               "CENTER STICKS/SLIDERS"
   #define TR_MOVESTICKSPOTS            "MOVE STICKS/POTS"
   #define TR_MENUWHENDONE              TR_ENTER " WHEN DONE"
+#elif defined(PCBTANGO)
+  #define TR_MENUTOSTART               CENTER "\010" TR_ENTER " TO START"
+  #define TR_SETMIDPOINT               TR(CENTER "\004SET STICKS MIDPOINT", CENTER "\004CENTER STICKS/SLIDERS")
+  #define TR_MOVESTICKSPOTS            CENTER "\006MOVE STICKS/POTS"
+  #define TR_MOVESTICKSPOTS_BOUNDARY   CENTER "\004MOVE ALONG BOUNDARY"
+  #define TR_MOVESTICKSPOTS_AGAIN      CENTER "\001MOVE STICKS/POTS AGAIN"
+  #define TR_MENUWHENDONE              CENTER "\006" TR_ENTER " WHEN DONE"
 #else
   #define TR_MENUTOSTART               CENTER "\010" TR_ENTER " TO START"
   #define TR_SETMIDPOINT               TR(CENTER "\004SET STICKS MIDPOINT", CENTER "\004CENTER STICKS/SLIDERS")

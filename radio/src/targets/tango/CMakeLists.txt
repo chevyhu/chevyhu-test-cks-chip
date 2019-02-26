@@ -188,7 +188,7 @@ set(GUI_SRC ${GUI_SRC}
   model_display.cpp
   radio_diagkeys.cpp
   radio_diaganas.cpp
-  #radio_hardware.cpp
+  radio_hardware.cpp
   view_channels.cpp
   view_telemetry.cpp
   view_about.cpp

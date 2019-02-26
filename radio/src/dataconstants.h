@@ -145,7 +145,7 @@ enum CurveType {
   #define MAX_CURVE_POINTS             512
 #endif
 
-#if defined(PCBTARANIS) || defined(PCBSKY9X) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBSKY9X) || defined(PCBHORUS) || defined(PCBTANGO)
   #define NUM_MODULES                  2
 #else
   #define NUM_MODULES                  1
@@ -647,6 +647,14 @@ enum MixSources {
   MIXSRC_SC,                        LUA_EXPORT("sc", "Switch C")
   MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
   MIXSRC_LAST_SWITCH = MIXSRC_SD,
+#elif defined(PCBTANGO)
+  MIXSRC_SA = MIXSRC_FIRST_SWITCH,  LUA_EXPORT("sa", "Switch A")
+  MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")
+  MIXSRC_SC,                        LUA_EXPORT("sc", "Switch C")
+  MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
+  MIXSRC_SE,                        LUA_EXPORT("se", "Switch E")
+  MIXSRC_SF,                        LUA_EXPORT("sf", "Switch F")
+  MIXSRC_LAST_SWITCH = MIXSRC_SF,
 #elif defined(PCBTARANIS) || defined(PCBHORUS)
   MIXSRC_SA = MIXSRC_FIRST_SWITCH,  LUA_EXPORT("sa", "Switch A")
   MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")

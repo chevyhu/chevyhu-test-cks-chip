@@ -101,7 +101,7 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
   menuRadioVersion,
   menuRadioDiagKeys,
   menuRadioDiagAnalogs,
-  //menuRadioHardware,
+  menuRadioHardware,
   menuRadioCalibration
 };
 
