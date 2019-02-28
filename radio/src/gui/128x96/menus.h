@@ -106,8 +106,8 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
 };
 
 enum MenuModelIndexes {
-  MENU_MODEL_SELECT,
-  MENU_MODEL_SETUP,
+  //MENU_MODEL_SELECT,
+  //MENU_MODEL_SETUP,
   CASE_HELI(MENU_MODEL_HELI)
   CASE_FLIGHT_MODES(MENU_MODEL_FLIGHT_MODES)
   MENU_MODEL_INPUTS,
