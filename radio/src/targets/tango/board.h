@@ -294,8 +294,6 @@ enum EnumSwitches
   SW_SD,
   SW_SE,
   SW_SF,
-  SW_SG,
-  SW_SH
 };
 #define IS_3POS(x)                      ((x) != SW_SF && (x) != SW_SH)
 
@@ -372,6 +370,8 @@ enum EnumSwitchesPositions
   #define NUM_SWITCHES                  6
 #elif defined(PCBX9E)
   #define NUM_SWITCHES                  18 // yes, it's a lot!
+#elif defined(PCBTANGO)
+  #define NUM_SWITCHES                  6
 #else
   #define NUM_SWITCHES                  8
 #endif
@@ -422,9 +422,9 @@ enum Analogs {
     NUM_ANALOGS
 };
 
-#define NUM_POTS                        (POT_LAST-POT_FIRST+1)
-#define NUM_XPOTS                       NUM_POTS
-#define NUM_SLIDERS                     (TX_VOLTAGE-POT_LAST-1)
+#define NUM_POTS                        0//(POT_LAST-POT_FIRST+1)
+#define NUM_XPOTS                       0//NUM_POTS
+#define NUM_SLIDERS                     0//(TX_VOLTAGE-POT_LAST-1)
 #define NUM_TRIMS                       4
 #define NUM_MOUSE_ANALOGS               0
 #define NUM_DUMMY_ANAS                  0

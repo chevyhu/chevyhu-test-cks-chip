@@ -471,11 +471,14 @@ void menuMainView(event_t event)
     }
 #endif
   }
+
   //sticks
   doMainScreenGraphics();
 
   // switches
   drawSwitches();
+
+
 
   if (view_base < VIEW_INPUTS) {
     // scroll bar

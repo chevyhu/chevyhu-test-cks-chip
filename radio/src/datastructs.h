@@ -883,7 +883,7 @@ static inline void check_struct()
   CHKSIZE(TimerData, 11);
 
   CHKSIZE(FlightModeData, 36);
-  CHKSIZE(RadioData, 765);
+  CHKSIZE(RadioData, 723);
 
 #endif /* board specific ifdefs*/
 
@@ -906,8 +906,8 @@ static inline void check_struct()
   CHKSIZE(RadioData, 952);
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBTANGO)
-  CHKSIZE(RadioData, 765);
-  CHKSIZE(ModelData, 5890);
+  CHKSIZE(RadioData, 723);
+  CHKSIZE(ModelData, 5886);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);
