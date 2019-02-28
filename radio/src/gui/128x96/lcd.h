@@ -95,6 +95,12 @@
 
   typedef uint32_t LcdFlags;
 
+#if LCD_DEPTH > 1
+#define GREY(x)                        ((x) * 0x010000)
+#define WHITE                          GREY(0xf)
+#define GREY_DEFAULT                   GREY(11)
+#endif
+
 #define COLOUR_MASK(x)                 ((x) & 0x0F0000)
 
 #define display_t                      uint8_t
@@ -105,6 +111,10 @@
 #elif LCD_DEPTH == 4
 #define DISPLAY_BUFFER_SIZE            (LCD_W*LCD_H*4/8)
 #define BITMAP_BUFFER_SIZE(w, h)       (2 + (w) * (((h)+7)/8)*4)
+#endif
+
+#if LCD_DEPTH > 1
+#define FILL_WHITE                     0x10
 #endif
 
 

@@ -296,7 +296,7 @@ PACK(struct FrSkyLineData {
   source_t sources[NUM_LINE_ITEMS];
 });
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBTANGO)
 PACK(struct TelemetryScriptData {
   char    file[LEN_SCRIPT_FILENAME];
   int16_t inputs[MAX_TELEM_SCRIPT_INPUTS];
@@ -306,7 +306,7 @@ PACK(struct TelemetryScriptData {
 union FrSkyScreenData {
   FrSkyBarData  bars[4];
   FrSkyLineData lines[4];
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBTANGO)
   TelemetryScriptData script;
 #endif
 };
@@ -872,7 +872,7 @@ static inline void check_struct()
   CHKSIZE(SwashRingData, 8);
   CHKSIZE(FrSkyBarData, 5);
   CHKSIZE(FrSkyLineData, 2);
-  CHKSIZE(FrSkyTelemetryData, 88);
+  CHKSIZE(FrSkyTelemetryData, 96);
   CHKSIZE(ModelHeader, 12);
   CHKTYPE(CurveData, 4);
 
@@ -907,7 +907,7 @@ static inline void check_struct()
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBTANGO)
   CHKSIZE(RadioData, 765);
-  CHKSIZE(ModelData, 5882);
+  CHKSIZE(ModelData, 5890);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);

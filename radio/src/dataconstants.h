@@ -345,7 +345,7 @@ enum TelemetryUnit {
   #define NUM_LINE_ITEMS 2
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBTANGO)
 #define MAX_TELEM_SCRIPT_INPUTS  8
 #endif
 

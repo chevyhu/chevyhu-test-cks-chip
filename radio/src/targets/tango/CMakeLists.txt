@@ -39,7 +39,7 @@ elseif(PCB STREQUAL TANGO)
   set(CPU_TYPE_FULL STM32F407xE)  # for size report
   set(LINKER_SCRIPT targets/tango/stm32f4_flash.ld)
   set(HAPTIC YES)
-  set(LUA_EXPORT lua_export_x9e)
+  set(LUA_EXPORT lua_export_tango)
   set(FLAVOUR tango)
   add_definitions(-DSTM32F40_41xxx -DPCBTANGO)
   add_definitions(-DEEPROM_VARIANT=0x8000)

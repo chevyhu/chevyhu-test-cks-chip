@@ -307,7 +307,7 @@ void handleGui(event_t event) {
     // so Lua telemetry script can fully use them
     if (event) {
       uint8_t key = EVT_KEY_MASK(event);
-#if defined(PCBXLITE)
+#if defined(PCBXLITE) || defined(PCBTANGO)
       // SHIFT + LEFT/RIGHT LONG used to change telemetry screen on XLITE
       if ((!IS_KEY_LONG(event) && key == KEY_RIGHT && IS_SHIFT_PRESSED()) || (!IS_KEY_LONG(event) && key == KEY_LEFT  && IS_SHIFT_PRESSED()) || (!IS_KEY_LONG(event) && key == KEY_EXIT)) {
 #else

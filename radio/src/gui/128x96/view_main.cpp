@@ -371,6 +371,7 @@ void menuMainView(event_t event)
       CASE_EVT_ROTARY_BREAK
     case EVT_KEY_MODEL_MENU:
       //pushMenu(menuModelSelect);
+      pushMenu(menuModelHeli);
       killEvents(event);
       break;
 
