@@ -54,17 +54,18 @@
   * @{
   */
 
-#define USBD_VID                            0x0483
+//#define USBD_VID                            0x0483
+#define USBD_VID                            0x04d8
 
 #define USBD_LANGID_STRING                  0x409
-#define USBD_MANUFACTURER_STRING            "FrSky"
+#define USBD_MANUFACTURER_STRING            "Team-BlackSheep"
 #define USBD_SERIALNUMBER_FS_STRING         "00000000001B"
 
 
 #if defined(BOOT)
-  #define USBD_MSC_PRODUCT_FS_STRING          USB_NAME " Bootloader"
+  #define USBD_MSC_PRODUCT_FS_STRING        USB_NAME " Bootloader"
 #else
-  #define USBD_MSC_PRODUCT_FS_STRING          USB_NAME " Mass Storage"
+  #define USBD_MSC_PRODUCT_FS_STRING        USB_NAME " Mass Storage"
 #endif
 
 #define USBD_MSC_PID                        0x5720
@@ -76,10 +77,16 @@
 #define USBD_HID_CONFIGURATION_FS_STRING    "HID Config"
 #define USBD_HID_INTERFACE_FS_STRING        "HID Interface"
 
-#define USBD_CDC_PID                        0x5740      // do not change, this ID is used by the ST USB driver for Windows
-#define USBD_CDC_PRODUCT_FS_STRING          USB_NAME " Serial Port"
-#define USBD_CDC_CONFIGURATION_FS_STRING    "VSP Config"
-#define USBD_CDC_INTERFACE_FS_STRING        "VSP Interface"
+//#define USBD_AGENT_PID                       0x5750
+#define USBD_AGENT_PID                       0xf94c
+#define USBD_AGENT_PRODUCT_FS_STRING         USB_NAME " Agent"
+#define USBD_AGENT_CONFIGURATION_FS_STRING   "HID Config"
+#define USBD_AGENT_INTERFACE_FS_STRING       "HID Interface"
+
+#define USBD_CDC_PID                         0x5740      // do not change, this ID is used by the ST USB driver for Windows
+#define USBD_CDC_PRODUCT_FS_STRING           USB_NAME " Serial Port"
+#define USBD_CDC_CONFIGURATION_FS_STRING     "VSP Config"
+#define USBD_CDC_INTERFACE_FS_STRING         "VSP Interface"
 
 const USBD_DEVICE USR_desc =
 {
@@ -133,6 +140,9 @@ uint8_t *  USBD_USR_DeviceDescriptor( uint8_t speed , uint16_t *length)
   switch (getSelectedUsbMode()) {
     case USB_JOYSTICK_MODE:
       pid = USBD_HID_PID;
+      break;
+    case USB_AGENT_MODE:
+      pid = USBD_AGENT_PID;
       break;
     case USB_SERIAL_MODE:
       pid = USBD_CDC_PID;
@@ -198,6 +208,9 @@ uint8_t *  USBD_USR_ProductStrDescriptor( uint8_t speed , uint16_t *length)
     case USB_JOYSTICK_MODE:
       USBD_GetString ((uint8_t*)USBD_HID_PRODUCT_FS_STRING, USBD_StrDesc, length);
       break;
+    case USB_AGENT_MODE:
+      USBD_GetString ((uint8_t*)USBD_AGENT_PRODUCT_FS_STRING, USBD_StrDesc, length);
+      break;
     case USB_SERIAL_MODE:
       USBD_GetString ((uint8_t*)USBD_CDC_PRODUCT_FS_STRING, USBD_StrDesc, length);
       break;
@@ -248,6 +261,9 @@ uint8_t *  USBD_USR_ConfigStrDescriptor( uint8_t speed , uint16_t *length)
     case USB_JOYSTICK_MODE:
       USBD_GetString ((uint8_t*)USBD_HID_CONFIGURATION_FS_STRING, USBD_StrDesc, length);
       break;
+    case USB_AGENT_MODE:
+      USBD_GetString ((uint8_t*)USBD_AGENT_CONFIGURATION_FS_STRING, USBD_StrDesc, length);
+      break;
     case USB_SERIAL_MODE:
       USBD_GetString ((uint8_t*)USBD_CDC_CONFIGURATION_FS_STRING, USBD_StrDesc, length);
       break;
@@ -271,6 +287,9 @@ uint8_t *  USBD_USR_InterfaceStrDescriptor( uint8_t speed , uint16_t *length)
   switch (getSelectedUsbMode()) {
     case USB_JOYSTICK_MODE:
       USBD_GetString ((uint8_t*)USBD_HID_INTERFACE_FS_STRING, USBD_StrDesc, length);
+      break;
+    case USB_AGENT_MODE:
+      USBD_GetString ((uint8_t*)USBD_AGENT_INTERFACE_FS_STRING, USBD_StrDesc, length);
       break;
     case USB_SERIAL_MODE:
       USBD_GetString ((uint8_t*)USBD_CDC_INTERFACE_FS_STRING, USBD_StrDesc, length);

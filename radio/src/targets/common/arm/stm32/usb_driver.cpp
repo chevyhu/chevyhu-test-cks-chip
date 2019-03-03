@@ -28,7 +28,13 @@ extern "C" {
 #endif
 
 #include "opentx.h"
+#include "usb_driver.h"
 #include "debug.h"
+
+#if defined(AGENT)
+#include "io/crsf/crsf.h"
+#include "io/crsf/crossfire.h"
+#endif
 
 static bool usbDriverStarted = false;
 #if defined(BOOT)
@@ -44,10 +50,18 @@ int getSelectedUsbMode()
 
 void setSelectedUsbMode(int mode)
 {
+  static int prev_mode = USB_UNSELECTED_MODE;
   selectedUsbMode = usbMode (mode);
+
+  // for disconnecting usb from host without unplugging
+  if(prev_mode != mode){
+    usbStop();
+  }
+  prev_mode = mode;
 }
 
 int usbPlugged()
+//#include "io/crsf/crossfire.h"
 {
   // debounce
   static uint8_t debounced_state = 0;
@@ -92,6 +106,12 @@ void usbStart()
       USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_HID_cb, &USR_cb);
       break;
 #endif
+#if defined(AGENT)
+    case USB_AGENT_MODE:
+      // initialize USB as HID device
+      USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_AGENT_cb, &USR_cb);
+      break;
+#endif
 #if defined(USB_SERIAL)
     case USB_SERIAL_MODE:
       // initialize USB as CDC device (virtual serial port)
@@ -109,8 +129,9 @@ void usbStart()
 
 void usbStop()
 {
-  usbDriverStarted = false;
   USBD_DeInit(&USB_OTG_dev);
+  // modified to do after USBD_DeInit for using usbDriverStarted in USB_OTG_BSP_Deinit, in order to deconnect usb without unplugging.
+  usbDriverStarted = false;
 }
 
 bool usbStarted()
@@ -162,4 +183,41 @@ void usbJoystickUpdate()
     USBD_HID_SendReport(&USB_OTG_dev, HID_Buffer, HID_IN_PACKET);
   }
 }
+
+#if defined(AGENT)
+void usbAgentWrite( uint8_t *pData )
+{
+  static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
+  memcpy(HID_Buffer, pData, HID_AGENT_IN_PACKET);
+  USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
+}
+
+void CRSF_To_USB_HID( uint8_t *p_arr )
+{
+  static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
+  memcpy(HID_Buffer, p_arr, HID_AGENT_IN_PACKET);
+  USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
+}
+
+void AgentHandler(){
+  /* handle TBS Agent requests */
+  extern uint8_t ReportReceived;
+  extern uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
+  if(ReportReceived){
+	  ReportReceived = 0;
+	  if (HID_Buffer[0] == LIBCRSF_AGENT_LEGACY_SYNC) {
+		AgentLegacyCalls( &HID_Buffer[0] );
+	  }
+	  else {
+		static _libCrsf_CRSF_PARSE_DATA HID_CRSF_Data;
+		for( uint8_t i = 0; i < HID_AGENT_OUT_PACKET; i++ ){
+		  if ( libCrsf_CRSF_Parse( &HID_CRSF_Data, HID_Buffer[i] )) {
+			libCrsf_CRSF_Routing( USB_HID, HID_CRSF_Data.Payload );
+			break;
+		  }
+		}
+	  }
+  }
+}
+#endif // AGENT
 #endif

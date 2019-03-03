@@ -68,6 +68,10 @@ set(FIRMWARE_TARGET_SRC
   ${FIRMWARE_TARGET_SRC}
   ../common/arm/stm32/usbd_hid_joystick.c
   )
+set(FIRMWARE_TARGET_SRC
+  ${FIRMWARE_TARGET_SRC}
+  ../common/arm/stm32/usbd_hid_agent.c
+  )
 if(GVARS)
   set(GUI_SRC
     ${GUI_SRC}
