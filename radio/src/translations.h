@@ -642,6 +642,7 @@ extern const char STR_PERSISTENT_MAH[];
   extern const char STR_STATISTICS[];
   extern const char STR_ABOUT_US[];
   extern const char STR_USB_JOYSTICK[];
+  extern const char STR_USB_AGENT[];
   extern const char STR_USB_MASS_STORAGE[];
   extern const char STR_USB_SERIAL[];
   extern const char STR_SETUP_SCREENS[];

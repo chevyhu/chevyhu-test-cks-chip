@@ -33,6 +33,9 @@ void onUSBConnectMenu(const char *result)
   else if (result == STR_USB_JOYSTICK) {
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
+  else if (result == STR_USB_AGENT) {
+    setSelectedUsbMode(USB_AGENT_MODE);
+  }
   else if (result == STR_USB_SERIAL) {
     setSelectedUsbMode(USB_SERIAL_MODE);
   }
@@ -72,6 +75,10 @@ void handleUsbConnection()
 #endif
   }
 #endif // defined(STM32) && !defined(SIMU)
+
+#if defined(AGENT) && !defined(SIMU)
+  AgentHandler();
+#endif
 }
 
 void checkSpeakerVolume()
@@ -85,8 +92,10 @@ void checkSpeakerVolume()
 }
 
 #if defined(EEPROM)
+#include "./io/crsf/crossfire.h"
 void checkEeprom()
 {
+#include "./io/crsf/crossfire.h"
   if (!usbPlugged()) {
     if (eepromIsWriting())
       eepromWriteProcess();
@@ -307,7 +316,7 @@ void handleGui(event_t event) {
     // so Lua telemetry script can fully use them
     if (event) {
       uint8_t key = EVT_KEY_MASK(event);
-#if defined(PCBXLITE) || defined(PCBTANGO)
+#if defined(PCBXLITE)
       // SHIFT + LEFT/RIGHT LONG used to change telemetry screen on XLITE
       if ((!IS_KEY_LONG(event) && key == KEY_RIGHT && IS_SHIFT_PRESSED()) || (!IS_KEY_LONG(event) && key == KEY_LEFT  && IS_SHIFT_PRESSED()) || (!IS_KEY_LONG(event) && key == KEY_EXIT)) {
 #else
@@ -401,6 +410,15 @@ void guiMain(event_t evt)
 
 void perMain()
 {
+#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
+  static bool startOnce = false;
+  if(!startOnce){
+	  extern bool startCrsfSdReadTest;
+	  startCrsfSdReadTest = true;
+	  startOnce = true;
+  }
+#endif
+
   DEBUG_TIMER_START(debugTimerPerMain1);
 #if defined(PCBSKY9X) && !defined(REVA)
   calcConsumption();
@@ -470,7 +488,7 @@ void perMain()
   }
 #endif
 
-#if defined(PCBX9E) && !defined(SIMU) && !defined(PCBTANGO)
+#if defined(PCBX9E) && !defined(SIMU)
   toplcdRefreshStart();
   setTopFirstTimer(getValue(MIXSRC_FIRST_TIMER+g_model.toplcdTimer));
   setTopSecondTimer(g_eeGeneral.globalTimer + sessionTimer);

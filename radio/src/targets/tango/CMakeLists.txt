@@ -181,11 +181,11 @@ if(PCB STREQUAL TANGO)
   set(SRC
     ${SRC}
     bluetooth.cpp
-    io/crsf/crossfire.cpp
-    io/crsf/crsf.cpp
-    io/crsf/crsf_write.cpp
-    io/crsf/crsf_utilities.cpp
-    io/crsf/crc8.cpp
+    #io/crsf/crossfire.cpp
+    #io/crsf/crsf.cpp
+    #io/crsf/crsf_write.cpp
+    #io/crsf/crsf_utilities.cpp
+    #io/crsf/crc8.cpp
     )
 endif()
 
