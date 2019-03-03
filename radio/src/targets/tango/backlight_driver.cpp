@@ -58,6 +58,27 @@ uint8_t isBacklightEnabled()
 {
   return (BACKLIGHT_TIMER->CCR1 != 0 || BACKLIGHT_TIMER->CCR2 != 0);
 }
+
+#elif defined(PCBTANGO)
+void backlightInit()
+{
+  return;
+}
+
+void backlightEnable(uint8_t level)
+{
+  return;
+}
+
+void backlightDisable()
+{
+  return;
+}
+
+uint8_t isBacklightEnabled()
+{
+  return 1;
+}
 #elif defined(PCBX9DP)
 void backlightInit()
 {

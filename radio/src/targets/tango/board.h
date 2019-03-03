@@ -240,30 +240,48 @@ int sbusGetByte(uint8_t * byte);
 // Keys driver
 enum EnumKeys
 {
-  KEY_LEFT,
-  KEY_RIGHT,
-  KEY_UP,
-  KEY_DOWN,
-  KEY_ENTER,
+#if defined(PCBTANGO)
+  KEY_MENU,
+  KEY_PAGE,
   KEY_EXIT,
+  KEY_ENTER,
+  KEY_PLUS,
+  KEY_MINUS,
+#else
+#if defined(PCBXLITE)
+  KEY_SHIFT,
+#else
+  KEY_MENU,
+#endif
+  KEY_EXIT,
+  KEY_ENTER,
+#if defined(PCBXLITE)
+  KEY_DOWN,
+  KEY_UP,
+  KEY_RIGHT,
+  KEY_LEFT,
+#else
+  KEY_PAGE,
+  KEY_PLUS,
+  KEY_MINUS,
+#endif
 
-    TRM_BASE,
-    TRM_LH_DWN = TRM_BASE,
-    TRM_LH_UP,
-    TRM_LV_DWN,
-    TRM_LV_UP,
-    TRM_RV_DWN,
-    TRM_RV_UP,
-    TRM_RH_DWN,
-    TRM_RH_UP,
-    TRM_LAST = TRM_RH_UP,
+#endif // PCBTANGO
+  TRM_BASE,
+  TRM_LH_DWN = TRM_BASE,
+  TRM_LH_UP,
+  TRM_LV_DWN,
+  TRM_LV_UP,
+  TRM_RV_DWN,
+  TRM_RV_UP,
+  TRM_RH_DWN,
+  TRM_RH_UP,
+  TRM_LAST = TRM_RH_UP,
 
-    NUM_KEYS
+  NUM_KEYS
 };
 
-
-
-#if defined(PCBX9E) && !defined(SIMU) && !defined(PCBTANGO)
+#if defined(PCBX9E) && !defined(SIMU)
   #define KEY_UP                        KEY_MINUS
   #define KEY_DOWN                      KEY_PLUS
   #define KEY_RIGHT                     KEY_PLUS
@@ -272,10 +290,10 @@ enum EnumKeys
   #define KEY_PLUS                      KEY_RIGHT
   #define KEY_MINUS                     KEY_LEFT
 #else
-  #define KEY_UP                        KEY_UP
-  #define KEY_DOWN                      KEY_DOWN
-  #define KEY_RIGHT                     KEY_RIGHT
-  #define KEY_LEFT                      KEY_LEFT
+  #define KEY_UP                        11//KEY_PLUS
+  #define KEY_DOWN                      12//KEY_MINUS
+  #define KEY_RIGHT                     13//KEY_MINUS
+  #define KEY_LEFT                      14//KEY_PLUS
 #endif
 
 #if defined(KEYS_GPIO_PIN_SHIFT)
@@ -295,10 +313,39 @@ enum EnumSwitches
   SW_SE,
   SW_SF,
 };
-#define IS_3POS(x)                      ((x) != SW_SF && (x) != SW_SH)
+#define IS_3POS(x)                      ((x) != SW_SA && (x) != SW_SD && (x) != SW_SE && (x) != SW_SF && (x) != SW_SG )
 
 enum EnumSwitchesPositions
 {
+#if defined(PCBTANGO)
+  SW_SA0,
+  SW_SA1,
+  SW_SA2,
+  SW_SB0,
+  SW_SB1,
+  SW_SB2,
+  SW_SC0,
+  SW_SC1,
+  SW_SC2,
+  SW_SD0,
+  SW_SD1,
+  SW_SD2,
+  SW_SE0,
+  SW_SE1,
+  SW_SE2,
+  SW_SF0,
+  SW_SF1,
+  SW_SF2,
+  SW_SG0,
+  SW_SG1,
+  SW_SG2,
+  SW_SH0,
+  SW_SH1,
+  SW_SH2,
+  SW_SI0,
+  SW_SI1,
+  SW_SI2,
+#else
   SW_SA0,
   SW_SA1,
   SW_SA2,
@@ -363,15 +410,16 @@ enum EnumSwitchesPositions
   SW_SR1,
   SW_SR2,
 #endif
+#endif // PCBTANGO
 };
-#if defined(PCBXLITE)
+#if defined(PCBTANGO)
+  #define NUM_SWITCHES                  6
+#elif defined(PCBXLITE)
   #define NUM_SWITCHES                  4
 #elif defined(PCBX7)
   #define NUM_SWITCHES                  6
 #elif defined(PCBX9E)
   #define NUM_SWITCHES                  18 // yes, it's a lot!
-#elif defined(PCBTANGO)
-  #define NUM_SWITCHES                  6
 #else
   #define NUM_SWITCHES                  8
 #endif
@@ -383,7 +431,7 @@ uint32_t readTrims(void);
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
-#if defined(PCBX9E) && !defined(PCBTANGO) || defined(PCBX7)
+#if defined(PCBX9E) || defined(PCBX7)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
 void checkRotaryEncoder(void);
@@ -406,20 +454,31 @@ void watchdogInit(unsigned int duration);
 
 // ADC driver
 enum Analogs {
-    STICK1,
-    STICK2,
-    STICK3,
-    STICK4,
-    POT_FIRST,
-    POT1 = POT_FIRST,
-    POT2,
-    POT_LAST = POT2,
-    ADC_ANALOGS_FIRST,
-    THREE_POS_L = ADC_ANALOGS_FIRST,
-    THREE_POS_R,
-    TX_VOLTAGE,
-    ADC_ANALOGS_LAST = TX_VOLTAGE,
-    NUM_ANALOGS
+  STICK1,
+  STICK2,
+  STICK3,
+  STICK4,
+  POT_FIRST,
+  POT1 = POT_FIRST,
+  POT2,
+#if defined(PCBX7) || defined(PCBXLITE)
+  POT_LAST = POT2,
+#elif defined(PCBX9E)
+  POT3,
+  POT4,
+  POT_LAST = POT4,
+  SLIDER1,
+  SLIDER2,
+  SLIDER3,
+  SLIDER4,
+#else
+  POT3,
+  POT_LAST = POT3,
+  SLIDER1,
+  SLIDER2,
+#endif
+  TX_VOLTAGE,
+  NUM_ANALOGS
 };
 
 #define NUM_POTS                        0//(POT_LAST-POT_FIRST+1)
@@ -528,9 +587,9 @@ uint8_t isBacklightEnabled(void);
 #if !defined(SIMU)
   void usbJoystickUpdate();
 #endif
-#define USB_NAME                        "FrSky Taranis"
-#define USB_MANUFACTURER                'F', 'r', 'S', 'k', 'y', ' ', ' ', ' '  /* 8 bytes */
-#define USB_PRODUCT                     'T', 'a', 'r', 'a', 'n', 'i', 's', ' '  /* 8 Bytes */
+#define USB_NAME                        "TBS"
+#define USB_MANUFACTURER                'T', 'B', 'S', ' ', ' ', ' ', ' ', ' '  /* 8 bytes */
+#define USB_PRODUCT                     'T', 'a', 'n', 'g', 'o', ' ', '2', ' '  /* 8 Bytes */
 
 #if defined(__cplusplus) && !defined(SIMU)
 }
@@ -708,5 +767,14 @@ extern DMAFifo<32> serial2RxFifo;
 #endif
 
 #define DISPLAY_PROGRESS_BAR(...) do{} while(0)
+
+void CRSF_Init( void );
+#define SHARED_MEMORY_ADDRESS   0x2001fd80 // allocate at end of SRAM
+
+#if defined(ESP_SERIAL)
+void espInit(uint32_t baudrate, bool use_dma);
+void espWriteBuffer(uint8_t* buf, uint8_t len);
+uint8_t espReadBuffer(uint8_t* buf);
+#endif
 
 #endif // _BOARD_H_
