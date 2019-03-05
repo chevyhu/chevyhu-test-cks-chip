@@ -122,6 +122,7 @@ tmr10ms_t menuEntryTime;
 #define MAXCOL(row)                    (MAXCOL_RAW(row) >= HIDDEN_ROW ? MAXCOL_RAW(row) : (const uint8_t)(MAXCOL_RAW(row) & (~NAVIGATION_LINE_BY_LINE)))
 #define POS_HORZ_INIT(posVert)         0
 
+#if 0
 void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, const uint8_t *horTab, uint8_t horTabMax, vertpos_t maxrow)
 {
   vertpos_t l_posVert = menuVerticalPosition;
@@ -341,6 +342,279 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t 
     }
   }
 }
+#else
+
+#define CURSOR_NOT_ALLOWED_IN_ROW(row) ((int8_t)MAXCOL(row) < 0)
+#define MAXCOL_RAW(row)                (horTab ? *(horTab+min(row, (vertpos_t)horTabMax)) : (const uint8_t)0)
+#define MAXCOL(row)                    (MAXCOL_RAW(row) >= HIDDEN_ROW ? MAXCOL_RAW(row) : (const uint8_t)(MAXCOL_RAW(row) & (~NAVIGATION_LINE_BY_LINE)))
+#define COLATTR(row)                   (MAXCOL_RAW(row) == (uint8_t)-1 ? (const uint8_t)0 : (const uint8_t)(MAXCOL_RAW(row) & NAVIGATION_LINE_BY_LINE))
+#define INC(val, min, max)             if (val<max) {val++;} else if (max>min) {val=min;}
+#define DEC(val, min, max)             if (val>min) {val--;} else {val=max;}
+
+coord_t scrollbar_X = DEFAULT_SCROLLBAR_X;
+
+void onLongMenuPress(const char * result)
+{
+  if (result == STR_VIEW_CHANNELS) {
+    pushMenu(menuChannelsView);
+  }
+  else if (result == STR_VIEW_NOTES) {
+    pushModelNotes();
+  }
+}
+
+void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, const uint8_t *horTab, uint8_t horTabMax, vertpos_t rowcount, uint8_t flags)
+{
+  vertpos_t l_posVert = menuVerticalPosition;
+  horzpos_t l_posHorz = menuHorizontalPosition;
+
+  uint8_t maxcol = MAXCOL(l_posVert);
+
+  if (menuTab) {
+    int cc = curr;
+    switch (event) {
+      case EVT_KEY_LONG(KEY_MENU):
+        if (menuTab == menuTabModel) {
+          killEvents(event);
+          if (modelHasNotes()) {
+            POPUP_MENU_ADD_SD_ITEM(STR_VIEW_CHANNELS);
+            POPUP_MENU_ADD_ITEM(STR_VIEW_NOTES);
+            POPUP_MENU_START(onLongMenuPress);
+          }
+          else {
+            pushMenu(menuChannelsView);
+          }
+        }
+        break;
+
+      case EVT_KEY_LONG(KEY_PAGE):
+        if (s_editMode>0)
+          break;
+
+        if (curr > 0)
+          cc = curr - 1;
+        else
+          cc = menuTabSize-1;
+        killEvents(event);
+        break;
+
+      case EVT_KEY_BREAK(KEY_PAGE):
+        if (s_editMode>0)
+          break;
+
+        if (curr < (menuTabSize-1))
+          cc = curr + 1;
+        else
+          cc = 0;
+        break;
+    }
+
+    if (!menuCalibrationState && cc != curr) {
+      chainMenu(menuTab[cc]);
+    }
+
+    if (!(flags&CHECK_FLAG_NO_SCREEN_INDEX)) {
+      drawScreenIndex(curr, menuTabSize, 0);
+    }
+
+    lcdDrawFilledRect(0, 0, LCD_W, MENU_HEADER_HEIGHT, SOLID, FILL_WHITE|GREY_DEFAULT);
+  }
+
+  DISPLAY_PROGRESS_BAR(menuTab ? lcdLastRightPos-2*FW-((curr+1)/10*FWNUM)-2 : 20*FW+1);
+
+  switch (event) {
+    case EVT_ENTRY:
+      menuEntryTime = get_tmr10ms();
+      s_editMode = EDIT_MODE_INIT;
+      l_posVert = MENU_FIRST_LINE_EDIT;
+      l_posHorz = POS_HORZ_INIT(l_posVert);
+      SET_SCROLLBAR_X(LCD_W-1);
+      break;
+
+    case EVT_ENTRY_UP:
+      menuEntryTime = get_tmr10ms();
+      s_editMode = 0;
+      l_posHorz = POS_HORZ_INIT(l_posVert);
+      SET_SCROLLBAR_X(LCD_W-1);
+      break;
+
+    case EVT_KEY_BREAK(KEY_ENTER):
+      if (s_editMode > 1) break;
+      if (menuHorizontalPosition < 0 && maxcol > 0 && READ_ONLY_UNLOCKED()) {
+        l_posHorz = 0;
+        AUDIO_KEY_PRESS();
+      }
+      else if (READ_ONLY_UNLOCKED()) {
+        s_editMode = (s_editMode<=0);
+        AUDIO_KEY_PRESS();
+      }
+      break;
+
+    case EVT_KEY_LONG(KEY_EXIT):
+      s_editMode = 0; // TODO needed? we call ENTRY_UP after which does the same
+      popMenu();
+      break;
+
+    case EVT_KEY_BREAK(KEY_EXIT):
+      if (s_editMode > 0) {
+        s_editMode = 0;
+        AUDIO_KEY_PRESS();
+        break;
+      }
+
+      if (l_posHorz >= 0 && (COLATTR(l_posVert) & NAVIGATION_LINE_BY_LINE)) {
+        l_posHorz = -1;
+        AUDIO_KEY_PRESS();
+      }
+      else {
+        uint8_t posVertInit = MENU_FIRST_LINE_EDIT;
+        if (menuVerticalOffset != 0 || l_posVert != posVertInit) {
+          menuVerticalOffset = 0;
+          l_posVert = posVertInit;
+          l_posHorz = POS_HORZ_INIT(l_posVert);
+          AUDIO_KEY_PRESS();
+        }
+        else {
+          popMenu();
+        }
+      }
+      break;
+
+      CASE_EVT_ROTARY_RIGHT
+    case EVT_KEY_FIRST(KEY_RIGHT):
+      AUDIO_KEY_PRESS();
+      // no break
+    case EVT_KEY_REPT(KEY_RIGHT):
+      if (s_editMode != 0) break;
+      if ((COLATTR(l_posVert) & NAVIGATION_LINE_BY_LINE)) {
+        if (l_posHorz >= 0) {
+          INC(l_posHorz, 0, maxcol);
+          break;
+        }
+      }
+      else {
+        if (l_posHorz < maxcol) {
+          l_posHorz++;
+          break;
+        }
+        else {
+          l_posHorz = 0;
+        }
+      }
+
+      do {
+        INC(l_posVert, MENU_FIRST_LINE_EDIT, rowcount-1);
+      } while (CURSOR_NOT_ALLOWED_IN_ROW(l_posVert));
+
+      s_editMode = 0; // if we go down, we must be in this mode
+
+      l_posHorz = POS_HORZ_INIT(l_posVert);
+      break;
+
+      CASE_EVT_ROTARY_LEFT
+    case EVT_KEY_FIRST(KEY_LEFT):
+      AUDIO_KEY_PRESS();
+      // no break
+    case EVT_KEY_REPT(KEY_LEFT):
+      if (s_editMode != 0) break;
+      if ((COLATTR(l_posVert) & NAVIGATION_LINE_BY_LINE)) {
+        if (l_posHorz >= 0) {
+          DEC(l_posHorz, 0, maxcol);
+          break;
+        }
+      }
+      else if (l_posHorz > 0) {
+        l_posHorz--;
+        break;
+      }
+      else {
+        l_posHorz = 0xff;
+      }
+
+      do {
+        DEC(l_posVert, MENU_FIRST_LINE_EDIT, rowcount-1);
+      } while (CURSOR_NOT_ALLOWED_IN_ROW(l_posVert));
+
+      s_editMode = 0; // if we go up, we must be in this mode
+
+      if ((COLATTR(l_posVert) & NAVIGATION_LINE_BY_LINE))
+        l_posHorz = -1;
+      else
+        l_posHorz = min((uint8_t)l_posHorz, MAXCOL(l_posVert));
+
+      break;
+  }
+
+  int linesCount = rowcount;
+
+  if (l_posVert == 0 || (l_posVert==1 && MAXCOL(vertpos_t(0)) >= HIDDEN_ROW) || (l_posVert==2 && MAXCOL(vertpos_t(0)) >= HIDDEN_ROW && MAXCOL(vertpos_t(1)) >= HIDDEN_ROW)) {
+    menuVerticalOffset = 0;
+    if (horTab) {
+      linesCount = 0;
+      for (int i=0; i<rowcount; i++) {
+        if (i>horTabMax || horTab[i] != HIDDEN_ROW) {
+          linesCount++;
+        }
+      }
+    }
+  }
+  else if (horTab) {
+    if (rowcount > NUM_BODY_LINES) {
+      while (1) {
+        vertpos_t firstLine = 0;
+        for (int numLines=0; firstLine<rowcount && numLines<menuVerticalOffset; firstLine++) {
+          if (firstLine>=horTabMax || horTab[firstLine] != HIDDEN_ROW) {
+            numLines++;
+          }
+        }
+        if (l_posVert < firstLine) {
+          menuVerticalOffset--;
+        }
+        else {
+          vertpos_t lastLine = firstLine;
+          for (int numLines=0; lastLine<rowcount && numLines<NUM_BODY_LINES; lastLine++) {
+            if (lastLine>=horTabMax || horTab[lastLine] != HIDDEN_ROW) {
+              numLines++;
+            }
+          }
+          if (l_posVert >= lastLine) {
+            menuVerticalOffset++;
+          }
+          else {
+            linesCount = menuVerticalOffset + NUM_BODY_LINES;
+            for (int i=lastLine; i<rowcount; i++) {
+              if (i>horTabMax || horTab[i] != HIDDEN_ROW) {
+                linesCount++;
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  else {
+    if (l_posVert>=NUM_BODY_LINES+menuVerticalOffset) {
+      menuVerticalOffset = l_posVert-NUM_BODY_LINES+1;
+    }
+    else if (l_posVert<menuVerticalOffset) {
+      menuVerticalOffset = l_posVert;
+    }
+  }
+
+  if (scrollbar_X && linesCount > NUM_BODY_LINES) {
+    drawVerticalScrollbar(scrollbar_X, MENU_HEADER_HEIGHT, LCD_H-MENU_HEADER_HEIGHT, menuVerticalOffset, linesCount, NUM_BODY_LINES);
+  }
+#if 0
+  if (name) {
+    title(name);
+  }
+#endif
+
+  menuVerticalPosition = l_posVert;
+  menuHorizontalPosition = l_posHorz;
+}
+#endif
 
 void check_simple(event_t event, uint8_t curr, const MenuHandlerFunc * menuTab, uint8_t menuTabSize, vertpos_t maxrow)
 {

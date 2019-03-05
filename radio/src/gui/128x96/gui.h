@@ -38,6 +38,7 @@
 #define COLUMN_X                       0
 #define drawFieldLabel(x, y, str)      lcdDrawTextAlignedLeft(y, str)
 
+#define DEFAULT_SCROLLBAR_X            (LCD_W-1)
 #define NUM_BODY_LINES                 (LCD_LINES-1)
 #define MENU_HEADER_HEIGHT             FH
 #define MENU_INIT_VPOS                 0
@@ -160,7 +161,8 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
 #define CURSOR_ON_LINE()               (0)
 #endif
 
-void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, const uint8_t *horTab, uint8_t horTabMax, vertpos_t maxrow);
+#define CHECK_FLAG_NO_SCREEN_INDEX   1
+void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, const uint8_t *horTab, uint8_t horTabMax, vertpos_t maxrow, uint8_t flags=0);
 void check_simple(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, vertpos_t maxrow);
 void check_submenu_simple(event_t event, uint8_t maxrow);
 
@@ -300,11 +302,17 @@ void drawStatusLine();
   void pushMenuTextView(const char *filename);
   void pushModelNotes();
   void readModelNotes();
+  void menuChannelsView(event_t event);
 
 #define LABEL(...)                     (uint8_t)-1
 
-#define CURSOR_MOVED_LEFT(event)       (IS_ROTARY_LEFT(event) || EVT_KEY_MASK(event) == KEY_LEFT)
-#define CURSOR_MOVED_RIGHT(event)      (IS_ROTARY_RIGHT(event) || EVT_KEY_MASK(event) == KEY_RIGHT)
+#if defined(ROTARY_ENCODER_NAVIGATION)
+#define CURSOR_MOVED_LEFT(event)       (event==EVT_ROTARY_LEFT)
+#define CURSOR_MOVED_RIGHT(event)      (event==EVT_ROTARY_RIGHT)
+#else
+#define CURSOR_MOVED_LEFT(event)       (EVT_KEY_MASK(event) == KEY_LEFT)
+#define CURSOR_MOVED_RIGHT(event)      (EVT_KEY_MASK(event) == KEY_RIGHT)
+#endif
 
 #if defined(ROTARY_ENCODERS)
 #define CASE_EVT_ROTARY_BREAK          case EVT_ROTARY_BREAK:
@@ -313,6 +321,9 @@ void drawStatusLine();
 #define CASE_EVT_ROTARY_BREAK
 #define CASE_EVT_ROTARY_LONG
 #endif
+
+#define MENU_FIRST_LINE_EDIT           (menuTab ? (MAXCOL((uint16_t)0) >= HIDDEN_ROW ? (MAXCOL((uint16_t)1) >= HIDDEN_ROW ? 2 : 1) : 0) : 0)
+#define POS_HORZ_INIT(posVert)         ((COLATTR(posVert) & NAVIGATION_LINE_BY_LINE) ? -1 : 0)
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
   #define IS_ROTARY_LEFT(evt)          (evt == EVT_ROTARY_LEFT)

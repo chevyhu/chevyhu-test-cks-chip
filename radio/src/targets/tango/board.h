@@ -242,9 +242,9 @@ enum EnumKeys
 {
 #if defined(PCBTANGO)
   KEY_MENU,
-  KEY_PAGE,
   KEY_EXIT,
   KEY_ENTER,
+  KEY_PAGE,
   KEY_PLUS,
   KEY_MINUS,
 #else
@@ -290,10 +290,10 @@ enum EnumKeys
   #define KEY_PLUS                      KEY_RIGHT
   #define KEY_MINUS                     KEY_LEFT
 #else
-  #define KEY_UP                        11//KEY_PLUS
-  #define KEY_DOWN                      12//KEY_MINUS
-  #define KEY_RIGHT                     13//KEY_MINUS
-  #define KEY_LEFT                      14//KEY_PLUS
+  #define KEY_UP                        KEY_PLUS
+  #define KEY_DOWN                      KEY_MINUS
+  #define KEY_RIGHT                     KEY_MINUS
+  #define KEY_LEFT                      KEY_PLUS
 #endif
 
 #if defined(KEYS_GPIO_PIN_SHIFT)
