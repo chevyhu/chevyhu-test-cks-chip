@@ -29,6 +29,13 @@ extern "C" {
 }
 #endif
 
+typedef void (*Kernel_API_PTR)(void);
+Kernel_API_PTR *Kernel_API = (Kernel_API_PTR*)KERNEL_API_ADDRESS;
+void KernelApiInit( void ){
+#define DEF_API_CMD(_id, _function, _return_type, ...)  (Kernel_API[_id] = (Kernel_API_PTR)&_function);
+#include "rtos_api.h"
+}
+
 void watchdogInit(unsigned int duration)
 {
   IWDG->KR = 0x5555;      // Unlock registers
@@ -162,7 +169,7 @@ void boardInit()
                          HAPTIC_RCC_APB2Periph | INTMODULE_RCC_APB2Periph |
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph, ENABLE);
-
+  KernelApiInit();
 #if !defined(PCBX9E)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();

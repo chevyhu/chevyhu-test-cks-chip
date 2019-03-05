@@ -90,7 +90,7 @@ extern "C" {
 }
 #endif
 
-#define FLASHSIZE                       0x80000
+#define FLASHSIZE                       0x60000
 #define BOOTLOADER_SIZE                 0x9000
 #define FIRMWARE_ADDRESS                0x08000000
 
@@ -702,6 +702,10 @@ void checkTrainerSettings(void);
 #else
 #define TELEMETRY_FIFO_SIZE             64
 #endif
+
+#define KERNEL_API_ADDRESS      		0x10000000
+#define SHARED_MEMORY_ADDRESS   		0x10000040
+//#define DIO_INT_TRAMPOLINE      		0x9D060000
 
 extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 extern DMAFifo<32> serial2RxFifo;
