@@ -426,7 +426,7 @@ void perMain()
   checkSpeakerVolume();
   checkEeprom();
   logsWrite();
-  handleUsbConnection();
+  //handleUsbConnection();
   //checkTrainerSettings();
   periodicTick();
   DEBUG_TIMER_STOP(debugTimerPerMain1);

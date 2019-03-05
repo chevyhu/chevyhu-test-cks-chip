@@ -62,9 +62,86 @@ event_t getEvent(bool trim)
   }
 }
 
-#if defined(PCBTANGO) && !defined(SIMU)
-void Key::input(uint8_t val)
+void Key::input(bool val)
 {
+#if 1
+  //return;
+  // store new value in the bits that hold the key state history (used for debounce)
+  uint8_t t_vals = m_vals ;
+  t_vals <<= 1 ;
+  if (val) t_vals |= 1;
+  m_vals = t_vals ;
+
+  m_cnt++;
+
+  if (m_state && m_vals == 0) {
+    // key is released
+    if (m_state != KSTATE_KILLED) {
+      TRACE("key %d BREAK", key());
+      putEvent(EVT_KEY_BREAK(key()));
+    }
+    m_state = KSTATE_OFF;
+    m_cnt = 0;
+    return;
+  }
+
+  switch (m_state) {
+    case KSTATE_OFF:
+      if (m_vals == ((1<<FILTERBITS)-1)) {
+        m_state = KSTATE_START;
+        m_cnt = 0;
+      }
+      break;
+    case KSTATE_START:
+      TRACE("key %d FIRST", key());
+      putEvent(EVT_KEY_FIRST(key()));
+      inactivity.counter = 0;
+      m_state = KSTATE_RPTDELAY;
+      m_cnt = 0;
+      break;
+
+    case KSTATE_RPTDELAY: // gruvin: delay state before first key repeat
+      if (m_cnt == KEY_LONG_DELAY) {
+        // generate long key press
+        TRACE("key %d LONG", key());
+        putEvent(EVT_KEY_LONG(key()));
+      }
+      if (m_cnt == KEY_REPEAT_DELAY) {
+        m_state = 16;
+        m_cnt = 0;
+      }
+      break;
+
+    case 16:
+    case 8:
+    case 4:
+    case 2:
+      if (m_cnt >= KEY_REPEAT_TRIGGER) { //3 6 12 24 48 pulses in every 480ms
+        m_state >>= 1;
+        m_cnt = 0;
+      }
+      // no break
+    case 1:
+      if ((m_cnt & (m_state-1)) == 0) {
+        // this produces repeat events that at first repeat slowly and then increase in speed
+        TRACE("key %d REPEAT", key());
+        if (!IS_SHIFT_KEY(key()))
+          putEvent(EVT_KEY_REPT(key()));
+      }
+      break;
+
+    case KSTATE_PAUSE: //pause repeat events
+      if (m_cnt >= KEY_REPEAT_PAUSE_DELAY) {
+        m_state = 8;
+        m_cnt = 0;
+      }
+      break;
+
+    case KSTATE_KILLED: //killed
+      break;
+  }
+  
+#else
   m_cnt++;
 
   if (m_state && val == 0) {
@@ -97,86 +174,9 @@ void Key::input(uint8_t val)
         putEvent(EVT_KEY_REPT(key()), val);
       }
     }
-  }
-}
-#else
-void Key::input(bool val)
-{
-  // store new value in the bits that hold the key state history (used for debounce)
-  uint8_t t_vals = m_vals ;
-  t_vals <<= 1 ;
-  if (val) t_vals |= 1;
-  m_vals = t_vals ;
-
-  m_cnt++;
-
-  if (m_state && m_vals == 0) {
-    // key is released
-    if (m_state != KSTATE_KILLED) {
-      // TRACE("key %d BREAK", key());
-      putEvent(EVT_KEY_BREAK(key()));
-    }
-    m_state = KSTATE_OFF;
-    m_cnt = 0;
-    return;
-  }
-
-  switch (m_state) {
-    case KSTATE_OFF:
-      if (m_vals == ((1<<FILTERBITS)-1)) {
-        m_state = KSTATE_START;
-        m_cnt = 0;
-      }
-      break;
-    case KSTATE_START:
-      // TRACE("key %d FIRST", key());
-      putEvent(EVT_KEY_FIRST(key()));
-      inactivity.counter = 0;
-      m_state = KSTATE_RPTDELAY;
-      m_cnt = 0;
-      break;
-
-    case KSTATE_RPTDELAY: // gruvin: delay state before first key repeat
-      if (m_cnt == KEY_LONG_DELAY) {
-        // generate long key press
-        // TRACE("key %d LONG", key());
-        putEvent(EVT_KEY_LONG(key()));
-      }
-      if (m_cnt == KEY_REPEAT_DELAY) {
-        m_state = 16;
-        m_cnt = 0;
-      }
-      break;
-
-    case 16:
-    case 8:
-    case 4:
-    case 2:
-      if (m_cnt >= KEY_REPEAT_TRIGGER) { //3 6 12 24 48 pulses in every 480ms
-        m_state >>= 1;
-        m_cnt = 0;
-      }
-      // no break
-    case 1:
-      if ((m_cnt & (m_state-1)) == 0) {
-        // this produces repeat events that at first repeat slowly and then increase in speed
-        // TRACE("key %d REPEAT", key());
-        putEvent(EVT_KEY_REPT(key()));
-      }
-      break;
-
-    case KSTATE_PAUSE: //pause repeat events
-      if (m_cnt >= KEY_REPEAT_PAUSE_DELAY) {
-        m_state = 8;
-        m_cnt = 0;
-      }
-      break;
-
-    case KSTATE_KILLED: //killed
-      break;
-  }
-}
+  }  
 #endif
+}
 
 void Key::pauseEvents()
 {

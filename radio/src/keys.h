@@ -93,18 +93,10 @@ class Key
     uint8_t m_cnt;
     uint8_t m_state;
 public:
-#if defined(PCBTANGO) && !defined(SIMU)
-    void input(uint8_t val);
-    bool state() const
-    {
-      return m_state != 0;
-    }
-#else
     void input(bool val);
     bool state() const {
       return m_vals > 0;
     }
-#endif
     void pauseEvents();
     void killEvents();
     uint8_t key() const;

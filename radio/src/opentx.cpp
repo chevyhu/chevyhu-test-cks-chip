@@ -1546,8 +1546,9 @@ void opentxStart(const uint8_t startType = OPENTX_START_DEFAULT_ARGS)
     chainMenu(menuFirstCalib);
   }
   else {
-    checkAlarm();
-    checkAll();
+    /* Disable all check for testing, by Chevy 2019.03.05 */
+    //checkAlarm();
+    //checkAll();
     PLAY_MODEL_NAME();
   }
 #endif

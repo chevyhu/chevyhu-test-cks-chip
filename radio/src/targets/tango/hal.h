@@ -63,7 +63,13 @@
   #define KEYS_GPIO_REG_PAGE            GPIOD->IDR
   #define KEYS_GPIO_PIN_PAGE            GPIO_Pin_13  // PD.13
   #define KEYS_GPIO_REG_ENTER           GPIOD->IDR
-  #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_4  // PD.4
+  #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_4   // PD.4
+  #if !defined(SIMU)
+  #define KEYS_GPIO_REG_PLUS            GPIOA->IDR
+  #define KEYS_GPIO_PIN_PLUS            GPIO_Pin_10  // PA.10
+  #define KEYS_GPIO_REG_MINUS           GPIOA->IDR
+  #define KEYS_GPIO_PIN_MINUS           GPIO_Pin_8   // PA.08
+  #endif
 #else
   #define KEYS_GPIO_REG_MENU            GPIOD->IDR
   #define KEYS_GPIO_PIN_MENU            GPIO_Pin_7  // PD.07
@@ -98,7 +104,7 @@
 #endif
 
 // This is for SIMU: reuse rotary encoder pins to map UP and DOWN keyboard keys
-#if defined(SIMU) && (defined(PCBX9E) || defined(PCBX7))
+#if defined(SIMU) && (defined(PCBX9E) || defined(PCBTANGO) || defined(PCBX7))
   #define KEYS_GPIO_REG_PLUS            ENC_GPIO->IDR
   #define KEYS_GPIO_PIN_PLUS            ENC_GPIO_PIN_A
   #define KEYS_GPIO_REG_MINUS           ENC_GPIO->IDR
@@ -123,6 +129,23 @@
   #define TRIMS_GPIO_PIN_RVU            GPIO_Pin_2  // PC.02
   #define TRIMS_GPIO_REG_RHR            GPIOC->IDR
   #define TRIMS_GPIO_PIN_RHR            GPIO_Pin_13 // PC.13
+#elif defined(PCBTANGO)
+  #define TRIMS_GPIO_REG_LHL            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LHL            0//GPIO_Pin_4  // PE.04
+  #define TRIMS_GPIO_REG_LHR            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LHR            0//GPIO_Pin_3  // PE.03
+  #define TRIMS_GPIO_REG_LVD            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LVD            0//GPIO_Pin_6  // PE.06
+  #define TRIMS_GPIO_REG_LVU            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LVU            0//GPIO_Pin_5  // PE.05
+  #define TRIMS_GPIO_REG_RVD            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RVD            0//GPIO_Pin_3  // PC.03
+  #define TRIMS_GPIO_REG_RHL            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RHL            0//GPIO_Pin_1  // PC.01
+  #define TRIMS_GPIO_REG_RVU            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RVU            0//GPIO_Pin_2  // PC.02
+  #define TRIMS_GPIO_REG_RHR            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RHR            0//GPIO_Pin_13 // PC.13
 #elif defined(PCBXLITE)
   #define TRIMS_GPIO_REG_LHL            GPIOC->IDR
   #define TRIMS_GPIO_PIN_LHL            GPIO_Pin_4  // PC.04
