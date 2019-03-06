@@ -22,6 +22,7 @@
 #define _MYEEPROM_H_
 
 #include "datastructs.h"
+#include "board.h"
 
 #define WARN_THR_BIT  0x01
 #define WARN_BEP_BIT  0x80

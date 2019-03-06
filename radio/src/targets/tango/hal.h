@@ -129,23 +129,6 @@
   #define TRIMS_GPIO_PIN_RVU            GPIO_Pin_2  // PC.02
   #define TRIMS_GPIO_REG_RHR            GPIOC->IDR
   #define TRIMS_GPIO_PIN_RHR            GPIO_Pin_13 // PC.13
-#elif defined(PCBTANGO)
-  #define TRIMS_GPIO_REG_LHL            GPIOE->IDR
-  #define TRIMS_GPIO_PIN_LHL            0//GPIO_Pin_4  // PE.04
-  #define TRIMS_GPIO_REG_LHR            GPIOE->IDR
-  #define TRIMS_GPIO_PIN_LHR            0//GPIO_Pin_3  // PE.03
-  #define TRIMS_GPIO_REG_LVD            GPIOE->IDR
-  #define TRIMS_GPIO_PIN_LVD            0//GPIO_Pin_6  // PE.06
-  #define TRIMS_GPIO_REG_LVU            GPIOE->IDR
-  #define TRIMS_GPIO_PIN_LVU            0//GPIO_Pin_5  // PE.05
-  #define TRIMS_GPIO_REG_RVD            GPIOC->IDR
-  #define TRIMS_GPIO_PIN_RVD            0//GPIO_Pin_3  // PC.03
-  #define TRIMS_GPIO_REG_RHL            GPIOC->IDR
-  #define TRIMS_GPIO_PIN_RHL            0//GPIO_Pin_1  // PC.01
-  #define TRIMS_GPIO_REG_RVU            GPIOC->IDR
-  #define TRIMS_GPIO_PIN_RVU            0//GPIO_Pin_2  // PC.02
-  #define TRIMS_GPIO_REG_RHR            GPIOC->IDR
-  #define TRIMS_GPIO_PIN_RHR            0//GPIO_Pin_13 // PC.13
 #elif defined(PCBXLITE)
   #define TRIMS_GPIO_REG_LHL            GPIOC->IDR
   #define TRIMS_GPIO_PIN_LHL            GPIO_Pin_4  // PC.04
@@ -172,6 +155,24 @@
   #define TRIMS_GPIO_PIN_RVU            GPIO_Pin_2  // PC.02
   #define TRIMS_GPIO_REG_RHR            GPIOE->IDR
   #define TRIMS_GPIO_PIN_RHR            GPIO_Pin_4  // PE.04
+#elif defined(PCBTANGO)
+	// no use trims
+  #define TRIMS_GPIO_REG_LHL            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LHL            0
+  #define TRIMS_GPIO_REG_LHR            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LHR            0
+  #define TRIMS_GPIO_REG_LVD            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LVD            0
+  #define TRIMS_GPIO_REG_LVU            GPIOE->IDR
+  #define TRIMS_GPIO_PIN_LVU            0
+  #define TRIMS_GPIO_REG_RVD            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RVD            0
+  #define TRIMS_GPIO_REG_RHL            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RHL            0
+  #define TRIMS_GPIO_REG_RVU            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RVU            0
+  #define TRIMS_GPIO_REG_RHR            GPIOC->IDR
+  #define TRIMS_GPIO_PIN_RHR            0
 #else
   #define TRIMS_GPIO_REG_LHL            GPIOE->IDR
   #define TRIMS_GPIO_PIN_LHL            GPIO_Pin_4  // PE.04
@@ -477,26 +478,26 @@
   #define ADC_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_DMA2)
   #define ADC_RCC_APB1Periph            0
   #define ADC_RCC_APB2Periph            (RCC_APB2Periph_ADC1 | RCC_APB2Periph_ADC3)
-  #define ADC_GPIO_PIN_STICK_RV         GPIO_Pin_0  // PA.00
-  #define ADC_GPIO_PIN_STICK_RH         GPIO_Pin_1  // PA.01
-  #define ADC_GPIO_PIN_STICK_LH         GPIO_Pin_2  // PA.02
-  #define ADC_GPIO_PIN_STICK_LV         GPIO_Pin_3  // PA.03
+  #define ADC_GPIO_PIN_STICK_RV         0
+  #define ADC_GPIO_PIN_STICK_RH         0
+  #define ADC_GPIO_PIN_STICK_LH         0
+  #define ADC_GPIO_PIN_STICK_LV         0
   #define ADC_CHANNEL_STICK_RV          ADC_Channel_0  // ADC1_IN0
   #define ADC_CHANNEL_STICK_RH          ADC_Channel_1  // ADC1_IN1
   #define ADC_CHANNEL_STICK_LH          ADC_Channel_2  // ADC1_IN2
   #define ADC_CHANNEL_STICK_LV          ADC_Channel_3  // ADC1_IN3
-  #define ADC_GPIO_PIN_POT1             GPIO_Pin_8  // PF.08
-  #define ADC_GPIO_PIN_POT2             GPIO_Pin_0  // PB.00
-  #define ADC_GPIO_PIN_POT3             GPIO_Pin_5  // PC.05
-  #define ADC_GPIO_PIN_POT4             0//GPIO_Pin_4  // PC.04
-  #define ADC_GPIO_PIN_SLIDER1          GPIO_Pin_10 // PF.10
-  #define ADC_GPIO_PIN_SLIDER2          GPIO_Pin_9  // PF.09
-  #define ADC_GPIO_PIN_SLIDER3          0//GPIO_Pin_6  // PA.06
-  #define ADC_GPIO_PIN_SLIDER4          GPIO_Pin_1  // PB.01
-  #define ADC_GPIO_PIN_BATT             GPIO_Pin_0  // PC.00
+  #define ADC_GPIO_PIN_POT1             0
+  #define ADC_GPIO_PIN_POT2             0
+  #define ADC_GPIO_PIN_POT3             0
+  #define ADC_GPIO_PIN_POT4             0
+  #define ADC_GPIO_PIN_SLIDER1          0
+  #define ADC_GPIO_PIN_SLIDER2          0
+  #define ADC_GPIO_PIN_SLIDER3          0
+  #define ADC_GPIO_PIN_SLIDER4          0
+  #define ADC_GPIO_PIN_BATT             GPIO_Pin_1  // PB.01
   #define ADC_GPIOA_PINS                (ADC_GPIO_PIN_STICK_RV | ADC_GPIO_PIN_STICK_RH | ADC_GPIO_PIN_STICK_LH | ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_SLIDER3)
-  #define ADC_GPIOB_PINS                (ADC_GPIO_PIN_POT2 | ADC_GPIO_PIN_SLIDER4)
-  #define ADC_GPIOC_PINS                (ADC_GPIO_PIN_POT3 | ADC_GPIO_PIN_POT4 | ADC_GPIO_PIN_SLIDER1 | ADC_GPIO_PIN_SLIDER2 | ADC_GPIO_PIN_BATT)
+  #define ADC_GPIOB_PINS                (ADC_GPIO_PIN_BATT | ADC_GPIO_PIN_POT2 | ADC_GPIO_PIN_SLIDER4)
+  #define ADC_GPIOC_PINS                (ADC_GPIO_PIN_POT3 | ADC_GPIO_PIN_POT4 | ADC_GPIO_PIN_SLIDER1 | ADC_GPIO_PIN_SLIDER2)
   #define ADC_GPIOF_PINS                (ADC_GPIO_PIN_POT1 | ADC_GPIO_PIN_SLIDER1 | ADC_GPIO_PIN_SLIDER2)
   #define ADC_CHANNEL_POT1              ADC_Channel_6  // ADC3_IN6
   #define ADC_CHANNEL_POT2              ADC_Channel_8  // ADC1_IN8
@@ -505,8 +506,8 @@
   #define ADC_CHANNEL_SLIDER1           ADC_Channel_8  // ADC3_IN8
   #define ADC_CHANNEL_SLIDER2           ADC_Channel_7  // ADC3_IN7
   #define ADC_CHANNEL_SLIDER3           ADC_Channel_6  // ADC1_IN6
-  #define ADC_CHANNEL_SLIDER4           ADC_Channel_9  // ADC1_IN9
-  #define ADC_CHANNEL_BATT              ADC_Channel_10 // ADC1_IN10
+  #define ADC_CHANNEL_SLIDER4           ADC_Channel_1  // ADC1_IN9
+  #define ADC_CHANNEL_BATT              ADC_Channel_9  // ADC1_IN9
   #define ADC_EXT                       ADC3
   #define ADC_EXT_DMA                   DMA2
   #define ADC_EXT_DMA_Stream            DMA2_Stream0
@@ -819,9 +820,29 @@
 #endif
 
 // Trainer Port
-#if defined(PCDTANGO)
+#if defined(PCBTANGO)
+	// no trainer port
   #define TRAINER_RCC_AHB1Periph        0
   #define TRAINER_RCC_APB1Periph        0
+  #define TRAINER_GPIO                  GPIOC
+  #define TRAINER_IN_GPIO_PIN           0
+  #define TRAINER_IN_GPIO_PinSource     0
+  #define TRAINER_OUT_GPIO_PIN          0
+  #define TRAINER_OUT_GPIO_PinSource    0
+  #define TRAINER_DETECT_GPIO           GPIOA
+  #define TRAINER_DETECT_GPIO_PIN       0
+  #define TRAINER_TIMER                 TIM3
+  #define TRAINER_TIMER_IRQn            TIM3_IRQn
+  #define TRAINER_GPIO_AF               0
+  #define TRAINER_DMA                   DMA1
+  #define TRAINER_DMA_CHANNEL           DMA_Channel_5
+  #define TRAINER_DMA_STREAM            DMA1_Stream2
+  #define TRAINER_DMA_IRQn              DMA1_Stream2_IRQn
+  #define TRAINER_DMA_IRQHandler        DMA1_Stream2_IRQHandler
+  #define TRAINER_DMA_FLAG_TC           DMA_IT_TCIF2
+  #define TRAINER_TIMER_IRQn            TIM3_IRQn
+  #define TRAINER_TIMER_IRQHandler      TIM3_IRQHandler
+  #define TRAINER_TIMER_FREQ            (PERI1_FREQUENCY * TIMER_MULT_APB1)
 #elif defined(PCBXLITE)
   #define TRAINER_RCC_AHB1Periph        0
   #define TRAINER_RCC_APB1Periph        0

@@ -92,10 +92,8 @@ void checkSpeakerVolume()
 }
 
 #if defined(EEPROM)
-#include "./io/crsf/crossfire.h"
 void checkEeprom()
 {
-#include "./io/crsf/crossfire.h"
   if (!usbPlugged()) {
     if (eepromIsWriting())
       eepromWriteProcess();
@@ -426,7 +424,7 @@ void perMain()
   checkSpeakerVolume();
   checkEeprom();
   logsWrite();
-  //handleUsbConnection();
+  handleUsbConnection();
   //checkTrainerSettings();
   periodicTick();
   DEBUG_TIMER_STOP(debugTimerPerMain1);

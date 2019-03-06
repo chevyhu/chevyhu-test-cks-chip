@@ -61,7 +61,6 @@ void setSelectedUsbMode(int mode)
 }
 
 int usbPlugged()
-//#include "io/crsf/crossfire.h"
 {
   // debounce
   static uint8_t debounced_state = 0;

@@ -535,6 +535,11 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
   #define BATTERY_WARN                  66 // 6.6V
   #define BATTERY_MIN                   67 // 6.7V
   #define BATTERY_MAX                   83 // 8.3V
+#elif defined(PCBTANGO)
+  // 1 x Li-Ion
+  #define BATTERY_WARN                  33 // 3.3V
+  #define BATTERY_MIN                   34 // 3.4V
+  #define BATTERY_MAX                   41 // 4.1V
 #else
   // NI-MH 7.2V
   #define BATTERY_WARN                  65 // 6.5V
@@ -545,6 +550,8 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
   #define BATT_SCALE                    131
 #elif defined(PCBX7)
   #define BATT_SCALE                    123
+#elif defined(PCBTANGO)
+  #define BATT_SCALE                    47
 #else
   #define BATT_SCALE                    150
 #endif
