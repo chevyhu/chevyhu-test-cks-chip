@@ -63,13 +63,7 @@
   #define KEYS_GPIO_REG_PAGE            GPIOD->IDR
   #define KEYS_GPIO_PIN_PAGE            GPIO_Pin_13  // PD.13
   #define KEYS_GPIO_REG_ENTER           GPIOD->IDR
-  #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_4   // PD.4
-  #if !defined(SIMU)
-  #define KEYS_GPIO_REG_PLUS            GPIOA->IDR
-  #define KEYS_GPIO_PIN_PLUS            GPIO_Pin_10  // PA.10
-  #define KEYS_GPIO_REG_MINUS           GPIOA->IDR
-  #define KEYS_GPIO_PIN_MINUS           GPIO_Pin_8   // PA.08
-  #endif
+  #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_4  // PD.4
 #else
   #define KEYS_GPIO_REG_MENU            GPIOD->IDR
   #define KEYS_GPIO_PIN_MENU            GPIO_Pin_7  // PD.07
