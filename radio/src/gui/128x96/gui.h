@@ -346,7 +346,7 @@ void drawStatusLine();
 #endif
 
 // TODO enum
-#if defined(PCBX7)
+#if defined(PCBX7) || defined(PCBTANGO)
 #define EDIT_MODE_INIT                 0
 #else
 #define EDIT_MODE_INIT                 -1

@@ -1543,7 +1543,8 @@ void opentxStart(const uint8_t startType = OPENTX_START_DEFAULT_ARGS)
 
 #if defined(GUI)
   if (calibration_needed) {
-    chainMenu(menuFirstCalib);
+    /* Disable the first calibration for testing, by Chevy 2019.03.06 */
+    //chainMenu(menuFirstCalib);
   }
   else {
     /* Disable all check for testing, by Chevy 2019.03.05 */

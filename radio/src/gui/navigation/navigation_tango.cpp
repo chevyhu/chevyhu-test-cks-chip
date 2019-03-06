@@ -370,6 +370,11 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t 
 
   uint8_t maxcol = MAXCOL(l_posVert);
 
+  if (event == 0x65)
+  {
+    TRACE("Got it\n");
+  }
+
   if (menuTab) {
     int cc = curr;
     switch (event) {
