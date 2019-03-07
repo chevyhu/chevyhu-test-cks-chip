@@ -115,27 +115,6 @@ uint8_t keyDown()
   return readKeys() || readTrims();
 }
 
-#if defined(ROTARY_ENCODER_NAVIGATION)
-void checkRotaryEncoder()
-{
-  uint32_t newpos = ROTARY_ENCODER_POSITION();
-  if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
-    if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
-      --rotencValue[0];
-    }
-    else {
-      ++rotencValue[0];
-    }
-    rotencPosition = newpos;
-#if !defined(BOOT)
-    if (g_eeGeneral.backlightMode & e_backlight_mode_keys) {
-      backlightOn();
-    }
-#endif
-  }
-}
-#endif
-
 /* TODO common to ARM */
 void readKeysAndTrims()
 {
@@ -248,6 +227,27 @@ uint32_t switchState(uint8_t index)
   return xxx;
 }
 #endif
+#endif
+
+#if defined(ROTARY_ENCODER_NAVIGATION)
+void checkRotaryEncoder()
+{
+  uint32_t newpos = ROTARY_ENCODER_POSITION();
+  if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
+    if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
+      --rotencValue[0];
+    }
+    else {
+      ++rotencValue[0];
+    }
+    rotencPosition = newpos;
+#if !defined(BOOT)
+    if (g_eeGeneral.backlightMode & e_backlight_mode_keys) {
+      backlightOn();
+    }
+#endif
+  }
+}
 #endif
 
 void keysInit()

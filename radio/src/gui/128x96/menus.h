@@ -28,7 +28,7 @@ typedef int8_t horzpos_t;
 #define NAVIGATION_LINE_BY_LINE        0x40
 #define IS_LINE_SELECTED(sub, k)       ((sub)==(k) && menuHorizontalPosition < 0)
 #else
-typedef uint8_t horzpos_t;
+typedef int8_t horzpos_t;
 #define NAVIGATION_LINE_BY_LINE        40
 #define IS_LINE_SELECTED(sub, k)       (false)
 #endif
