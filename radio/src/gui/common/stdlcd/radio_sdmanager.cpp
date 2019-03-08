@@ -123,12 +123,10 @@ void onSdManagerMenu(const char * result)
     audioQueue.stopAll();
     audioQueue.playFile(lfn, 0, ID_PLAY_FROM_SD_MANAGER);
   }
-#if LCD_DEPTH > 1
+#if 0//LCD_DEPTH > 1
   else if (result == STR_ASSIGN_BITMAP) {
-#if !defined(PCBTANGO)
     strAppendFilename(g_model.header.bitmap, line, sizeof(g_model.header.bitmap));
     memcpy(modelHeaders[g_eeGeneral.currModel].bitmap, g_model.header.bitmap, sizeof(g_model.header.bitmap));
-#endif
     storageDirty(EE_MODEL);
   }
 #endif
@@ -215,7 +213,7 @@ void menuRadioSdManager(event_t _event)
       break;
 
 #if !defined(PCBTARANIS)
-    CASE_EVT_ROTARY_BREAK
+      CASE_EVT_ROTARY_BREAK
     case EVT_KEY_FIRST(KEY_RIGHT):
 #endif
     case EVT_KEY_BREAK(KEY_ENTER):
@@ -257,16 +255,13 @@ void menuRadioSdManager(event_t _event)
           if (!strcasecmp(ext, SOUNDS_EXT)) {
             POPUP_MENU_ADD_ITEM(STR_PLAY_FILE);
           }
-#if 0
-#if LCD_DEPTH > 1
+#if 0//LCD_DEPTH > 1
           else if (isExtensionMatching(ext, BITMAPS_EXT)) {
             if (!READ_ONLY() && (ext-line) <= (int)sizeof(g_model.header.bitmap)) {
               POPUP_MENU_ADD_ITEM(STR_ASSIGN_BITMAP);
             }
           }
 #endif
-#endif
-
           else if (!strcasecmp(ext, TEXT_EXT)) {
             POPUP_MENU_ADD_ITEM(STR_VIEW_TEXT);
           }
@@ -421,8 +416,8 @@ void menuRadioSdManager(event_t _event)
       }
     }
   }
-#if 0
-#if LCD_DEPTH > 1
+
+#if 0//LCD_DEPTH > 1
   const char * ext = getFileExtension(reusableBuffer.sdmanager.lines[index]);
   if (ext && isExtensionMatching(ext, BITMAPS_EXT)) {
     if (lastPos != menuVerticalPosition) {
@@ -432,6 +427,5 @@ void menuRadioSdManager(event_t _event)
     }
     lcdDrawBitmap(22*FW+2, 2*FH+FH/2, modelBitmap);
   }
-#endif
 #endif
 }

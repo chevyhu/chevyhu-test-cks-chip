@@ -24,7 +24,7 @@
 uint32_t rotencPosition;
 #endif
 
-#if !defined(SIMU)
+
 uint32_t readKeys()
 {
   uint32_t result = 0;
@@ -33,8 +33,10 @@ uint32_t readKeys()
     result |= 1 << KEY_ENTER;
 
 #if defined(KEYS_GPIO_PIN_MENU)
-  if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU)
+  if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU) {
+    TRACE("menu event\r\n");
     result |= 1 << KEY_MENU;
+  }
 #endif
 
 #if defined(KEYS_GPIO_PIN_PAGE)
@@ -110,7 +112,7 @@ uint8_t trimDown(uint8_t idx)
   return readTrims() & (1 << idx);
 }
 
-uint8_t keyDown()
+bool keyDown()
 {
   return readKeys() || readTrims();
 }
@@ -138,6 +140,13 @@ void readKeysAndTrims()
     backlightOn();
   }
 }
+
+uint8_t keyState(uint8_t index)
+{
+  return keys[index].state();
+}
+
+#if !defined(SIMU)
 
 #if defined(PCBX9E) || defined(PCBTANGO)
   #define ADD_2POS_CASE(x) \

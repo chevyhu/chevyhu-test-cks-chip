@@ -163,25 +163,80 @@ void simuInit()
       if ((int)state > 0) pin |= (mask); else pin &= ~(mask); \
       break;
 
-#if defined(PCBHORUS) || (defined(PCBTARANIS) && !defined(PCBX9E))
-#define SWITCH_CASE    NEG_CASE
-    #define SWITCH_INV     POS_CASE
-#else
-#define SWITCH_CASE    POS_CASE
-#endif
-#define KEY_CASE         NEG_CASE
-#define SWITCH_3_CASE(swtch, pin1, pin2, mask1, mask2) \
-    case swtch: \
-      if ((int)state < 0) pin1 &= ~(mask1); else pin1 |= (mask1); \
-      if ((int)state > 0) pin2 &= ~(mask2); else pin2 |= (mask2); \
-      break;
-#define SWITCH_3_INV(swtch, pin1, pin2, mask1, mask2)  SWITCH_3_CASE(swtch, pin2, pin1, mask2, mask1)
+    #if defined(PCBHORUS) || (defined(PCBTARANIS) && !defined(PCBX9E))
+    #define SWITCH_CASE    NEG_CASE
+        #define SWITCH_INV     POS_CASE
+    #else
+    #define SWITCH_CASE    POS_CASE
+    #endif
+    #define KEY_CASE         NEG_CASE
+    #define SWITCH_3_CASE(swtch, pin1, pin2, mask1, mask2) \
+        case swtch: \
+          if ((int)state < 0) pin1 &= ~(mask1); else pin1 |= (mask1); \
+          if ((int)state > 0) pin2 &= ~(mask2); else pin2 |= (mask2); \
+          break;
+    #define SWITCH_3_INV(swtch, pin1, pin2, mask1, mask2)  SWITCH_3_CASE(swtch, pin2, pin1, mask2, mask1)
 
-bool keysStates[NUM_KEYS] = { 0 };
+#define TRIM_CASE          KEY_CASE
 
 void simuSetKey(uint8_t key, bool state)
 {
-  keysStates[key] = state;
+  // if (state) TRACE_SIMPGMSPACE("simuSetKey(%d, %d)", key, state);
+
+  switch (key) {
+#if defined(PCBX12S)
+    KEY_CASE(KEY_PGUP, KEYS_GPIO_REG_PGUP, KEYS_GPIO_PIN_PGUP)
+    KEY_CASE(KEY_PGDN, KEYS_GPIO_REG_PGDN, KEYS_GPIO_PIN_PGDN)
+    KEY_CASE(KEY_ENTER, KEYS_GPIO_REG_ENTER, KEYS_GPIO_PIN_ENTER)
+    KEY_CASE(KEY_TELEM, KEYS_GPIO_REG_RIGHT, KEYS_GPIO_PIN_RIGHT)
+    KEY_CASE(KEY_RADIO, KEYS_GPIO_REG_LEFT, KEYS_GPIO_PIN_LEFT)
+    KEY_CASE(KEY_MODEL, KEYS_GPIO_REG_UP, KEYS_GPIO_PIN_UP)
+    KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_DOWN, KEYS_GPIO_PIN_DOWN)
+#elif defined(PCBX10)
+    KEY_CASE(KEY_PGDN, KEYS_GPIO_REG_PGDN, KEYS_GPIO_PIN_PGDN)
+    KEY_CASE(KEY_ENTER, KEYS_GPIO_REG_ENTER, KEYS_GPIO_PIN_ENTER)
+    KEY_CASE(KEY_TELEM, KEYS_GPIO_REG_RIGHT, KEYS_GPIO_PIN_RIGHT)
+    KEY_CASE(KEY_RADIO, KEYS_GPIO_REG_LEFT, KEYS_GPIO_PIN_LEFT)
+    KEY_CASE(KEY_MODEL, KEYS_GPIO_REG_UP, KEYS_GPIO_PIN_UP)
+    KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_DOWN, KEYS_GPIO_PIN_DOWN)
+#elif defined(PCBXLITE)
+    KEY_CASE(KEY_SHIFT, KEYS_GPIO_REG_SHIFT, KEYS_GPIO_PIN_SHIFT)
+    KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_EXIT, KEYS_GPIO_PIN_EXIT)
+    KEY_CASE(KEY_ENTER, KEYS_GPIO_REG_ENTER, KEYS_GPIO_PIN_ENTER)
+    KEY_CASE(KEY_RIGHT, KEYS_GPIO_REG_RIGHT, KEYS_GPIO_PIN_RIGHT)
+    KEY_CASE(KEY_LEFT, KEYS_GPIO_REG_LEFT, KEYS_GPIO_PIN_LEFT)
+    KEY_CASE(KEY_UP, KEYS_GPIO_REG_UP, KEYS_GPIO_PIN_UP)
+    KEY_CASE(KEY_DOWN, KEYS_GPIO_REG_DOWN, KEYS_GPIO_PIN_DOWN)
+#elif defined(PCBTARANIS)
+    KEY_CASE(KEY_MENU, KEYS_GPIO_REG_MENU, KEYS_GPIO_PIN_MENU)
+    KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_EXIT, KEYS_GPIO_PIN_EXIT)
+    KEY_CASE(KEY_ENTER, KEYS_GPIO_REG_ENTER, KEYS_GPIO_PIN_ENTER)
+    KEY_CASE(KEY_PAGE, KEYS_GPIO_REG_PAGE, KEYS_GPIO_PIN_PAGE)
+  #if defined(KEYS_GPIO_REG_MINUS)
+    KEY_CASE(KEY_MINUS, KEYS_GPIO_REG_MINUS, KEYS_GPIO_PIN_MINUS)
+    KEY_CASE(KEY_PLUS, KEYS_GPIO_REG_PLUS, KEYS_GPIO_PIN_PLUS)
+  #endif
+#elif defined(PCBTANGO)
+    KEY_CASE(KEY_MENU, KEYS_GPIO_REG_MENU, KEYS_GPIO_PIN_MENU)
+    KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_EXIT, KEYS_GPIO_PIN_EXIT)
+    KEY_CASE(KEY_ENTER, KEYS_GPIO_REG_ENTER, KEYS_GPIO_PIN_ENTER)
+    KEY_CASE(KEY_PAGE, KEYS_GPIO_REG_PAGE, KEYS_GPIO_PIN_PAGE)
+#if defined(KEYS_GPIO_REG_MINUS)
+    KEY_CASE(KEY_MINUS, KEYS_GPIO_REG_MINUS, KEYS_GPIO_PIN_MINUS)
+    KEY_CASE(KEY_PLUS, KEYS_GPIO_REG_PLUS, KEYS_GPIO_PIN_PLUS)
+#endif
+#else
+    KEY_CASE(KEY_MENU, KEYS_GPIO_REG_MENU, KEYS_GPIO_PIN_MENU)
+    KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_EXIT, KEYS_GPIO_PIN_EXIT)
+    KEY_CASE(KEY_RIGHT, KEYS_GPIO_REG_RIGHT, KEYS_GPIO_PIN_RIGHT)
+    KEY_CASE(KEY_LEFT, KEYS_GPIO_REG_LEFT, KEYS_GPIO_PIN_LEFT)
+    KEY_CASE(KEY_UP, KEYS_GPIO_REG_UP, KEYS_GPIO_PIN_UP)
+    KEY_CASE(KEY_DOWN, KEYS_GPIO_REG_DOWN, KEYS_GPIO_PIN_DOWN)
+#endif
+#if defined(PCBSKY9X) && !defined(REVX) && !defined(AR9X) && defined(ROTARY_ENCODERS)
+    KEY_CASE(BTN_REa, PIOB->PIO_PDSR, 0x40)
+#endif
+  }
 }
 
 bool trimsStates[NUM_TRIMS*2] = { 0 };
@@ -493,57 +548,7 @@ uint32_t pwrPressed()
 #endif
 }
 
-void readKeysAndTrims()
-{
-  uint8_t index = 0;
-  uint32_t in = readKeys();
-  for (uint8_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
-    keys[index++].input(in & i);
-  }
 
-  in = readTrims();
-  for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
-    keys[index++].input(in & i);
-  }
-}
-
-uint8_t keyDown()
-{
-  return readKeys();
-}
-
-uint8_t trimDown(uint8_t idx)
-{
-  return readTrims() & (1 << idx);
-}
-
-uint32_t readKeys()
-{
-  uint32_t result = 0;
-
-  for (int i=0; i<NUM_KEYS; i++) {
-    if (keysStates[i]) {
-      // TRACE("key pressed %d", i);
-      result |= 1 << i;
-    }
-  }
-
-  return result;
-}
-
-uint32_t readTrims()
-{
-  uint32_t result = 0;
-
-  for (int i=0; i<NUM_TRIMS*2; i++) {
-    if (trimsStates[i]) {
-      // TRACE("trim pressed %d", i);
-      result |= 1 << i;
-    }
-  }
-
-  return result;
-}
 
 uint32_t switchState(uint8_t index)
 {

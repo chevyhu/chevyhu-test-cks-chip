@@ -25,7 +25,7 @@
 #define KEY_REPEAT_TRIGGER          48  // repeat trigger, used in combination with m_state to produce decreasing times between repeat events
 #define KEY_REPEAT_PAUSE_DELAY      64
 
-#if defined(PCBTANGO) || defined(SIMU)
+#ifdef SIMU
 #define FILTERBITS                1   // defines how many bits are used for debounce
 #else
 #define FILTERBITS                4   // defines how many bits are used for debounce
@@ -39,11 +39,6 @@
 
 
 event_t s_evt;
-
-#if defined(PCBTANGO)
-uint8_t s_evt_value;
-#endif
-
 struct t_inactivity inactivity = {0};
 Key keys[NUM_KEYS];
 
@@ -64,8 +59,6 @@ event_t getEvent(bool trim)
 
 void Key::input(bool val)
 {
-#if 1
-  //return;
   // store new value in the bits that hold the key state history (used for debounce)
   uint8_t t_vals = m_vals ;
   t_vals <<= 1 ;
@@ -140,42 +133,6 @@ void Key::input(bool val)
     case KSTATE_KILLED: //killed
       break;
   }
-  
-#else
-  m_cnt++;
-
-  if (m_state && val == 0) {
-    if (m_cnt < 8)
-      return;
-    // key is released
-    if (m_state != KSTATE_KILLED) {
-      TRACE("key %d BREAK", key());
-      putEvent(EVT_KEY_BREAK(key()));
-    }
-    m_state = KSTATE_OFF;
-    m_cnt = 0;
-  }
-  else if (val == 255) {
-    putEvent(EVT_KEY_LONG(key()));
-    m_state = KSTATE_START;
-    m_cnt = 0;
-  }
-  else if (val > 0) {
-    inactivity.counter = 0;
-    if (m_state == KSTATE_OFF) {
-      TRACE("key %d FIRST", key());
-      putEvent(EVT_KEY_FIRST(key()), val);
-      m_cnt = 0;
-      m_state = KSTATE_START;
-    }
-    else if (m_state == KSTATE_START) {
-      TRACE("key %d REPT", key());
-      if (s_evt == 0) {
-        putEvent(EVT_KEY_REPT(key()), val);
-      }
-    }
-  }  
-#endif
 }
 
 void Key::pauseEvents()
@@ -190,14 +147,10 @@ void Key::killEvents()
   m_state = KSTATE_KILLED;
 }
 
+
 uint8_t Key::key() const
 {
   return (this - keys);
-}
-
-uint8_t keyState(uint8_t index)
-{
-  return keys[index].state();
 }
 
 // Introduce a slight delay in the key repeat sequence
@@ -226,7 +179,7 @@ void killEvents(event_t event)
 bool clearKeyEvents()
 {
 #if defined(PCBSKY9X)
-  RTOS_WAIT_MS(200);
+  RTOS_WAIT_MS(200); // 200ms
 #endif
 
   // loop until all keys are up
@@ -235,12 +188,7 @@ bool clearKeyEvents()
 #endif
 
   while (keyDown()) {
-
-#if defined(SIMU)
-    SIMU_SLEEP_NORET(1/*ms*/);
-#else
     wdt_reset();
-#endif
 
 #if !defined(BOOT)
     if ((get_tmr10ms() - start) >= 300) {  // wait no more than 3 seconds
