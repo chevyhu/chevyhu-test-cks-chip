@@ -212,7 +212,7 @@ void menuRadioSdManager(event_t _event)
       REFRESH_FILES();
       break;
 
-#if !defined(PCBTARANIS)
+#if !defined(PCBTARANIS) && !defined(PCBTANGO)
       CASE_EVT_ROTARY_BREAK
     case EVT_KEY_FIRST(KEY_RIGHT):
 #endif

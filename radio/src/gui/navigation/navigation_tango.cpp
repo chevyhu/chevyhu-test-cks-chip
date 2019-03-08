@@ -21,17 +21,54 @@
 #include "opentx.h"
 
 vertpos_t menuVerticalOffset;
-int8_t    s_editMode;
-uint8_t   noHighlightCounter;
-uint8_t   menuCalibrationState;
 vertpos_t menuVerticalPosition;
 horzpos_t menuHorizontalPosition;
+int8_t s_editMode;
+uint8_t noHighlightCounter;
+uint8_t menuCalibrationState;
 int checkIncDecSelection = 0;
-int8_t    checkIncDec_Ret;
+int8_t  checkIncDec_Ret;
 
 INIT_STOPS(stops100, 3, -100, 0, 100)
 INIT_STOPS(stops1000, 3, -1000, 0, 1000)
 INIT_STOPS(stopsSwitch, 15, SWSRC_FIRST, CATEGORY_END(-SWSRC_FIRST_LOGICAL_SWITCH), CATEGORY_END(-SWSRC_FIRST_TRIM), CATEGORY_END(-SWSRC_LAST_SWITCH+1), 0, CATEGORY_END(SWSRC_LAST_SWITCH), CATEGORY_END(SWSRC_FIRST_TRIM-1), CATEGORY_END(SWSRC_FIRST_LOGICAL_SWITCH-1), SWSRC_LAST)
+
+void onSourceLongEnterPress(const char * result)
+{
+  if (result == STR_MENU_INPUTS)
+    checkIncDecSelection = getFirstAvailable(MIXSRC_FIRST_INPUT, MIXSRC_LAST_INPUT, isInputAvailable)+1;
+#if defined(LUA_MODEL_SCRIPTS)
+    else if (result == STR_MENU_LUA)
+    checkIncDecSelection = getFirstAvailable(MIXSRC_FIRST_LUA, MIXSRC_LAST_LUA, isSourceAvailable);
+#endif
+  else if (result == STR_MENU_STICKS)
+    checkIncDecSelection = MIXSRC_FIRST_STICK;
+  else if (result == STR_MENU_POTS)
+    checkIncDecSelection = MIXSRC_FIRST_POT;
+  else if (result == STR_MENU_MAX)
+    checkIncDecSelection = MIXSRC_MAX;
+  else if (result == STR_MENU_HELI)
+    checkIncDecSelection = MIXSRC_FIRST_HELI;
+  else if (result == STR_MENU_TRIMS)
+    checkIncDecSelection = MIXSRC_FIRST_TRIM;
+  else if (result == STR_MENU_SWITCHES)
+    checkIncDecSelection = MIXSRC_FIRST_SWITCH;
+  else if (result == STR_MENU_TRAINER)
+    checkIncDecSelection = MIXSRC_FIRST_TRAINER;
+  else if (result == STR_MENU_CHANNELS)
+    checkIncDecSelection = getFirstAvailable(MIXSRC_FIRST_CH, MIXSRC_LAST_CH, isSourceAvailable);
+  else if (result == STR_MENU_GVARS)
+    checkIncDecSelection = MIXSRC_FIRST_GVAR;
+  else if (result == STR_MENU_TELEMETRY) {
+    for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
+      TelemetrySensor * sensor = & g_model.telemetrySensors[i];
+      if (sensor->isAvailable()) {
+        checkIncDecSelection = MIXSRC_FIRST_TELEM + 3*i;
+        break;
+      }
+    }
+  }
+}
 
 void onSwitchLongEnterPress(const char * result)
 {
@@ -278,22 +315,6 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
   return newval;
 }
 
-
-
-#define SCROLL_TH      64
-#define SCROLL_POT1_TH 32
-
-#define CURSOR_NOT_ALLOWED_IN_ROW(row)   ((int8_t)MAXCOL(row) < 0)
-
-
-#if !defined(CPUAVR) // TODO ifdef FEATURE_MENUS_ENTRY_TIME ?
-tmr10ms_t menuEntryTime;
-#endif
-
-#define MAXCOL_RAW(row)                (horTab ? *(horTab+min(row, (vertpos_t)horTabMax)) : (const uint8_t)0)
-#define MAXCOL(row)                    (MAXCOL_RAW(row) >= HIDDEN_ROW ? MAXCOL_RAW(row) : (const uint8_t)(MAXCOL_RAW(row) & (~NAVIGATION_LINE_BY_LINE)))
-
-
 #define CURSOR_NOT_ALLOWED_IN_ROW(row) ((int8_t)MAXCOL(row) < 0)
 #define MAXCOL_RAW(row)                (horTab ? *(horTab+min(row, (vertpos_t)horTabMax)) : (const uint8_t)0)
 #define MAXCOL(row)                    (MAXCOL_RAW(row) >= HIDDEN_ROW ? MAXCOL_RAW(row) : (const uint8_t)(MAXCOL_RAW(row) & (~NAVIGATION_LINE_BY_LINE)))
@@ -313,17 +334,14 @@ void onLongMenuPress(const char * result)
   }
 }
 
-void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, const uint8_t *horTab, uint8_t horTabMax, vertpos_t rowcount, uint8_t flags)
+tmr10ms_t menuEntryTime;
+
+void check(const char * name, event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, const uint8_t *horTab, uint8_t horTabMax, vertpos_t rowcount, uint8_t flags)
 {
   vertpos_t l_posVert = menuVerticalPosition;
   horzpos_t l_posHorz = menuHorizontalPosition;
 
   uint8_t maxcol = MAXCOL(l_posVert);
-
-  if (event == 0x65)
-  {
-    TRACE("Got it\n");
-  }
 
   if (menuTab) {
     int cc = curr;
@@ -375,7 +393,7 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t 
     lcdDrawFilledRect(0, 0, LCD_W, MENU_HEADER_HEIGHT, SOLID, FILL_WHITE|GREY_DEFAULT);
   }
 
-  DISPLAY_PROGRESS_BAR(menuTab ? lcdLastRightPos-2*FW-((curr+1)/10*FWNUM)-2 : 20*FW+1);
+  //DISPLAY_PROGRESS_BAR(menuTab ? lcdLastRightPos-2*FW-((curr+1)/10*FWNUM)-2 : 20*FW+1);
 
   switch (event) {
     case EVT_ENTRY:
@@ -560,24 +578,24 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t 
   if (scrollbar_X && linesCount > NUM_BODY_LINES) {
     drawVerticalScrollbar(scrollbar_X, MENU_HEADER_HEIGHT, LCD_H-MENU_HEADER_HEIGHT, menuVerticalOffset, linesCount, NUM_BODY_LINES);
   }
-#if 0
+
   if (name) {
     title(name);
   }
-#endif
 
   menuVerticalPosition = l_posVert;
   menuHorizontalPosition = l_posHorz;
 }
 
-void check_simple(event_t event, uint8_t curr, const MenuHandlerFunc * menuTab, uint8_t menuTabSize, vertpos_t maxrow)
+
+void check_simple(const char * name, event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, vertpos_t rowcount)
 {
-  check(event, curr, menuTab, menuTabSize, 0, 0, maxrow);
+  check(name, event, curr, menuTab, menuTabSize, 0, 0, rowcount);
 }
 
-void check_submenu_simple(event_t event, uint8_t maxrow)
+void check_submenu_simple(const char * name, event_t event, uint8_t rowcount)
 {
-  check_simple(event, 0, 0, 0, maxrow);
+  check_simple(name, event, 0, 0, 0, rowcount);
 }
 
 void repeatLastCursorMove(event_t event)
@@ -587,43 +605,5 @@ void repeatLastCursorMove(event_t event)
   }
   else {
     menuHorizontalPosition = 0;
-  }
-}
-
-
-void onSourceLongEnterPress(const char * result)
-{
-  if (result == STR_MENU_INPUTS)
-    checkIncDecSelection = getFirstAvailable(MIXSRC_FIRST_INPUT, MIXSRC_LAST_INPUT, isInputAvailable)+1;
-#if defined(LUA_MODEL_SCRIPTS)
-    else if (result == STR_MENU_LUA)
-    checkIncDecSelection = getFirstAvailable(MIXSRC_FIRST_LUA, MIXSRC_LAST_LUA, isSourceAvailable);
-#endif
-  else if (result == STR_MENU_STICKS)
-    checkIncDecSelection = MIXSRC_FIRST_STICK;
-  else if (result == STR_MENU_POTS)
-    checkIncDecSelection = MIXSRC_FIRST_POT;
-  else if (result == STR_MENU_MAX)
-    checkIncDecSelection = MIXSRC_MAX;
-  else if (result == STR_MENU_HELI)
-    checkIncDecSelection = MIXSRC_FIRST_HELI;
-  else if (result == STR_MENU_TRIMS)
-    checkIncDecSelection = MIXSRC_FIRST_TRIM;
-  else if (result == STR_MENU_SWITCHES)
-    checkIncDecSelection = MIXSRC_FIRST_SWITCH;
-  else if (result == STR_MENU_TRAINER)
-    checkIncDecSelection = MIXSRC_FIRST_TRAINER;
-  else if (result == STR_MENU_CHANNELS)
-    checkIncDecSelection = getFirstAvailable(MIXSRC_FIRST_CH, MIXSRC_LAST_CH, isSourceAvailable);
-  else if (result == STR_MENU_GVARS)
-    checkIncDecSelection = MIXSRC_FIRST_GVAR;
-  else if (result == STR_MENU_TELEMETRY) {
-    for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
-      TelemetrySensor * sensor = & g_model.telemetrySensors[i];
-      if (sensor->isAvailable()) {
-        checkIncDecSelection = MIXSRC_FIRST_TELEM + 3*i;
-        break;
-      }
-    }
   }
 }
