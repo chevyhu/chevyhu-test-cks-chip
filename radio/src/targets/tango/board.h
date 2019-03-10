@@ -313,7 +313,7 @@ enum EnumSwitches
   SW_SE,
   SW_SF,
 };
-#define IS_3POS(x)                      ((x) != SW_SA && (x) != SW_SD && (x) != SW_SE && (x) != SW_SF && (x) != SW_SG )
+#define IS_3POS(x)                      ((x) != SW_SA && (x) != SW_SD && (x) != SW_SE && (x) != SW_SF )
 
 enum EnumSwitchesPositions
 {
