@@ -325,7 +325,8 @@ void menuMainView(event_t event)
 #if MENUS_LOCK != 2/*no menus*/
     case EVT_KEY_BREAK(KEY_MENU):
       //pushMenu(menuModelSelect);
-      pushMenu(menuModelHeli);
+      //pushMenu(menuModelHeli);
+      pushMenu(menuModelSetup);
       break;
 
     case EVT_KEY_LONG(KEY_MENU):

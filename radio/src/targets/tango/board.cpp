@@ -106,7 +106,7 @@ extern "C" void INTERRUPT_xMS_IRQHandler()
   #define PWR_PRESS_DURATION_MAX        500 // 5s
 #endif
 
-#if (defined(PCBX9E) && !defined(SIMU))
+#if (defined(PCBX9E) || defined(PCBTANGO) && !defined(SIMU))
 const unsigned char bmp_startup[]  = {
   #include "startup.lbm"
 };
@@ -220,6 +220,8 @@ void boardInit()
     lcdClear();
 #if defined(PCBX9E)
     lcdDrawBitmap(76, 2, bmp_lock, 0, 60);
+#elif defined(PCBTANGO)
+    lcdDrawBitmap(40, 2, bmp_lock);
 #else
     lcdDrawFilledRect(LCD_W / 2 - 18, LCD_H / 2 - 3, 6, 6, SOLID, 0);
 #endif
@@ -236,6 +238,8 @@ void boardInit()
         lcdClear();
 #if defined(PCBX9E)
         lcdDrawBitmap(76, 2, bmp_startup, index*60, 60);
+#elif defined(PCBTANGO)
+        lcdDrawNornalBitmap(40, 2, bmp_startup, index*60, 60);
 #else
         for(uint8_t i= 0; i < 4; i++) {
           if (index >= i) {

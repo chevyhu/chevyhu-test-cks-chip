@@ -25,6 +25,7 @@
 #include "lcd.h"
 #include "menus.h"
 #include "popups.h"
+#include "widget.h"
 
 #define HEADER_LINE                    0
 #define HEADER_LINE_COLUMNS

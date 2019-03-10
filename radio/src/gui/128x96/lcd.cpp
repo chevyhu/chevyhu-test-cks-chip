@@ -809,7 +809,7 @@ void drawTelemetryTopBar()
   lcdInvertLine(0);
 }
 
-void lcdDrawBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offset, coord_t width)
+void lcdDrawNornalBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offset, coord_t width)
 {
   const uint8_t *q = img;
   uint8_t w = *q++;
