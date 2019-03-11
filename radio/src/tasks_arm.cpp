@@ -317,6 +317,8 @@ void tasksStart()
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
 #endif
 
+#if 0
+//henry: will cause hardfault and need fix @tommy
 #if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
   TRACE("otaXfTask");
   RTOS_CREATE_TASK(otaXfTaskId, otaXfTask, "otaXf", otaXfStack, OTA_XF_STACK_SIZE, OTA_XF_TASK_PRIO);
@@ -325,6 +327,7 @@ void tasksStart()
 #if defined(CRSF_SD) && !defined(SIMU)
   TRACE("otaTask");
   RTOS_CREATE_TASK(otaTaskId, otaTask, "ota", otaStack, OTA_STACK_SIZE, OTA_TASK_PRIO);
+#endif
 #endif
 
   RTOS_CREATE_MUTEX(audioMutex);

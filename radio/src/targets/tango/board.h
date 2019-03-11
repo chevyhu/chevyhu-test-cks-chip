@@ -787,7 +787,6 @@ extern DMAFifo<32> serial2RxFifo;
 #define DISPLAY_PROGRESS_BAR(...) do{} while(0)
 
 void CRSF_Init( void );
-#define SHARED_MEMORY_ADDRESS   0x2001fd80 // allocate at end of SRAM
 
 #if defined(ESP_SERIAL)
 void espInit(uint32_t baudrate, bool use_dma);
