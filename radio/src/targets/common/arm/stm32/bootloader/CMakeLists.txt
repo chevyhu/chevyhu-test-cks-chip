@@ -74,6 +74,7 @@ set(BOOTLOADER_SRC
   ../usbd_desc.c
   ../usb_bsp.c
   ../usb_driver.cpp
+  ../usbd_hid_agent.c
   ../flash_driver.cpp
   init.c
   boot.cpp

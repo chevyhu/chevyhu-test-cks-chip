@@ -23,13 +23,13 @@
 
 #include "keys.h"
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBTANGO)
 typedef int8_t horzpos_t;
 #define NAVIGATION_LINE_BY_LINE        0x40
 #define IS_LINE_SELECTED(sub, k)       ((sub)==(k) && menuHorizontalPosition < 0)
 #else
-typedef uint8_t horzpos_t;
-#define NAVIGATION_LINE_BY_LINE        0
+typedef int8_t horzpos_t;
+#define NAVIGATION_LINE_BY_LINE        40
 #define IS_LINE_SELECTED(sub, k)       (false)
 #endif
 
@@ -106,8 +106,8 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
 };
 
 enum MenuModelIndexes {
-  MENU_MODEL_SELECT,
-  MENU_MODEL_SETUP,
+  //MENU_MODEL_SELECT,
+  //MENU_MODEL_SETUP,
   CASE_HELI(MENU_MODEL_HELI)
   CASE_FLIGHT_MODES(MENU_MODEL_FLIGHT_MODES)
   MENU_MODEL_INPUTS,

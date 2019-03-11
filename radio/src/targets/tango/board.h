@@ -240,30 +240,48 @@ int sbusGetByte(uint8_t * byte);
 // Keys driver
 enum EnumKeys
 {
-  KEY_LEFT,
-  KEY_RIGHT,
-  KEY_UP,
-  KEY_DOWN,
-  KEY_ENTER,
+#if defined(PCBTANGO)
+  KEY_MENU,
   KEY_EXIT,
+  KEY_ENTER,
+  KEY_PAGE,
+  KEY_PLUS,
+  KEY_MINUS,
+#else
+#if defined(PCBXLITE)
+  KEY_SHIFT,
+#else
+  KEY_MENU,
+#endif
+  KEY_EXIT,
+  KEY_ENTER,
+#if defined(PCBXLITE)
+  KEY_DOWN,
+  KEY_UP,
+  KEY_RIGHT,
+  KEY_LEFT,
+#else
+  KEY_PAGE,
+  KEY_PLUS,
+  KEY_MINUS,
+#endif
 
-    TRM_BASE,
-    TRM_LH_DWN = TRM_BASE,
-    TRM_LH_UP,
-    TRM_LV_DWN,
-    TRM_LV_UP,
-    TRM_RV_DWN,
-    TRM_RV_UP,
-    TRM_RH_DWN,
-    TRM_RH_UP,
-    TRM_LAST = TRM_RH_UP,
+#endif // PCBTANGO
+  TRM_BASE,
+  TRM_LH_DWN = TRM_BASE,
+  TRM_LH_UP,
+  TRM_LV_DWN,
+  TRM_LV_UP,
+  TRM_RV_DWN,
+  TRM_RV_UP,
+  TRM_RH_DWN,
+  TRM_RH_UP,
+  TRM_LAST = TRM_RH_UP,
 
-    NUM_KEYS
+  NUM_KEYS
 };
 
-
-
-#if defined(PCBX9E) && !defined(SIMU) && !defined(PCBTANGO)
+#if defined(PCBX9E) && !defined(SIMU)
   #define KEY_UP                        KEY_MINUS
   #define KEY_DOWN                      KEY_PLUS
   #define KEY_RIGHT                     KEY_PLUS
@@ -272,10 +290,10 @@ enum EnumKeys
   #define KEY_PLUS                      KEY_RIGHT
   #define KEY_MINUS                     KEY_LEFT
 #else
-  #define KEY_UP                        KEY_UP
-  #define KEY_DOWN                      KEY_DOWN
-  #define KEY_RIGHT                     KEY_RIGHT
-  #define KEY_LEFT                      KEY_LEFT
+  #define KEY_UP                        KEY_PLUS
+  #define KEY_DOWN                      KEY_MINUS
+  #define KEY_RIGHT                     KEY_MINUS
+  #define KEY_LEFT                      KEY_PLUS
 #endif
 
 #if defined(KEYS_GPIO_PIN_SHIFT)
@@ -294,13 +312,40 @@ enum EnumSwitches
   SW_SD,
   SW_SE,
   SW_SF,
-  SW_SG,
-  SW_SH
 };
-#define IS_3POS(x)                      ((x) != SW_SF && (x) != SW_SH)
+#define IS_3POS(x)                      ((x) != SW_SA && (x) != SW_SD && (x) != SW_SE && (x) != SW_SF && (x) != SW_SG )
 
 enum EnumSwitchesPositions
 {
+#if defined(PCBTANGO)
+  SW_SA0,
+  SW_SA1,
+  SW_SA2,
+  SW_SB0,
+  SW_SB1,
+  SW_SB2,
+  SW_SC0,
+  SW_SC1,
+  SW_SC2,
+  SW_SD0,
+  SW_SD1,
+  SW_SD2,
+  SW_SE0,
+  SW_SE1,
+  SW_SE2,
+  SW_SF0,
+  SW_SF1,
+  SW_SF2,
+  SW_SG0,
+  SW_SG1,
+  SW_SG2,
+  SW_SH0,
+  SW_SH1,
+  SW_SH2,
+  SW_SI0,
+  SW_SI1,
+  SW_SI2,
+#else
   SW_SA0,
   SW_SA1,
   SW_SA2,
@@ -365,8 +410,11 @@ enum EnumSwitchesPositions
   SW_SR1,
   SW_SR2,
 #endif
+#endif // PCBTANGO
 };
-#if defined(PCBXLITE)
+#if defined(PCBTANGO)
+  #define NUM_SWITCHES                  6
+#elif defined(PCBXLITE)
   #define NUM_SWITCHES                  4
 #elif defined(PCBX7)
   #define NUM_SWITCHES                  6
@@ -383,7 +431,7 @@ uint32_t readTrims(void);
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
-#if defined(PCBX9E) && !defined(PCBTANGO) || defined(PCBX7)
+#if (defined(PCBX9E) || defined(PCBX7) || defined(PCBTANGO) && !defined(SIMU))
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
 void checkRotaryEncoder(void);
@@ -406,25 +454,36 @@ void watchdogInit(unsigned int duration);
 
 // ADC driver
 enum Analogs {
-    STICK1,
-    STICK2,
-    STICK3,
-    STICK4,
-    POT_FIRST,
-    POT1 = POT_FIRST,
-    POT2,
-    POT_LAST = POT2,
-    ADC_ANALOGS_FIRST,
-    THREE_POS_L = ADC_ANALOGS_FIRST,
-    THREE_POS_R,
-    TX_VOLTAGE,
-    ADC_ANALOGS_LAST = TX_VOLTAGE,
-    NUM_ANALOGS
+  STICK1,
+  STICK2,
+  STICK3,
+  STICK4,
+  POT_FIRST,
+  POT1 = POT_FIRST,
+  POT2,
+#if defined(PCBX7) || defined(PCBXLITE)
+  POT_LAST = POT2,
+#elif defined(PCBX9E)
+  POT3,
+  POT4,
+  POT_LAST = POT4,
+  SLIDER1,
+  SLIDER2,
+  SLIDER3,
+  SLIDER4,
+#else
+  POT3,
+  POT_LAST = POT3,
+  SLIDER1,
+  SLIDER2,
+#endif
+  TX_VOLTAGE,
+  NUM_ANALOGS
 };
 
-#define NUM_POTS                        (POT_LAST-POT_FIRST+1)
-#define NUM_XPOTS                       NUM_POTS
-#define NUM_SLIDERS                     (TX_VOLTAGE-POT_LAST-1)
+#define NUM_POTS                        0//(POT_LAST-POT_FIRST+1)
+#define NUM_XPOTS                       0//NUM_POTS
+#define NUM_SLIDERS                     0//(TX_VOLTAGE-POT_LAST-1)
 #define NUM_TRIMS                       4
 #define NUM_MOUSE_ANALOGS               0
 #define NUM_DUMMY_ANAS                  0
@@ -476,6 +535,11 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
   #define BATTERY_WARN                  66 // 6.6V
   #define BATTERY_MIN                   67 // 6.7V
   #define BATTERY_MAX                   83 // 8.3V
+#elif defined(PCBTANGO)
+  // 1 x Li-Ion
+  #define BATTERY_WARN                  33 // 3.3V
+  #define BATTERY_MIN                   34 // 3.4V
+  #define BATTERY_MAX                   41 // 4.1V
 #else
   // NI-MH 7.2V
   #define BATTERY_WARN                  65 // 6.5V
@@ -486,6 +550,8 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
   #define BATT_SCALE                    131
 #elif defined(PCBX7)
   #define BATT_SCALE                    123
+#elif defined(PCBTANGO)
+  #define BATT_SCALE                    47
 #else
   #define BATT_SCALE                    150
 #endif
@@ -528,9 +594,9 @@ uint8_t isBacklightEnabled(void);
 #if !defined(SIMU)
   void usbJoystickUpdate();
 #endif
-#define USB_NAME                        "FrSky Taranis"
-#define USB_MANUFACTURER                'F', 'r', 'S', 'k', 'y', ' ', ' ', ' '  /* 8 bytes */
-#define USB_PRODUCT                     'T', 'a', 'r', 'a', 'n', 'i', 's', ' '  /* 8 Bytes */
+#define USB_NAME                        "TBS"
+#define USB_MANUFACTURER                'T', 'B', 'S', ' ', ' ', ' ', ' ', ' '  /* 8 bytes */
+#define USB_PRODUCT                     'T', 'a', 'n', 'g', 'o', ' ', '2', ' '  /* 8 Bytes */
 
 #if defined(__cplusplus) && !defined(SIMU)
 }
@@ -719,5 +785,14 @@ extern DMAFifo<32> serial2RxFifo;
 #endif
 
 #define DISPLAY_PROGRESS_BAR(...) do{} while(0)
+
+void CRSF_Init( void );
+#define SHARED_MEMORY_ADDRESS   0x2001fd80 // allocate at end of SRAM
+
+#if defined(ESP_SERIAL)
+void espInit(uint32_t baudrate, bool use_dma);
+void espWriteBuffer(uint8_t* buf, uint8_t len);
+uint8_t espReadBuffer(uint8_t* buf);
+#endif
 
 #endif // _BOARD_H_

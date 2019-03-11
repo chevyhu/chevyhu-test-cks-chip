@@ -33,6 +33,9 @@ void onUSBConnectMenu(const char *result)
   else if (result == STR_USB_JOYSTICK) {
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
+  else if (result == STR_USB_AGENT) {
+    setSelectedUsbMode(USB_AGENT_MODE);
+  }
   else if (result == STR_USB_SERIAL) {
     setSelectedUsbMode(USB_SERIAL_MODE);
   }
@@ -72,6 +75,10 @@ void handleUsbConnection()
 #endif
   }
 #endif // defined(STM32) && !defined(SIMU)
+
+#if defined(AGENT) && !defined(SIMU)
+  AgentHandler();
+#endif
 }
 
 void checkSpeakerVolume()
@@ -401,6 +408,15 @@ void guiMain(event_t evt)
 
 void perMain()
 {
+#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
+  static bool startOnce = false;
+  if(!startOnce){
+	  extern bool startCrsfSdReadTest;
+	  startCrsfSdReadTest = true;
+	  startOnce = true;
+  }
+#endif
+
   DEBUG_TIMER_START(debugTimerPerMain1);
 #if defined(PCBSKY9X) && !defined(REVA)
   calcConsumption();
@@ -408,7 +424,7 @@ void perMain()
   checkSpeakerVolume();
   checkEeprom();
   logsWrite();
-  handleUsbConnection();
+  //handleUsbConnection();
   //checkTrainerSettings();
   periodicTick();
   DEBUG_TIMER_STOP(debugTimerPerMain1);
@@ -470,7 +486,7 @@ void perMain()
   }
 #endif
 
-#if defined(PCBX9E) && !defined(SIMU) && !defined(PCBTANGO)
+#if defined(PCBX9E) && !defined(SIMU)
   toplcdRefreshStart();
   setTopFirstTimer(getValue(MIXSRC_FIRST_TIMER+g_model.toplcdTimer));
   setTopSecondTimer(g_eeGeneral.globalTimer + sessionTimer);

@@ -294,156 +294,78 @@ void onMainViewMenu(const char *result)
 void menuMainView(event_t event)
 {
   //STICK_SCROLL_DISABLE();
+  static bool secondPage = false;
 
   uint8_t view = g_eeGeneral.view;
   uint8_t view_base = view & 0x0f;
 
   switch (event) {
+
     case EVT_ENTRY:
+      killEvents(KEY_EXIT);
       killEvents(KEY_UP);
       killEvents(KEY_DOWN);
+      // no break
+
+    case EVT_ENTRY_UP:
+      LOAD_MODEL_BITMAP();
       break;
 
-      /* TODO if timer2 is OFF, it's possible to use this timer2 as in er9x...
-      case EVT_KEY_BREAK(KEY_MENU):
-        if (view_base == VIEW_TIMER2) {
-          Timer2_running = !Timer2_running;
-          AUDIO_KEY_PRESS();
-        }
-      break;
-      */
-
-#if defined(EVT_KEY_NEXT_PAGE)
-    case EVT_KEY_NEXT_PAGE:
-    case EVT_KEY_PREVIOUS_PAGE:
-      if (view_base <= VIEW_INPUTS) {
-#if defined(CPUARM)
-        if (view_base == VIEW_INPUTS)
-          g_eeGeneral.view ^= ALTERNATE_VIEW;
-        else
-          g_eeGeneral.view = (g_eeGeneral.view + (4*ALTERNATE_VIEW) + ((event==EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (4*ALTERNATE_VIEW);
-#else
-        g_eeGeneral.view ^= ALTERNATE_VIEW;
-#endif
-        storageDirty(EE_GENERAL);
-        AUDIO_KEY_PRESS();
-      }
-      break;
-#endif
-
-#if defined(NAVIGATION_MENUS)
-    case EVT_KEY_CONTEXT_MENU:
+    case EVT_KEY_LONG(KEY_ENTER):
       killEvents(event);
-
-#if defined(CPUARM)
       if (modelHasNotes()) {
         POPUP_MENU_ADD_ITEM(STR_VIEW_NOTES);
       }
-#endif
-
-#if defined(CPUARM)
       POPUP_MENU_ADD_ITEM(STR_RESET_SUBMENU);
-#else
-    POPUP_MENU_ADD_ITEM(STR_RESET_TIMER1);
-      POPUP_MENU_ADD_ITEM(STR_RESET_TIMER2);
-#if defined(TELEMETRY_FRSKY)
-      POPUP_MENU_ADD_ITEM(STR_RESET_TELEMETRY);
-#endif
-      POPUP_MENU_ADD_ITEM(STR_RESET_FLIGHT);
-#endif
-
       POPUP_MENU_ADD_ITEM(STR_STATISTICS);
-#if defined(CPUARM)
       POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
-#endif
       POPUP_MENU_START(onMainViewMenu);
       break;
-#endif
 
-#if MENUS_LOCK != 2 /*no menus*/
-#if defined(EVT_KEY_LAST_MENU)
-    case EVT_KEY_LAST_MENU:
-      pushMenu(lastPopMenu());
-      killEvents(event);
-      break;
-#endif
-
-      CASE_EVT_ROTARY_BREAK
-    case EVT_KEY_MODEL_MENU:
+#if MENUS_LOCK != 2/*no menus*/
+    case EVT_KEY_BREAK(KEY_MENU):
       //pushMenu(menuModelSelect);
-      killEvents(event);
+      pushMenu(menuModelHeli);
       break;
 
-      CASE_EVT_ROTARY_LONG
-    case EVT_KEY_GENERAL_MENU:
+    case EVT_KEY_LONG(KEY_MENU):
       pushMenu(menuRadioSetup);
       killEvents(event);
       break;
 #endif
 
-#if defined(EVT_KEY_PREVIOUS_VIEW)
-      // TODO try to split those 2 cases on 9X
-    case EVT_KEY_PREVIOUS_VIEW:
-    case EVT_KEY_NEXT_VIEW:
-      // TODO try to split those 2 cases on 9X
-      g_eeGeneral.view = (event == EVT_KEY_PREVIOUS_VIEW ? (view_base == VIEW_COUNT-1 ? 0 : view_base+1) : (view_base == 0 ? VIEW_COUNT-1 : view_base-1));
-      storageDirty(EE_GENERAL);
-      break;
-#elif defined(EVT_KEY_NEXT_VIEW)
-    case EVT_KEY_NEXT_VIEW:
-      g_eeGeneral.view = (view_base == 0 ? VIEW_COUNT-1 : view_base-1);
-      storageDirty(EE_GENERAL);
-      break;
+    case EVT_KEY_BREAK(KEY_PAGE):
+#if 0
+      storageDirty(EE_MODEL);
+      g_model.view += 1;
+      if (g_model.view >= VIEW_COUNT) {
+        g_model.view = 0;
+        chainMenu(menuMainViewChannelsMonitor);
+      }
 #endif
+      break;
 
-#if defined(EVT_KEY_STATISTICS)
-    case EVT_KEY_STATISTICS:
-      // TODO chainMenu(menuStatisticsView);
+    case EVT_KEY_LONG(KEY_PAGE):
+      chainMenu(menuViewTelemetryFrsky);
       killEvents(event);
       break;
-#endif
-
-#if defined(EVT_KEY_TELEMETRY)
-    case EVT_KEY_TELEMETRY:
-#if defined(TELEMETRY_FRSKY)
-      if (!IS_FAI_ENABLED())
-        // TODO chainMenu(menuViewTelemetryFrsky);
-#elif defined(TELEMETRY_JETI)
-      JETI_EnableRXD(); // enable JETI-Telemetry reception
-      chainMenu(menuViewTelemetryJeti);
-#elif defined(TELEMETRY_ARDUPILOT)
-      ARDUPILOT_EnableRXD(); // enable ArduPilot-Telemetry reception
-      chainMenu(menuViewTelemetryArduPilot);
-#elif defined(TELEMETRY_NMEA)
-      NMEA_EnableRXD(); // enable NMEA-Telemetry reception
-      chainMenu(menuViewTelemetryNMEA);
-#elif defined(TELEMETRY_MAVLINK)
-      chainMenu(menuViewTelemetryMavlink);
-#else
-      // TODO chainMenu(menuStatisticsDebug);
-#endif
-      killEvents(event);
-      break;
-#endif
 
     case EVT_KEY_FIRST(KEY_EXIT):
-#if defined(GVARS) && !defined(PCBSTD)
+#if defined(GVARS)
       if (gvarDisplayTimer > 0) {
         gvarDisplayTimer = 0;
       }
 #endif
-#if !defined(NAVIGATION_MENUS)
-      if (view == VIEW_TIMER2) {
-        timerReset(1);
-      }
-#endif
       break;
 
-#if !defined(NAVIGATION_MENUS)
-    case EVT_KEY_LONG(KEY_EXIT):
-      flightReset();
-      break;
+    case EVT_KEY_FIRST(KEY_RIGHT):
+    case EVT_KEY_FIRST(KEY_LEFT):
+#if defined(ROTARY_ENCODER_NAVIGATION)
+      case EVT_ROTARY_LEFT:
+    case EVT_ROTARY_RIGHT:
 #endif
+      secondPage = !secondPage;
+      break;
   }
 
   {
@@ -470,11 +392,14 @@ void menuMainView(event_t event)
     }
 #endif
   }
+
   //sticks
   doMainScreenGraphics();
 
   // switches
   drawSwitches();
+
+
 
   if (view_base < VIEW_INPUTS) {
     // scroll bar

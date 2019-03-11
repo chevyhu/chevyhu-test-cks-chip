@@ -37,6 +37,8 @@
   #include "lua/lua_exports_xlite.inc"
 #elif defined(PCBTARANIS)
   #include "lua/lua_exports_x9d.inc"
+#elif defined(PCBTANGO)
+#include "lua/lua_exports_tango.inc"
 #endif
 
 #if defined(SIMU)
@@ -1385,11 +1387,11 @@ const luaR_value_entry opentxConstants[] = {
   { "MIXSRC_SB", MIXSRC_SB },
   { "MIXSRC_SC", MIXSRC_SC },
   { "MIXSRC_SD", MIXSRC_SD },
-#if !defined(PCBX7) && !defined(PCBXLITE)
+#if !defined(PCBX7) && !defined(PCBXLITE) && !defined(PCBTANGO)
   { "MIXSRC_SE", MIXSRC_SE },
   { "MIXSRC_SG", MIXSRC_SG },
 #endif
-#if !defined(PCBXLITE)
+#if !defined(PCBXLITE)  && !defined(PCBTANGO)
   { "MIXSRC_SF", MIXSRC_SF },
   { "MIXSRC_SH", MIXSRC_SH },
 #endif

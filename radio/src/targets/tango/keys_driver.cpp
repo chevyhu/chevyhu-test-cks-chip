@@ -20,36 +20,10 @@
 
 #include "opentx.h"
 
-
 #if defined(ROTARY_ENCODER_NAVIGATION)
 uint32_t rotencPosition;
 #endif
 
-
-#if !defined(SIMU)
-/* TODO common to ARM */
-void readKeysAndTrims()
-{
-  uint8_t index = 0;
-  uint32_t keys_input = readKeys();
-  for (uint8_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
-    keys[index++].input(keys_input & i);
-  }
-
-  uint32_t trims_input = readTrims();
-  for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
-    keys[index++].input(trims_input & i);
-  }
-
-#if defined(PWR_BUTTON_PRESS)
-  if ((keys_input || trims_input || pwrPressed()) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
-#else
-  if ((keys_input || trims_input) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
-#endif
-    // on keypress turn the light on
-    backlightOn();
-  }
-}
 
 uint32_t readKeys()
 {
@@ -59,13 +33,15 @@ uint32_t readKeys()
     result |= 1 << KEY_ENTER;
 
 #if defined(KEYS_GPIO_PIN_MENU)
-  //if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU)
-  //result |= 1 << KEY_MENU;
+  if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU) {
+    TRACE("menu event\r\n");
+    result |= 1 << KEY_MENU;
+  }
 #endif
 
 #if defined(KEYS_GPIO_PIN_PAGE)
-  //if (~KEYS_GPIO_REG_PAGE & KEYS_GPIO_PIN_PAGE)
-  //result |= 1 << KEY_PAGE;
+  if (~KEYS_GPIO_REG_PAGE & KEYS_GPIO_PIN_PAGE)
+    result |= 1 << KEY_PAGE;
 #endif
 
   if (~KEYS_GPIO_REG_EXIT & KEYS_GPIO_PIN_EXIT)
@@ -136,13 +112,44 @@ uint8_t trimDown(uint8_t idx)
   return readTrims() & (1 << idx);
 }
 
-uint8_t keyDown()
+bool keyDown()
 {
   return readKeys() || readTrims();
 }
 
-#if defined(PCBX9E)
-#define ADD_2POS_CASE(x) \
+/* TODO common to ARM */
+void readKeysAndTrims()
+{
+  uint8_t index = 0;
+  uint32_t keys_input = readKeys();
+  for (uint8_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
+    keys[index++].input(keys_input & i);
+  }
+
+  uint32_t trims_input = readTrims();
+  for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
+    keys[index++].input(trims_input & i);
+  }
+
+#if defined(PWR_BUTTON_PRESS)
+  if ((keys_input || trims_input || pwrPressed()) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
+#else
+  if ((keys_input || trims_input) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
+#endif
+    // on keypress turn the light on
+    backlightOn();
+  }
+}
+
+uint8_t keyState(uint8_t index)
+{
+  return keys[index].state();
+}
+
+#if !defined(SIMU)
+
+#if defined(PCBX9E) || defined(PCBTANGO)
+  #define ADD_2POS_CASE(x) \
     case SW_S ## x ## 2: \
       xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break; \
@@ -150,8 +157,7 @@ uint8_t keyDown()
       xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break;
 #else
-
-#define ADD_2POS_CASE(x) \
+  #define ADD_2POS_CASE(x) \
     case SW_S ## x ## 0: \
       xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break; \
@@ -159,8 +165,7 @@ uint8_t keyDown()
       xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break;
 #endif
-
-#define ADD_3POS_CASE(x, i) \
+  #define ADD_3POS_CASE(x, i) \
     case SW_S ## x ## 0: \
       xxx = (SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H); \
       if (IS_CONFIG_3POS(i)) { \
@@ -184,6 +189,17 @@ uint32_t switchState(uint8_t index)
   uint32_t xxx = 0;
 
   switch (index) {
+#if defined(PCBTANGO)
+    ADD_2POS_CASE(A);
+    ADD_3POS_CASE(B, 1);
+    ADD_3POS_CASE(C, 2);
+    ADD_2POS_CASE(D);
+    ADD_2POS_CASE(E);
+    ADD_2POS_CASE(F);
+    ADD_2POS_CASE(G);
+    ADD_2POS_CASE(H);
+    ADD_2POS_CASE(I);
+#else
     ADD_3POS_CASE(A, 0);
     ADD_3POS_CASE(B, 1);
     ADD_3POS_CASE(C, 2);
@@ -211,7 +227,7 @@ uint32_t switchState(uint8_t index)
     ADD_3POS_CASE(Q, 16);
     ADD_3POS_CASE(R, 17);
 #endif
-
+#endif  // PCBTANGO
     default:
       break;
   }
@@ -220,11 +236,28 @@ uint32_t switchState(uint8_t index)
   return xxx;
 }
 #endif
-
 #endif
 
-
-
+#if defined(ROTARY_ENCODER_NAVIGATION)
+void checkRotaryEncoder()
+{
+  uint32_t newpos = ROTARY_ENCODER_POSITION();
+  if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
+    if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
+      --rotencValue[0];
+    }
+    else {
+      ++rotencValue[0];
+    }
+    rotencPosition = newpos;
+#if !defined(BOOT)
+    if (g_eeGeneral.backlightMode & e_backlight_mode_keys) {
+      backlightOn();
+    }
+#endif
+  }
+}
+#endif
 
 void keysInit()
 {

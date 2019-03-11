@@ -63,13 +63,15 @@ void pushMenu(MenuHandlerFunc newMenu)
   menuEvent = EVT_ENTRY;
   TRACE("pushMenu(%d, %p)", menuLevel, newMenu);
 }
-#if 0
+#if 1
 void menuModelNotes(event_t event)
 {
   if (event == EVT_ENTRY) {
+#if 0
     strcpy(s_text_file, MODELS_PATH "/");
     char *buf = strcat_modelname(&s_text_file[sizeof(MODELS_PATH)], g_eeGeneral.currModel);
     strcpy(buf, TEXT_EXT);
+#endif
   }
 
   menuTextView(event);

@@ -258,7 +258,7 @@ void Open9xSim::updateKeysAndSwitches(bool start)
     KEY_Left,      KEY_LEFT,
     KEY_Up,        KEY_UP,
     KEY_Down,      KEY_DOWN,
-#elif defined(PCBTARANIS) && !defined(PCBTANGO)
+#elif defined(PCBTARANIS)
     KEY_Page_Up,   KEY_MENU,
   #if defined(KEYS_GPIO_REG_PAGE)
     KEY_Page_Down, KEY_PAGE,
@@ -268,12 +268,14 @@ void Open9xSim::updateKeysAndSwitches(bool start)
     KEY_Up,        KEY_PLUS,
     KEY_Down,      KEY_MINUS,
 #elif defined(PCBTANGO)
-    KEY_BackSpace, KEY_EXIT,
+    KEY_Page_Up,   KEY_MENU,
+  #if defined(KEYS_GPIO_REG_PAGE)
+    KEY_Page_Down, KEY_PAGE,
+  #endif
     KEY_Return,    KEY_ENTER,
-    KEY_Right,     KEY_RIGHT,
-    KEY_Left,      KEY_LEFT,
-    KEY_Up,        KEY_UP,
-    KEY_Down,      KEY_DOWN,
+    KEY_BackSpace, KEY_EXIT,
+    KEY_Up,        KEY_PLUS,
+    KEY_Down,      KEY_MINUS,
 #else
     KEY_Return,    KEY_MENU,
     KEY_BackSpace, KEY_EXIT,
@@ -321,7 +323,7 @@ void Open9xSim::updateKeysAndSwitches(bool start)
   } \
   simuSetSwitch(swtch, state_##swtch-states);
 
-#if defined(PCBX9E) && !defined(PCBTANGO)
+#if defined(PCBX9E)
   SWITCH_KEY(A, 0, 3);
   SWITCH_KEY(B, 1, 3);
   SWITCH_KEY(C, 2, 3);
@@ -340,7 +342,7 @@ void Open9xSim::updateKeysAndSwitches(bool start)
   SWITCH_KEY(P, 15, 3);
   SWITCH_KEY(Q, 16, 3);
   SWITCH_KEY(R, 17, 3);
-#elif defined(PCBTARANIS)  && !defined(PCBTANGO) || defined(PCBHORUS)
+#elif defined(PCBTARANIS) || defined(PCBHORUS)
   SWITCH_KEY(A, 0, 3);
   SWITCH_KEY(B, 1, 3);
   SWITCH_KEY(C, 2, 3);
@@ -390,7 +392,7 @@ long Open9xSim::onTimeout(FXObject*, FXSelector, void*)
     }
 #endif
 
-#if defined(PCBX9E) && !defined(PCBTANGO)
+#if defined(PCBX9E)
     SWITCH_KEY(A, 0, 3);
     SWITCH_KEY(B, 1, 3);
     SWITCH_KEY(C, 2, 3);
@@ -409,7 +411,7 @@ long Open9xSim::onTimeout(FXObject*, FXSelector, void*)
     SWITCH_KEY(P, 15, 3);
     SWITCH_KEY(Q, 16, 3);
     SWITCH_KEY(R, 17, 3);
-#elif defined(PCBTARANIS) && !defined(PCBTANGO) || defined(PCBHORUS)
+#elif defined(PCBTARANIS) || defined(PCBHORUS)
     SWITCH_KEY(A, 0, 3);
     SWITCH_KEY(B, 1, 3);
     SWITCH_KEY(C, 2, 3);

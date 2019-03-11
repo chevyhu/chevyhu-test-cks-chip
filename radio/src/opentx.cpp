@@ -256,12 +256,18 @@ void generalDefault()
   g_eeGeneral.switchConfig = 0x00007bff; // 6x3POS, 1x2POS, 1xTOGGLE
 #endif
 
+#if defined(PCBTANGO)
+  g_eeGeneral.vBatWarn = BATTERY_WARN;
+  g_eeGeneral.vBatMin = BATTERY_MIN;
+  g_eeGeneral.vBatMax = BATTERY_MAX;
+#else
   // vBatWarn is voltage in 100mV, vBatMin is in 100mV but with -9V offset, vBatMax has a -12V offset
   g_eeGeneral.vBatWarn = BATTERY_WARN;
   if (BATTERY_MIN != 90)
     g_eeGeneral.vBatMin = BATTERY_MIN - 90;
   if (BATTERY_MAX != 120)
     g_eeGeneral.vBatMax = BATTERY_MAX - 120;
+#endif
 
 #if defined(DEFAULT_MODE)
   g_eeGeneral.stickMode = DEFAULT_MODE-1;
@@ -1543,11 +1549,13 @@ void opentxStart(const uint8_t startType = OPENTX_START_DEFAULT_ARGS)
 
 #if defined(GUI)
   if (calibration_needed) {
-    chainMenu(menuFirstCalib);
+    /* Disable the first calibration for testing, by Chevy 2019.03.06 */
+    //chainMenu(menuFirstCalib);
   }
   else {
-    checkAlarm();
-    checkAll();
+    /* Disable all check for testing, by Chevy 2019.03.05 */
+    //checkAlarm();
+    //checkAll();
     PLAY_MODEL_NAME();
   }
 #endif

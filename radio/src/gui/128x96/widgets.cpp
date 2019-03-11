@@ -47,6 +47,14 @@ void drawCheckBox(coord_t x, coord_t y, uint8_t value, LcdFlags attr)
 #endif
 }
 
+swsrc_t editSwitch(coord_t x, coord_t y, swsrc_t value, LcdFlags attr, event_t event)
+{
+  drawFieldLabel(x, y, STR_SWITCH);
+  drawSwitch(x,  y, value, attr);
+  if (attr & (~RIGHT)) CHECK_INCDEC_MODELSWITCH(event, value, SWSRC_FIRST_IN_MIXES, SWSRC_LAST_IN_MIXES, isSwitchAvailableInMixes);
+  return value;
+}
+
 void drawScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
 {
   lcdDrawNumber(LCD_W, 0, count, RIGHT | attr);

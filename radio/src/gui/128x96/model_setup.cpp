@@ -23,7 +23,7 @@
 uint8_t g_moduleIdx;
 void menuModelFailsafe(event_t event);
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBTANGO)
 uint8_t getSwitchWarningsCount()
 {
   int count = 0;

@@ -204,13 +204,18 @@ void boardInit()
   audioInit();
   init2MhzTimer();
   init5msTimer();
+  CRSF_Init();
   __enable_irq();
-  //i2cInit();
+  i2cInit();
   usbInit();
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
-  TRACE("\nTango board started :)");
+  TRACE("\Tango board started :)");
+#endif
+
+#if defined(ESP_SERIAL)
+  espInit(115200, false);
 #endif
 
 #if defined(HAPTIC)

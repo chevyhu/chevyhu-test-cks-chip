@@ -40,11 +40,14 @@ elseif(PCB STREQUAL TANGO)
   set(CPU_TYPE_FULL STM32F407xE)  # for size report
   set(LINKER_SCRIPT targets/tango/stm32f4_flash.ld)
   set(HAPTIC YES)
-  set(LUA_EXPORT lua_export_x9e)
+  set(LUA_EXPORT lua_export_tango)
   set(FLAVOUR tango)
   add_definitions(-DSTM32F40_41xxx -DPCBTANGO)
   add_definitions(-DEEPROM_VARIANT=0x8000)
   #add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
+  add_definitions(-DSOFTWARE_VOLUME)
+  add_definitions(-DAGENT )
+  add_definitions(-DCRSF_SD )
 
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
@@ -173,6 +176,26 @@ if(PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL XLITE OR PCB STREQUAL TAN
   set(SRC
     ${SRC}
     bluetooth.cpp
+    )
+endif()
+
+if(PCB STREQUAL TANGO)
+  add_definitions(-DESP_SERIAL)
+  set(TARGET_SRC
+    ${TARGET_SRC}
+    ../tango/esp_driver.cpp
+    )
+  set(SRC
+    ${SRC}
+    bluetooth.cpp
+    )
+  set(FIRMWARE_TARGET_SRC
+    ${FIRMWARE_TARGET_SRC}
+    ../../io/crsf/crossfire.cpp
+    ../../io/crsf/crsf.cpp
+    ../../io/crsf/crsf_write.cpp
+    ../../io/crsf/crsf_utilities.cpp
+    ../../io/crsf/crc8.cpp
     )
 endif()
 

@@ -20,6 +20,8 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
+/*_estack = 0x10010000;*/    /* end of 64K CCM */
+/*_heap_end = 0x20020000;*/  /* end of 128K SRAM */
 _estack = 0x10010000;    /* end of 64K CCM */
 _heap_end = 0x20010000;  /* end of first 64KB of 128K SRAM */
 

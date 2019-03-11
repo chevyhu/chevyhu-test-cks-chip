@@ -167,19 +167,19 @@ void menuModelMixOne(event_t event)
         break;
 
       case MIX_FIELD_DELAY_UP:
-        md2->delayUp = EDIT_DELAY(0, y, event, attr, STR_DELAYUP, md2->delayUp);
+        md2->delayUp = EDIT_DELAY(y, event, attr, STR_DELAYUP, md2->delayUp);
         break;
 
       case MIX_FIELD_DELAY_DOWN:
-        md2->delayDown = EDIT_DELAY(0, y, event, attr, STR_DELAYDOWN, md2->delayDown);
+        md2->delayDown = EDIT_DELAY(y, event, attr, STR_DELAYDOWN, md2->delayDown);
         break;
 
       case MIX_FIELD_SLOW_UP:
-        md2->speedUp = EDIT_DELAY(0, y, event, attr, STR_SLOWUP, md2->speedUp);
+        md2->speedUp = EDIT_DELAY(y, event, attr, STR_SLOWUP, md2->speedUp);
         break;
 
       case MIX_FIELD_SLOW_DOWN:
-        md2->speedDown = EDIT_DELAY(0, y, event, attr, STR_SLOWDOWN, md2->speedDown);
+        md2->speedDown = EDIT_DELAY(y, event, attr, STR_SLOWDOWN, md2->speedDown);
         break;
     }
   }
