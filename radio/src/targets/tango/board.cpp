@@ -20,6 +20,14 @@
 
 #include "opentx.h"
 
+RTOS_TASK_HANDLE crossfireTaskId;
+RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
+
+RTOS_TASK_HANDLE systemTaskId;
+RTOS_DEFINE_STACK(systemStack, SYSTEM_STACK_SIZE);
+
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void);
+
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
 #endif
@@ -364,3 +372,21 @@ uint16_t getBatteryVoltage()
   instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
   return (uint16_t)instant_vbat;
 }
+
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
+{
+  return crossfireTaskId;
+};
+
+#if !defined(SIMU)
+TASK_FUNCTION(systemTask)
+{
+  while(1) {
+
+//      SYS_Tasks();
+//      USB_APP_Tasks();
+//      crsfSharedFifoHandler();
+  }
+  TASK_RETURN();
+}
+#endif
