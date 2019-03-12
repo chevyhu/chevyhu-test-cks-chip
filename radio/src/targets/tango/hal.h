@@ -57,13 +57,13 @@
   #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_10 // PE.10
 #elif defined(PCBTANGO)
   #define KEYS_GPIO_REG_MENU            GPIOD->IDR
-  #define KEYS_GPIO_PIN_MENU            GPIO_Pin_12  // PD.12
+  #define KEYS_GPIO_PIN_MENU            GPIO_Pin_13  // PD.13
   #define KEYS_GPIO_REG_EXIT            GPIOD->IDR
   #define KEYS_GPIO_PIN_EXIT            GPIO_Pin_14  // PD.14
   #define KEYS_GPIO_REG_PAGE            GPIOD->IDR
-  #define KEYS_GPIO_PIN_PAGE            GPIO_Pin_13  // PD.13
+  #define KEYS_GPIO_PIN_PAGE            GPIO_Pin_12  // PD.12
   #define KEYS_GPIO_REG_ENTER           GPIOD->IDR
-  #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_4  // PD.4
+  #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_4   // PD.4
 #else
   #define KEYS_GPIO_REG_MENU            GPIOD->IDR
   #define KEYS_GPIO_PIN_MENU            GPIO_Pin_7  // PD.07
