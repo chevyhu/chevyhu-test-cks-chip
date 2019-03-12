@@ -7,7 +7,7 @@ set(GUI_SRC
   widgets.cpp
   menus.cpp
   menu_model.cpp
-  #model_select.cpp
+  model_select.cpp
   model_setup.cpp
   model_logical_switches.cpp
   model_special_functions.cpp

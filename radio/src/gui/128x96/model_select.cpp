@@ -21,498 +21,278 @@
 #include "opentx.h"
 #include "storage/modelslist.h"
 
-#define CATEGORIES_WIDTH               120
-#define MODELS_LEFT                    123
-#define MODELS_COLUMN_WIDTH            174
+#define MODELSIZE_POS_X 170
+#define MODELSEL_W 133
 
-enum ModelSelectMode {
-    MODE_SELECT_MODEL,
-    MODE_RENAME_CATEGORY,
-    MODE_MOVE_MODEL,
-};
 
-enum ModelDeleteMode {
-    MODE_DELETE_MODEL,
-    MODE_DELETE_CATEGORY,
-};
-
-uint8_t selectMode, deleteMode;
-
-ModelsCategory * currentCategory;
-int currentCategoryIndex;
-ModelCell * currentModel;
-
-void drawCategory(coord_t y, const char * name, bool selected)
-{
-  if (selected) {
-    lcdDrawSolidFilledRect(1, y-INVERT_VERT_MARGIN, CATEGORIES_WIDTH-10, INVERT_LINE_HEIGHT+2, TEXT_INVERTED_BGCOLOR);
-    lcdDrawText(6, y, name, TEXT_COLOR | INVERS);
-  }
-  else {
-    lcdDrawText(6, y, name, TEXT_COLOR);
-  }
-}
-
-void drawModel(coord_t x, coord_t y, ModelCell * model, bool current, bool selected)
-{
-  lcd->drawBitmap(x+1, y+1, model->getBuffer());
-  if (current) {
-    lcd->drawBitmapPattern(x+66, y+43, LBM_ACTIVE_MODEL, TITLE_BGCOLOR);
-  }
-  if (selected) {
-    lcdDrawSolidRect(x, y, MODELCELL_WIDTH+2, MODELCELL_HEIGHT+2, 1, TITLE_BGCOLOR);
-    drawShadow(x, y, MODELCELL_WIDTH+2, MODELCELL_HEIGHT+2);
-    if (selectMode == MODE_MOVE_MODEL) {
-      lcd->drawMask(x+MODELCELL_WIDTH+2-modelselModelMoveBackground->getWidth(), y, modelselModelMoveBackground, TITLE_BGCOLOR);
-      lcd->drawMask(x+MODELCELL_WIDTH+2-modelselModelMoveBackground->getWidth()+12, y+5, modelselModelMoveIcon, TEXT_BGCOLOR);
-    }
-  }
-}
-
-uint16_t categoriesVerticalOffset = 0;
-uint16_t categoriesVerticalPosition = 0;
-#define MODEL_INDEX()       (menuVerticalPosition*2+menuHorizontalPosition)
-
-void setCurrentModel(unsigned int index)
-{
-  std::list<ModelCell *>::iterator it = currentCategory->begin();
-  std::advance(it, index);
-  currentModel = *it;
-  menuVerticalPosition = index / 2;
-  menuHorizontalPosition = index & 1;
-  menuVerticalOffset = limit<int>(menuVerticalPosition-2, menuVerticalOffset, min<int>(menuVerticalPosition, max<int>(0, (currentCategory->size()-7)/2)));
-}
-
-void setCurrentCategory(unsigned int index)
-{
-  currentCategoryIndex = index;
-  const std::list<ModelsCategory *>& cats = modelslist.getCategories();
-  std::list<ModelsCategory *>::const_iterator it = cats.begin();
-  std::advance(it, index);
-  currentCategory = *it;
-  categoriesVerticalPosition = index;
-  categoriesVerticalOffset = limit<int>(categoriesVerticalPosition-4, categoriesVerticalOffset, min<int>(categoriesVerticalPosition, max<int>(0, cats.size()-5)));
-  if (currentCategory->size() > 0)
-    setCurrentModel(0);
-  else
-    currentModel = NULL;
-}
-
-#if defined(LUA)
-
-#define MAX_WIZARD_NAME_LEN            (sizeof(WIZARD_PATH)+20)
-#define WIZARD_SPACING                 40
-#define WIZARD_LEFT_SPACING            30
-#define WIZARD_ICON_X                  80
-#define WIZARD_ICON_Y                  110
-#define WIZARD_TEXT_Y                  195
-
-uint8_t getWizardCount()
-{
-  uint8_t wizCnt=0;
-  DIR dir;
-  static FILINFO fno;
-
-  FRESULT res = f_opendir(&dir, WIZARD_PATH);
-  if (res == FR_OK) {
-    for (;;) {
-      res = f_readdir(&dir, &fno);
-      if (res != FR_OK || fno.fname[0] == 0) {
-        break;
-      }
-      if (fno.fattrib & AM_DIR) {
-        wizCnt++;
-      }
-    }
-  }
-  f_closedir(&dir);
-  return wizCnt;
-}
-
-bool menuModelWizard(event_t event)
-{
-  static uint8_t wizardSelected = 0;
-  static uint8_t wizardCnt = getWizardCount();
-  bool executeMe = false;
-  uint8_t first = 0;
-  DIR dir;
-  static FILINFO fno;
-  char wizpath[MAX_WIZARD_NAME_LEN];
-
-  if (wizardCnt == 0) {
-    chainMenu(menuModelSelect);
-    return false;
-  }
-
-  switch(event) {
-   case 0:
-     // no need to refresh the screen
-     return false;
-
-  case EVT_KEY_FIRST(KEY_EXIT):
-    chainMenu(menuModelSelect);
-    return false;
-
-  case EVT_KEY_BREAK(KEY_ENTER):
-    executeMe = true;
-    break;
-
-  case EVT_ROTARY_RIGHT:
-    if (wizardSelected < wizardCnt-1) {
-      wizardSelected++;
-    }
-    if (wizardSelected > 3) {
-      first = wizardSelected - 3;
-    }
-    break;
-
-  case EVT_ROTARY_LEFT:
-    if (wizardSelected != 0) {
-      wizardSelected--;
-    }
-    if(wizardSelected < first)
-    {
-      first = wizardSelected;
-    }
-    break;
-  }
-  strcpy(wizpath, WIZARD_PATH);
-  strcpy(&wizpath[sizeof(WIZARD_PATH)-1], "/");
-  lcdDrawSolidFilledRect(0, 0, LCD_W, LCD_H, TEXT_BGCOLOR);
-  lcd->drawBitmap(0, 0, modelselWizardBackground);
-  FRESULT res = f_opendir(&dir, WIZARD_PATH);
-  if (res == FR_OK) {
-    for (uint8_t wizidx=0;;wizidx++) {
-      res = f_readdir(&dir, &fno);
-      if (res != FR_OK || fno.fname[0] == 0) {
-        break;
-      }
-      if (fno.fattrib & AM_DIR) {
-        if((wizidx >= first) && (wizidx < (first+4))) {
-          uint16_t x = WIZARD_LEFT_SPACING + (wizidx - first) * (WIZARD_SPACING + WIZARD_ICON_X);
-          strcpy(&wizpath[sizeof(WIZARD_PATH)], fno.fname);
-          strcpy(&wizpath[sizeof(WIZARD_PATH) + strlen(fno.fname)], "/icon.png");
-          lcdDrawText(x + 10, WIZARD_TEXT_Y, fno.fname);
-          BitmapBuffer * background = BitmapBuffer::load(wizpath);
-          lcd->drawBitmap(x, WIZARD_ICON_Y, background);
-          if(wizidx == wizardSelected ) {
-            if (wizardSelected < 5) {
-              lcdDrawRect(x, WIZARD_ICON_Y, 85, 130, 2, SOLID, MAINVIEW_GRAPHICS_COLOR_INDEX);
-              lcdDrawRect(x+5, WIZARD_TEXT_Y, 75, 4, 2, SOLID, MAINVIEW_GRAPHICS_COLOR_INDEX);
-            }
-            if (executeMe) {
-              strcpy(&wizpath[sizeof(WIZARD_PATH)+strlen(fno.fname)], "/wizard.lua");
-              if (isFileAvailable(wizpath)) {
-                wizpath[sizeof(WIZARD_PATH) + strlen(fno.fname)] = 0;
-                f_chdir(wizpath);
-                luaExec(WIZARD_NAME);
-              }
-            }
-          }
-          delete background;
-        }
-      }
-    }
-    f_closedir(&dir);
-  }
-  return true;
-}
-#endif
+#define selectModel(a)
+#define eeBackupModel(a)  "Pop up"
+#define strcat_modelname(a, b)
+#define eeRestoreModel(a, b) "Restore"
+#define eeLoadModel(a)
+#define eeDeleteModel(a)
+#define eeModelExists(a) false
+#define eeCopyModel(a, b) false
+#define eeSwapModels(a, b)
+#define eeFindEmptyModel(a, b) 0
+#define EeFsGetFree(a) 0
+#define eeModelSize(a) 0
 
 void onModelSelectMenu(const char * result)
 {
-  if (result == STR_SELECT_MODEL) {
-    // we store the latest changes if any
-    storageFlushCurrentModel();
-    storageCheck(true);
-    memcpy(g_eeGeneral.currModelFilename, currentModel->modelFilename, LEN_MODEL_FILENAME);
-    modelslist.setCurrentModel(currentModel);
-    loadModel(g_eeGeneral.currModelFilename, true);
-    storageDirty(EE_GENERAL);
-    storageCheck(true);
-    chainMenu(menuMainView);
+  int8_t sub = menuVerticalPosition;
+
+  if (result == STR_SELECT_MODEL || result == STR_CREATE_MODEL) {
+    selectModel(sub);
   }
-  else if (result == STR_DELETE_MODEL) {
-    POPUP_CONFIRMATION(STR_DELETEMODEL);
-    SET_WARNING_INFO(currentModel->modelName, LEN_MODEL_NAME, 0);
-    deleteMode = MODE_DELETE_MODEL;
-  }
-  else if (result == STR_CREATE_MODEL) {
-    storageCheck(true);
-    modelslist.addModel(currentCategory, createModel());
-    selectMode = MODE_SELECT_MODEL;
-    setCurrentModel(currentCategory->size() - 1);
-    modelslist.setCurrentModel(currentModel);
-    modelslist.onNewModelCreated(currentModel, &g_model);
-#if defined(LUA)
-    chainMenu(menuModelWizard);
-#endif
-  }
-  else if (result == STR_DUPLICATE_MODEL) {
-    char duplicatedFilename[LEN_MODEL_FILENAME+1];
-    memcpy(duplicatedFilename, currentModel->modelFilename, sizeof(duplicatedFilename));
-    if (findNextFileIndex(duplicatedFilename, LEN_MODEL_FILENAME, MODELS_PATH)) {
-      sdCopyFile(currentModel->modelFilename, MODELS_PATH, duplicatedFilename, MODELS_PATH);
-      ModelCell* dup_model = modelslist.addModel(currentCategory, duplicatedFilename);
-      dup_model->fetchRfData();
-      setCurrentModel(currentCategory->size() - 1);
-    }
-    else {
-      POPUP_WARNING("Invalid File");
-    }
+  else if (result == STR_COPY_MODEL) {
+    s_copyMode = COPY_MODE;
+    s_copyTgtOfs = 0;
+    s_copySrcRow = -1;
   }
   else if (result == STR_MOVE_MODEL) {
-    selectMode = MODE_MOVE_MODEL;
+    s_copyMode = MOVE_MODE;
+    s_copyTgtOfs = 0;
+    s_copySrcRow = -1;
   }
-  else if (result == STR_CREATE_CATEGORY) {
-    currentCategory = modelslist.createCategory();
-    setCurrentCategory(modelslist.getCategories().size() - 1);
+  else if (result == STR_BACKUP_MODEL) {
+    storageCheck(true); // force writing of current model data before this is changed
+    POPUP_WARNING(eeBackupModel(sub));
   }
-  else if (result == STR_RENAME_CATEGORY) {
-    selectMode = MODE_RENAME_CATEGORY;
-    s_editMode = EDIT_MODIFY_STRING;
-    editNameCursorPos = 0;
-  }
-  else if (result == STR_DELETE_CATEGORY) {
-    if (currentCategory->size() > 0){
-      POPUP_WARNING(STR_DELETE_ERROR);
-      SET_WARNING_INFO(STR_CAT_NOT_EMPTY, sizeof(TR_CAT_NOT_EMPTY), 0);
+  else if (result == STR_RESTORE_MODEL || result == STR_UPDATE_LIST) {
+    if (!sdListFiles(MODELS_PATH, MODELS_EXT, MENU_LINE_LENGTH-1, NULL)) {
+      POPUP_WARNING(STR_NO_MODELS_ON_SD);
     }
-    else {
-      POPUP_CONFIRMATION(STR_DELETEMODEL);
-      SET_WARNING_INFO(currentCategory->name, LEN_MODEL_FILENAME, 0);
-      deleteMode = MODE_DELETE_CATEGORY;
+  }
+  else if (result == STR_DELETE_MODEL) {
+    char * nametmp =  reusableBuffer.modelsel.mainname;
+    strcat_modelname (nametmp, sub);
+    POPUP_CONFIRMATION(STR_DELETEMODEL);
+    SET_WARNING_INFO(nametmp, sizeof(g_model.header.name), 0);
+  }
+  else {
+    // The user choosed a file on SD to restore
+    storageCheck(true);
+    POPUP_WARNING(eeRestoreModel(sub, (char *)result));
+    if (!warningText && g_eeGeneral.currModel == sub) {
+      eeLoadModel(sub);
     }
   }
 }
 
-void initModelsList()
-{
-  modelslist.load();
-
-  categoriesVerticalOffset = 0;
-  bool found = false;
-  int index = 0;
-  const std::list<ModelsCategory *>& cats = modelslist.getCategories();
-  for (std::list<ModelsCategory *>::const_iterator it = cats.begin(); it != cats.end(); ++it, ++index) {
-    if (*it == modelslist.getCurrentCategory()) {
-      setCurrentCategory(index);
-      found = true;
-      break;
-    }
-  }
-  if (!found) {
-    setCurrentCategory(0);
-  }
-
-  menuVerticalOffset = 0;
-  found = false;
-  index = 0;
-  for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
-    if (*it == modelslist.getCurrentModel()) {
-      setCurrentModel(index);
-      found = true;
-      break;
-    }
-  }
-  if (!found) {
-    setCurrentModel(0);
-  }
-}
-
-bool menuModelSelect(event_t event)
+void menuModelSelect(event_t event)
 {
   if (warningResult) {
     warningResult = 0;
-    if (deleteMode == MODE_DELETE_CATEGORY) {
-      TRACE("DELETE CATEGORY");
-      modelslist.removeCategory(currentCategory);
-      modelslist.save();
-      setCurrentCategory(currentCategoryIndex > 0 ? currentCategoryIndex-1 : currentCategoryIndex);
-    }
-    else if (deleteMode == MODE_DELETE_MODEL){
-      int modelIndex = MODEL_INDEX();
-      modelslist.removeModel(currentCategory, currentModel);
-      s_copyMode = 0;
-      event = EVT_REFRESH;
-      if (modelIndex > 0) {
-        modelIndex--;
-      }
-      setCurrentModel(modelIndex);
-    }
+    storageCheck(true);
+    eeDeleteModel(menuVerticalPosition); // delete file
+    s_copyMode = 0;
+    event = EVT_ENTRY_UP;
   }
 
-  const std::list<ModelsCategory*>& cats = modelslist.getCategories();
-  switch(event) {
-    case 0:
-      // no need to refresh the screen
-      return false;
+  event_t _event_ = ((event==EVT_KEY_BREAK(KEY_ENTER) || event==EVT_KEY_LONG(KEY_ENTER)) ? 0 : event);
 
+  if ((s_copyMode && EVT_KEY_MASK(event) == KEY_EXIT) || event == EVT_KEY_BREAK(KEY_EXIT)) {
+    _event_ -= KEY_EXIT;
+  }
+
+  int8_t oldSub = menuVerticalPosition;
+
+  check_submenu_simple(NULL, _event_, MAX_MODELS);
+
+  if (s_editMode > 0) s_editMode = 0;
+
+  int sub = menuVerticalPosition;
+
+  switch (event) {
     case EVT_ENTRY:
-      selectMode = MODE_SELECT_MODEL;
-      initModelsList();
+      menuVerticalPosition = sub = g_eeGeneral.currModel;
+      if (sub >= NUM_BODY_LINES)
+        menuVerticalOffset = sub-(NUM_BODY_LINES-1);
+      s_copyMode = 0;
+      s_editMode = EDIT_MODE_INIT;
       break;
 
-    case EVT_KEY_BREAK(KEY_ENTER):
-      if (selectMode == MODE_MOVE_MODEL)
-        selectMode = MODE_SELECT_MODEL;
-      break;
-
-    case EVT_KEY_FIRST(KEY_EXIT):
-      switch (selectMode) {
-        case MODE_MOVE_MODEL:
-          selectMode = MODE_SELECT_MODEL;
-          break;
-        case MODE_SELECT_MODEL:
-          chainMenu(menuMainView);
-          return false;
-      }
-      break;
-
-    case EVT_KEY_FIRST(KEY_PGUP):
-#if defined(PCBX10)
-      case EVT_KEY_LONG(KEY_PGDN):
-#endif
-      if (selectMode == MODE_SELECT_MODEL) {
-        if (categoriesVerticalPosition == 0)
-          categoriesVerticalPosition = cats.size() - 1;
-        else
-          categoriesVerticalPosition -= 1;
-        setCurrentCategory(categoriesVerticalPosition);
-      }
-      else if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition > 0) {
-        ModelsCategory * previous_category = currentCategory;
-        ModelCell * model = currentModel;
-        categoriesVerticalPosition -= 1;
-        setCurrentCategory(categoriesVerticalPosition);
-        modelslist.moveModel(model, previous_category, currentCategory);
-        setCurrentModel(currentCategory->size()-1);
-      }
-      killEvents(event);
-      break;
-
-#if defined(PCBX12S)
-      case EVT_KEY_FIRST(KEY_PGDN):
-#elif defined(PCBX10)
-      case EVT_KEY_BREAK(KEY_PGDN):
-#endif
-      if (selectMode == MODE_SELECT_MODEL) {
-        categoriesVerticalPosition += 1;
-        if (categoriesVerticalPosition >= cats.size())
-          categoriesVerticalPosition = 0;
-        setCurrentCategory(categoriesVerticalPosition);
-      }
-      else if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition < cats.size()-1) {
-        ModelsCategory * previous_category = currentCategory;
-        ModelCell * model = currentModel;
-        categoriesVerticalPosition += 1;
-        setCurrentCategory(categoriesVerticalPosition);
-        modelslist.moveModel(model, previous_category, currentCategory);
-        setCurrentModel(currentCategory->size()-1);
-      }
-      break;
-
-    case EVT_KEY_LONG(KEY_ENTER):
-      if (selectMode == MODE_SELECT_MODEL) {
+    case EVT_KEY_LONG(KEY_EXIT):
+      if (s_copyMode && s_copyTgtOfs == 0 && g_eeGeneral.currModel != sub && eeModelExists(sub)) {
+        char * nametmp =  reusableBuffer.modelsel.mainname;
+        strcat_modelname (nametmp, sub);
+        POPUP_CONFIRMATION(STR_DELETEMODEL);
+        SET_WARNING_INFO(nametmp, sizeof(g_model.header.name), 0);
         killEvents(event);
-        if (currentModel && currentModel != modelslist.getCurrentModel()) {
-          POPUP_MENU_ADD_ITEM(STR_SELECT_MODEL);
+        break;
+      }
+      // no break
+    case EVT_KEY_BREAK(KEY_EXIT):
+      if (s_copyMode) {
+        sub = menuVerticalPosition = (s_copyMode == MOVE_MODE || s_copySrcRow<0) ? (MAX_MODELS+sub+s_copyTgtOfs) % MAX_MODELS : s_copySrcRow;
+        s_copyMode = 0;
+      }
+      else {
+        if (menuVerticalPosition != g_eeGeneral.currModel) {
+          sub = menuVerticalPosition = g_eeGeneral.currModel;
+          menuVerticalOffset = 0;
         }
-        POPUP_MENU_ADD_ITEM(STR_CREATE_MODEL);
-        if (currentModel) {
-          POPUP_MENU_ADD_ITEM(STR_DUPLICATE_MODEL);
+        else if (event != EVT_KEY_LONG(KEY_EXIT)) {
+          popMenu();
+        }
+      }
+      break;
+    case EVT_KEY_LONG(KEY_ENTER):
+    case EVT_KEY_BREAK(KEY_ENTER):
+      s_editMode = 0;
+      if (READ_ONLY()) {
+        if (g_eeGeneral.currModel != sub && eeModelExists(sub)) {
+          selectModel(sub);
+        }
+      }
+      else if (s_copyMode && (s_copyTgtOfs || s_copySrcRow>=0)) {
+        showMessageBox(s_copyMode==COPY_MODE ? STR_COPYINGMODEL : STR_MOVINGMODEL);
+        storageCheck(true); // force writing of current model data before this is changed
+
+        uint8_t cur = (MAX_MODELS + sub + s_copyTgtOfs) % MAX_MODELS;
+
+        if (s_copyMode == COPY_MODE) {
+          if (!eeCopyModel(cur, s_copySrcRow)) {
+            cur = sub;
+          }
+        }
+
+        s_copySrcRow = g_eeGeneral.currModel; // to update the currModel value
+        while (sub != cur) {
+          uint8_t src = cur;
+          cur = (s_copyTgtOfs > 0 ? cur+MAX_MODELS-1 : cur+1) % MAX_MODELS;
+          eeSwapModels(src, cur);
+          if (src == s_copySrcRow)
+            s_copySrcRow = cur;
+          else if (cur == s_copySrcRow)
+            s_copySrcRow = src;
+        }
+
+        if (s_copySrcRow != g_eeGeneral.currModel) {
+          g_eeGeneral.currModel = s_copySrcRow;
+          storageDirty(EE_GENERAL);
+        }
+
+        s_copyMode = 0;
+        event = EVT_ENTRY_UP;
+      }
+      else if (event == EVT_KEY_LONG(KEY_ENTER)) {
+        s_copyMode = 0;
+        killEvents(event);
+        if (g_eeGeneral.currModel != sub) {
+          if (eeModelExists(sub)) {
+            POPUP_MENU_ADD_ITEM(STR_SELECT_MODEL);
+            POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
+            POPUP_MENU_ADD_ITEM(STR_COPY_MODEL);
+            POPUP_MENU_ADD_ITEM(STR_MOVE_MODEL);
+            POPUP_MENU_ADD_ITEM(STR_DELETE_MODEL);
+          }
+          else {
+            POPUP_MENU_ADD_ITEM(STR_CREATE_MODEL);
+            POPUP_MENU_ADD_ITEM(STR_RESTORE_MODEL);
+          }
+        }
+        else {
+          POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
+          POPUP_MENU_ADD_ITEM(STR_COPY_MODEL);
           POPUP_MENU_ADD_ITEM(STR_MOVE_MODEL);
-        }
-        // POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
-        if (currentModel && currentModel != modelslist.getCurrentModel()) {
-          POPUP_MENU_ADD_ITEM(STR_DELETE_MODEL);
-        }
-        // POPUP_MENU_ADD_ITEM(STR_RESTORE_MODEL);
-        POPUP_MENU_ADD_ITEM(STR_CREATE_CATEGORY);
-        POPUP_MENU_ADD_ITEM(STR_RENAME_CATEGORY);
-        if (cats.size() > 1) {
-          POPUP_MENU_ADD_ITEM(STR_DELETE_CATEGORY);
         }
         POPUP_MENU_START(onModelSelectMenu);
       }
+      else if (eeModelExists(sub)) {
+        s_copyMode = (s_copyMode == COPY_MODE ? MOVE_MODE : COPY_MODE);
+        s_copyTgtOfs = 0;
+        s_copySrcRow = -1;
+      }
       break;
 
+    case EVT_KEY_BREAK(KEY_PAGE):
+    case EVT_KEY_LONG(KEY_PAGE):
+      chainMenu(event == EVT_KEY_BREAK(KEY_PAGE) ? menuModelSetup : menuTabModel[DIM(menuTabModel)-1]);
+      killEvents(event);
+      break;
+
+    case EVT_KEY_FIRST(KEY_UP):
+    case EVT_KEY_REPT(KEY_UP):
+    case EVT_KEY_FIRST(KEY_DOWN):
+    case EVT_KEY_REPT(KEY_DOWN):
+#if defined(ROTARY_ENCODER_NAVIGATION)
+    case EVT_ROTARY_LEFT:
+    case EVT_ROTARY_RIGHT:
+#endif
+      if (s_copyMode) {
+        int8_t next_ofs = s_copyTgtOfs + oldSub - menuVerticalPosition;
+        if (next_ofs == MAX_MODELS || next_ofs == -MAX_MODELS)
+          next_ofs = 0;
+
+        if (s_copySrcRow < 0 && s_copyMode==COPY_MODE) {
+          s_copySrcRow = oldSub;
+          // find a hole (in the first empty slot above / below)
+          sub = eeFindEmptyModel(s_copySrcRow, event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_REPT(KEY_DOWN));
+          if (sub < 0) {
+            // no free room for duplicating the model
+            AUDIO_ERROR();
+            sub = oldSub;
+            s_copyMode = 0;
+          }
+          next_ofs = 0;
+          menuVerticalPosition = sub;
+        }
+        s_copyTgtOfs = next_ofs;
+      }
+      break;
   }
 
-  lcdDrawSolidFilledRect(0, 0, LCD_W, LCD_H, TEXT_BGCOLOR);
-  lcd->drawBitmap(0, 0, modelselIconBitmap);
+  lcdDrawNumber(19*FW, 0, EeFsGetFree(), RIGHT);
+  lcdDrawText(19*FW + 3, 0, STR_BYTES);
+  lcdDrawText(lcdLastRightPos + 3, 0, STR_FREE);
 
-  // Categories
-  int index = 0;
-  coord_t y = 97;
-  drawVerticalScrollbar(CATEGORIES_WIDTH-1, y-1, 5*(FH+7)-5, categoriesVerticalOffset, cats.size(), 5);
-  for (std::list<ModelsCategory *>::const_iterator it = cats.begin(); it != cats.end(); ++it, ++index) {
-    if (index >= categoriesVerticalOffset && index < categoriesVerticalOffset+5) {
-      if (index != categoriesVerticalOffset) {
-        lcdDrawSolidHorizontalLine(1, y-4, CATEGORIES_WIDTH-10, LINE_COLOR);
-      }
-      if (selectMode == MODE_RENAME_CATEGORY && currentCategory == *it) {
-        lcdDrawSolidFilledRect(0, y-INVERT_VERT_MARGIN+1, CATEGORIES_WIDTH-2, INVERT_LINE_HEIGHT, TEXT_BGCOLOR);
-        editName(MENUS_MARGIN_LEFT, y, currentCategory->name, LEN_MODEL_FILENAME, event, 1, 0);
-        if (s_editMode == 0 || event == EVT_KEY_BREAK(KEY_EXIT)) {
-          modelslist.save();
-          selectMode = MODE_SELECT_MODEL;
-          putEvent(EVT_REFRESH);
+  drawScreenIndex(MENU_MODEL_SELECT, DIM(menuTabModel), 0);
+  lcdDrawFilledRect(0, 0, LCD_W, FH, SOLID, FILL_WHITE|GREY_DEFAULT);
+
+  TITLE(STR_MENUMODELSEL);
+
+  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+    coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
+    uint8_t k = i+menuVerticalOffset;
+
+    lcdDrawNumber(3*FW+2, y, k+1, RIGHT|LEADING0|((!s_copyMode && sub==k) ? INVERS : 0), 2);
+
+    if (s_copyMode == MOVE_MODE || (s_copyMode == COPY_MODE && s_copySrcRow >= 0)) {
+      if (k == sub) {
+        if (s_copyMode == COPY_MODE) {
+          k = s_copySrcRow;
+          lcdDrawChar(MODELSEL_W-FW, y, '+');
+        }
+        else {
+          k = sub + s_copyTgtOfs;
         }
       }
-      else {
-        drawCategory(y, (*it)->name, currentCategory==*it);
-      }
-      y += FH+7;
+      else if (s_copyTgtOfs < 0 && ((k < sub && k >= sub+s_copyTgtOfs) || (k-MAX_MODELS < sub && k-MAX_MODELS >= sub+s_copyTgtOfs)))
+        k += 1;
+      else if (s_copyTgtOfs > 0 && ((k > sub && k <= sub+s_copyTgtOfs) || (k+MAX_MODELS > sub && k+MAX_MODELS <= sub+s_copyTgtOfs)))
+        k += MAX_MODELS-1;
+    }
+
+    k %= MAX_MODELS;
+
+    if (eeModelExists(k)) {
+      putsModelName(4*FW, y, modelHeaders[k].name, k, 0);
+      lcdDrawNumber(20*FW, y, eeModelSize(k), RIGHT);
+      if (k==g_eeGeneral.currModel && (s_copyMode!=COPY_MODE || s_copySrcRow<0 || i+menuVerticalOffset!=(vertpos_t)sub))
+        lcdDrawChar(1, y, '*');
+    }
+
+    if (s_copyMode && (vertpos_t)sub==i+menuVerticalOffset) {
+      lcdDrawSolidFilledRect(9, y, MODELSEL_W-1-9, 7);
+      lcdDrawRect(8, y-1, MODELSEL_W-1-7, 9, s_copyMode == COPY_MODE ? SOLID : DOTTED);
     }
   }
 
-  // Models
-  index = 0;
-  y = 5;
-  for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
-    if (index >= menuVerticalOffset*2 && index < (menuVerticalOffset+4)*2) {
-      bool selected = ((selectMode==MODE_SELECT_MODEL || selectMode==MODE_MOVE_MODEL) && index==menuVerticalPosition*2+menuHorizontalPosition);
-      bool current = !strncmp((*it)->modelFilename, g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME);
-      if (index & 1) {
-        drawModel(MODELS_LEFT + MODELS_COLUMN_WIDTH, y, *it, current, selected);
-        y += 66;
-      }
-      else {
-        drawModel(MODELS_LEFT, y, *it, current, selected);
-      }
-      if (selected) {
-        lcd->drawBitmap(5, LCD_H-FH, modelselModelNameBitmap);
-        lcdDrawText(22, LCD_H-FH-1, (*it)->modelFilename, SMLSIZE|TEXT_COLOR);
-      }
-    }
+  if (event == EVT_ENTRY || sub != oldSub) {
+    loadModelBitmap(modelHeaders[sub].bitmap, modelBitmap);
   }
 
-  // Navigation
-  if (currentModel) {
-    if (selectMode == MODE_SELECT_MODEL) {
-      if (navigate(event, index, 4, 2) != 0) {
-        setCurrentModel(MODEL_INDEX());
-        putEvent(EVT_REFRESH);
-      }
-    }
-    else if (selectMode == MODE_MOVE_MODEL) {
-      int8_t direction = navigate(event, index, 4, 2, false);
-      if (direction) {
-        modelslist.moveModel(currentCategory, currentModel, direction);
-        setCurrentModel(MODEL_INDEX());
-        putEvent(EVT_REFRESH);
-      }
-    }
-  }
-  drawVerticalScrollbar(DEFAULT_SCROLLBAR_X + 4, 7, LCD_H - 15, menuVerticalOffset, (index + 1) / 2, 4);
-
-  // Footer
-  lcd->drawBitmap(5, LCD_H-FH-20, modelselSdFreeBitmap);
-  uint32_t size = sdGetSize() / 100;
-  lcdDrawNumber(22, LCD_H-FH-21, size, PREC1|SMLSIZE, 0, NULL, "GB");
-  lcd->drawBitmap(70, LCD_H-FH-20, modelselModelQtyBitmap);
-  lcdDrawNumber(92, LCD_H-FH-21, modelslist.getModelsCount(),SMLSIZE);
-
-  return true;
+  lcdDrawBitmap(22*FW+2, 2*FH+FH/2, modelBitmap);
 }

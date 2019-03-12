@@ -49,6 +49,14 @@
 
 #define TRIM_LEN      23
 
+const unsigned char logo_tango[]  = {
+#include "logo.lbm"
+};
+
+const unsigned char icons[]  = {
+#include "icons.lbm"
+};
+
 #if defined(TELEMETRY_FRSKY) && defined(CPUARM)
 void drawRSSIGauge()
 {
@@ -152,6 +160,7 @@ void displayTrims(uint8_t phase)
         lcdDrawSolidHorizontalLine(xm-1, ym,  3);
       }
 #endif
+
 #if !defined(CPUAVR)
       if (g_model.displayTrims != DISPLAY_TRIMS_NEVER && dir != 0) {
         if (g_model.displayTrims == DISPLAY_TRIMS_ALWAYS || (trimsDisplayTimer > 0 && (trimsDisplayMask & (1<<i)))) {
@@ -324,9 +333,9 @@ void menuMainView(event_t event)
 
 #if MENUS_LOCK != 2/*no menus*/
     case EVT_KEY_BREAK(KEY_MENU):
-      //pushMenu(menuModelSelect);
+      pushMenu(menuModelSelect);
       //pushMenu(menuModelHeli);
-      pushMenu(menuModelSetup);
+      //pushMenu(menuModelSetup);
       break;
 
     case EVT_KEY_LONG(KEY_MENU):

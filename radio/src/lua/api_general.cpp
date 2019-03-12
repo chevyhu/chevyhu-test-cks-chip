@@ -1441,14 +1441,14 @@ const luaR_value_entry opentxConstants[] = {
   { "FIXEDWIDTH", FIXEDWIDTH },
 #endif
 #if defined(PCBHORUS)
-  { "EVT_PAGEUP_FIRST",  EVT_KEY_FIRST(KEY_PGUP) },
+{ "EVT_PAGEUP_FIRST",  EVT_KEY_FIRST(KEY_PGUP) },
   { "EVT_PAGEDN_FIRST",  EVT_KEY_FIRST(KEY_PGDN) },
   { "EVT_TELEM_FIRST",  EVT_KEY_FIRST(KEY_TELEM) },
   { "EVT_MODEL_FIRST",  EVT_KEY_FIRST(KEY_MODEL) },
   { "EVT_SYS_FIRST",  EVT_KEY_FIRST(KEY_RADIO) },
   { "EVT_RTN_FIRST",  EVT_KEY_FIRST(KEY_EXIT) },
 #elif defined(PCBXLITE)
-  { "EVT_DOWN_FIRST", EVT_KEY_FIRST(KEY_DOWN) },
+{ "EVT_DOWN_FIRST", EVT_KEY_FIRST(KEY_DOWN) },
   { "EVT_UP_FIRST", EVT_KEY_FIRST(KEY_UP) },
   { "EVT_LEFT_FIRST", EVT_KEY_FIRST(KEY_LEFT) },
   { "EVT_RIGHT_FIRST", EVT_KEY_FIRST(KEY_RIGHT) },
@@ -1470,8 +1470,8 @@ const luaR_value_entry opentxConstants[] = {
   { "FORCE", FORCE },
   { "ERASE", ERASE },
   { "ROUND", ROUND },
-#elif defined(PCBTARANIS)
-  { "EVT_MENU_BREAK", EVT_KEY_BREAK(KEY_MENU) },
+#elif defined(PCBTARANIS) || defined(PCBTANGO)
+{ "EVT_MENU_BREAK", EVT_KEY_BREAK(KEY_MENU) },
   { "EVT_MENU_LONG", EVT_KEY_LONG(KEY_MENU) },
   { "EVT_PAGE_BREAK", EVT_KEY_BREAK(KEY_PAGE) },
   { "EVT_PAGE_LONG", EVT_KEY_LONG(KEY_PAGE) },
@@ -1507,7 +1507,7 @@ const luaR_value_entry opentxConstants[] = {
   { "TIMEHOUR", TIMEHOUR },
 
 #if defined(PCBHORUS)
-  // Adding the unit consts for the set Telemetry function adds about 1k of flash usage
+// Adding the unit consts for the set Telemetry function adds about 1k of flash usage
   {"UNIT_RAW", UNIT_RAW },
   {"UNIT_VOLTS", UNIT_VOLTS },
   {"UNIT_AMPS", UNIT_AMPS },

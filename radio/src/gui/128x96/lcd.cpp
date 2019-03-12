@@ -832,9 +832,6 @@ void lcdDrawNornalBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offs
     }
   }
 }
-#endif
-
-void drawSwitch(coord_t x, coord_t y, swsrc_t idx, LcdFlags flags);
 
 void drawSource(coord_t x, coord_t y, uint32_t idx, LcdFlags att)
 {
@@ -925,6 +922,11 @@ void drawSource(coord_t x, coord_t y, uint32_t idx, LcdFlags att)
     if (qr.rem) lcdDrawChar(lcdLastRightPos, y, qr.rem==2 ? '+' : '-', att);
   }
 }
+#endif
+
+
+void drawSwitch(coord_t x, coord_t y, swsrc_t idx, LcdFlags flags);
+
 
 void putsChnLetter(coord_t x, coord_t y, uint8_t idx, LcdFlags att)
 {

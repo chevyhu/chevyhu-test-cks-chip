@@ -1241,6 +1241,8 @@ void varioWakeup();
 
 #if defined(PCBTARANIS)
   extern const unsigned char logo_taranis[];
+#elif defined(PCBTANGO)
+  extern const unsigned char logo_tango[];
 #endif
 
 #if defined(STM32)

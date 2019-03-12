@@ -52,6 +52,11 @@
 
 #define MENUS_SCROLLBAR_WIDTH          2
 
+#define INVERT_HORZ_MARGIN             2
+#define INVERT_VERT_MARGIN             1
+#define INVERT_LINE_HEIGHT             20
+
+
 inline void drawFieldLabel(coord_t x, coord_t y, const char * str)
 {
   lcdDrawText(0, y, str);
