@@ -196,7 +196,7 @@ void boardInit()
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
-  TRACE("\Tango board started :)");
+  TRACE("Tango board started :)\r\n");
 #endif
 
 #if defined(ESP_SERIAL)
