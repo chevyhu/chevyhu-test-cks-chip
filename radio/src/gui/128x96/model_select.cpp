@@ -31,19 +31,76 @@
 #define eeRestoreModel(a, b) "Restore"
 #define eeLoadModel(a)
 #define eeDeleteModel(a)
-#define eeModelExists(a) false
 #define eeCopyModel(a, b) false
 #define eeSwapModels(a, b)
 #define eeFindEmptyModel(a, b) 0
 #define EeFsGetFree(a) 0
 #define eeModelSize(a) 0
 
+uint16_t categoriesVerticalOffset = 0;
+uint16_t categoriesVerticalPosition = 0;
+#define MODEL_INDEX()       (menuVerticalPosition*2+menuHorizontalPosition)
+
+ModelsCategory * currentCategory;
+int currentCategoryIndex;
+ModelCell * currentModel;
+
+
+bool eeModelExists(uint8_t id)
+{
+  int index = 0;
+
+  for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
+    if (id == index){
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void setCurrentModel(unsigned int index)
+{
+  std::list<ModelCell *>::iterator it = currentCategory->begin();
+  std::advance(it, index);
+  currentModel = *it;
+  menuVerticalPosition = index / 2;
+  menuHorizontalPosition = index & 1;
+  menuVerticalOffset = limit<int>(menuVerticalPosition-2, menuVerticalOffset, min<int>(menuVerticalPosition, max<int>(0, (currentCategory->size()-7)/2)));
+}
+
+void setCurrentCategory(unsigned int index)
+{
+  currentCategoryIndex = index;
+  const std::list<ModelsCategory *>& cats = modelslist.getCategories();
+  std::list<ModelsCategory *>::const_iterator it = cats.begin();
+  std::advance(it, index);
+  currentCategory = *it;
+  categoriesVerticalPosition = index;
+  categoriesVerticalOffset = limit<int>(categoriesVerticalPosition-4, categoriesVerticalOffset, min<int>(categoriesVerticalPosition, max<int>(0, cats.size()-5)));
+  if (currentCategory->size() > 0)
+    setCurrentModel(0);
+  else
+    currentModel = NULL;
+}
+
 void onModelSelectMenu(const char * result)
 {
   int8_t sub = menuVerticalPosition;
 
-  if (result == STR_SELECT_MODEL || result == STR_CREATE_MODEL) {
+  if (result == STR_SELECT_MODEL) {
     selectModel(sub);
+  }
+  else if (result == STR_CREATE_MODEL) {
+    storageCheck(true);
+    modelslist.addModel(currentCategory, createModel());
+    //s_editMode = MODE_SELECT_MODEL;
+    setCurrentModel(currentCategory->size() - 1);
+    modelslist.setCurrentModel(currentModel);
+    modelslist.onNewModelCreated(currentModel, &g_model);
+#if defined(LUA)
+    //chainMenu(menuModelWizard);
+#endif
   }
   else if (result == STR_COPY_MODEL) {
     s_copyMode = COPY_MODE;
@@ -80,6 +137,40 @@ void onModelSelectMenu(const char * result)
   }
 }
 
+void initModelsList()
+{
+  modelslist.load();
+
+  categoriesVerticalOffset = 0;
+  bool found = false;
+  int index = 0;
+  const std::list<ModelsCategory *>& cats = modelslist.getCategories();
+  for (std::list<ModelsCategory *>::const_iterator it = cats.begin(); it != cats.end(); ++it, ++index) {
+    if (*it == modelslist.getCurrentCategory()) {
+      setCurrentCategory(index);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    setCurrentCategory(0);
+  }
+
+  menuVerticalOffset = 0;
+  found = false;
+  index = 0;
+  for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
+    if (*it == modelslist.getCurrentModel()) {
+      setCurrentModel(index);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    setCurrentModel(0);
+  }
+}
+
 void menuModelSelect(event_t event)
 {
   if (warningResult) {
@@ -111,6 +202,8 @@ void menuModelSelect(event_t event)
         menuVerticalOffset = sub-(NUM_BODY_LINES-1);
       s_copyMode = 0;
       s_editMode = EDIT_MODE_INIT;
+
+      initModelsList();
       break;
 
     case EVT_KEY_LONG(KEY_EXIT):
