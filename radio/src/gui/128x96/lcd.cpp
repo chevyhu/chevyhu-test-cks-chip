@@ -942,6 +942,7 @@ void putsModelName(coord_t x, coord_t y, char *name, uint8_t id, LcdFlags att)
   }
   else {
     lcdDrawSizedText(x, y, name, sizeof(g_model.header.name), ZCHAR|att);
+    //lcdDrawSizedText(x, y, name, sizeof(g_model.header.name), att);
   }
 }
 

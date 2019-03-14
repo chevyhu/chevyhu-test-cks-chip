@@ -64,7 +64,7 @@ void setCurrentModel(unsigned int index)
   std::list<ModelCell *>::iterator it = currentCategory->begin();
   std::advance(it, index);
   currentModel = *it;
-  menuVerticalPosition = index / 2;
+  menuVerticalPosition = index;
   menuHorizontalPosition = index & 1;
   menuVerticalOffset = limit<int>(menuVerticalPosition-2, menuVerticalOffset, min<int>(menuVerticalPosition, max<int>(0, (currentCategory->size()-7)/2)));
 }
@@ -84,18 +84,64 @@ void setCurrentCategory(unsigned int index)
     currentModel = NULL;
 }
 
+void initModelsList()
+{
+  modelslist.load();
+
+  categoriesVerticalOffset = 0;
+  bool found = false;
+  int index = 0;
+  const std::list<ModelsCategory *>& cats = modelslist.getCategories();
+  for (std::list<ModelsCategory *>::const_iterator it = cats.begin(); it != cats.end(); ++it, ++index) {
+    if (*it == modelslist.getCurrentCategory()) {
+      setCurrentCategory(index);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    setCurrentCategory(0);
+  }
+
+  menuVerticalOffset = 0;
+  found = false;
+  index = 0;
+  for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
+    if (*it == modelslist.getCurrentModel()) {
+      setCurrentModel(index);
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    setCurrentModel(0);
+  }
+}
+
 void onModelSelectMenu(const char * result)
 {
   int8_t sub = menuVerticalPosition;
 
   if (result == STR_SELECT_MODEL) {
-    selectModel(sub);
+#if !defined(COLORLCD)
+    showMessageBox(STR_LOADINGMODEL);
+#endif
+    setCurrentModel(sub);
+    storageFlushCurrentModel();
+    storageCheck(true);
+    memcpy(g_eeGeneral.currModelFilename, currentModel->modelFilename, LEN_MODEL_FILENAME);
+    modelslist.setCurrentModel(currentModel);
+    loadModel(g_eeGeneral.currModelFilename, true);
+    g_eeGeneral.currModel = sub;
+    storageDirty(EE_GENERAL);
+    storageCheck(true);
+    //chainMenu(menuMainView);
   }
   else if (result == STR_CREATE_MODEL) {
     storageCheck(true);
     modelslist.addModel(currentCategory, createModel());
-    //s_editMode = MODE_SELECT_MODEL;
     setCurrentModel(currentCategory->size() - 1);
+    g_eeGeneral.currModel = sub;
     modelslist.setCurrentModel(currentModel);
     modelslist.onNewModelCreated(currentModel, &g_model);
 #if defined(LUA)
@@ -137,47 +183,17 @@ void onModelSelectMenu(const char * result)
   }
 }
 
-void initModelsList()
-{
-  modelslist.load();
-
-  categoriesVerticalOffset = 0;
-  bool found = false;
-  int index = 0;
-  const std::list<ModelsCategory *>& cats = modelslist.getCategories();
-  for (std::list<ModelsCategory *>::const_iterator it = cats.begin(); it != cats.end(); ++it, ++index) {
-    if (*it == modelslist.getCurrentCategory()) {
-      setCurrentCategory(index);
-      found = true;
-      break;
-    }
-  }
-  if (!found) {
-    setCurrentCategory(0);
-  }
-
-  menuVerticalOffset = 0;
-  found = false;
-  index = 0;
-  for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
-    if (*it == modelslist.getCurrentModel()) {
-      setCurrentModel(index);
-      found = true;
-      break;
-    }
-  }
-  if (!found) {
-    setCurrentModel(0);
-  }
-}
-
 void menuModelSelect(event_t event)
 {
   if (warningResult) {
     warningResult = 0;
+    modelslist.removeModel(currentCategory, currentModel);
     storageCheck(true);
-    eeDeleteModel(menuVerticalPosition); // delete file
     s_copyMode = 0;
+    if (menuVerticalPosition > 0) {
+      menuVerticalPosition--;
+    }
+    setCurrentModel(menuVerticalPosition);
     event = EVT_ENTRY_UP;
   }
 
@@ -246,8 +262,21 @@ void menuModelSelect(event_t event)
         uint8_t cur = (MAX_MODELS + sub + s_copyTgtOfs) % MAX_MODELS;
 
         if (s_copyMode == COPY_MODE) {
+          /*
           if (!eeCopyModel(cur, s_copySrcRow)) {
             cur = sub;
+          }
+          */
+          char duplicatedFilename[LEN_MODEL_FILENAME+1];
+          memcpy(duplicatedFilename, currentModel->modelFilename, sizeof(duplicatedFilename));
+          if (findNextFileIndex(duplicatedFilename, LEN_MODEL_FILENAME, MODELS_PATH)) {
+            sdCopyFile(currentModel->modelFilename, MODELS_PATH, duplicatedFilename, MODELS_PATH);
+            ModelCell* dup_model = modelslist.addModel(currentCategory, duplicatedFilename);
+            dup_model->fetchRfData();
+            setCurrentModel(currentCategory->size() - 1);
+          }
+          else {
+            POPUP_WARNING("Invalid File");
           }
         }
 
@@ -276,20 +305,20 @@ void menuModelSelect(event_t event)
         if (g_eeGeneral.currModel != sub) {
           if (eeModelExists(sub)) {
             POPUP_MENU_ADD_ITEM(STR_SELECT_MODEL);
-            POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
+            //POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
             POPUP_MENU_ADD_ITEM(STR_COPY_MODEL);
-            POPUP_MENU_ADD_ITEM(STR_MOVE_MODEL);
+            //POPUP_MENU_ADD_ITEM(STR_MOVE_MODEL);
             POPUP_MENU_ADD_ITEM(STR_DELETE_MODEL);
           }
           else {
             POPUP_MENU_ADD_ITEM(STR_CREATE_MODEL);
-            POPUP_MENU_ADD_ITEM(STR_RESTORE_MODEL);
+            //POPUP_MENU_ADD_ITEM(STR_RESTORE_MODEL);
           }
         }
         else {
-          POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
+          //POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
           POPUP_MENU_ADD_ITEM(STR_COPY_MODEL);
-          POPUP_MENU_ADD_ITEM(STR_MOVE_MODEL);
+          //POPUP_MENU_ADD_ITEM(STR_MOVE_MODEL);
         }
         POPUP_MENU_START(onModelSelectMenu);
       }
@@ -370,11 +399,15 @@ void menuModelSelect(event_t event)
 
     k %= MAX_MODELS;
 
-    if (eeModelExists(k)) {
-      putsModelName(4*FW, y, modelHeaders[k].name, k, 0);
-      lcdDrawNumber(20*FW, y, eeModelSize(k), RIGHT);
-      if (k==g_eeGeneral.currModel && (s_copyMode!=COPY_MODE || s_copySrcRow<0 || i+menuVerticalOffset!=(vertpos_t)sub))
-        lcdDrawChar(1, y, '*');
+    int index = 0;
+
+    for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, index++) {
+      if (index == k) {
+        lcdDrawText(4*FW, y, (*it)->modelFilename);
+        lcdDrawNumber(20*FW, y, eeModelSize(k), RIGHT);
+        if (k==g_eeGeneral.currModel && (s_copyMode!=COPY_MODE || s_copySrcRow<0 || i+menuVerticalOffset!=(vertpos_t)sub))
+          lcdDrawChar(1, y, '*');
+      }
     }
 
     if (s_copyMode && (vertpos_t)sub==i+menuVerticalOffset) {
