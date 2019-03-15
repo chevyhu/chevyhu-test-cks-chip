@@ -242,6 +242,7 @@ void menuCommonCalib(event_t event)
 #endif
 #if defined(PCBTANGO)
       crossfireSharedData.stick_state = reusableBuffer.calib.state;
+      memset(crossfireSharedData.sticks, 0, sizeof(crossfireSharedData.sticks));
 #else
       g_eeGeneral.chkSum = evalChkSum();
       storageDirty(EE_GENERAL);
