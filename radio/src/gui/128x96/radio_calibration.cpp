@@ -32,8 +32,8 @@ enum CalibrationState {
   CALIB_MOVE_STICKS_EXTREMA,
   CALIB_MOVE_STICKS_EXTREMA2,
   CALIB_STORE,
-  CALIB_SYNC0,
   CALIB_SYNC1,
+  CALIB_SYNC2,
   CALIB_FINISHED,
   CALIB_INVALID
 };
@@ -113,7 +113,7 @@ void menuCommonCalib(event_t event)
     // to force starting a new calibration
     crossfireSharedData.stick_state = CALIB_START_MIDPOINT;
   }
-  else if( crossfireSharedData.stick_state == CALIB_SYNC0 ) {
+  else if( crossfireSharedData.stick_state == CALIB_SYNC1 ) {
     // to sync the valid calibration values found only
     reusableBuffer.calib.state = crossfireSharedData.stick_state;
   }
@@ -131,7 +131,7 @@ void menuCommonCalib(event_t event)
 #if defined(PCBTANGO)
       if( isCalValid )
         reusableBuffer.calib.state = crossfireSharedData.stick_state = CALIB_FINISHED;
-      else if( crossfireSharedData.stick_state != CALIB_SYNC0 )
+      else if( crossfireSharedData.stick_state != CALIB_SYNC1 )
 #endif
       reusableBuffer.calib.state = CALIB_START;
       break;
@@ -251,30 +251,30 @@ void menuCommonCalib(event_t event)
       break;
 
 #if defined(PCBTANGO)
-    case CALIB_SYNC0: //for lx & ly
+    case CALIB_SYNC1: //for lx & ly
       if(crossfireSharedData.sticks[0] && crossfireSharedData.sticks[1] && crossfireSharedData.sticks[2] && crossfireSharedData.sticks[3] ) {
         i = STICK1;
         g_eeGeneral.calib[i].mid = 0;
         g_eeGeneral.calib[i].spanNeg = -crossfireSharedData.sticks[0];
         g_eeGeneral.calib[i].spanPos = crossfireSharedData.sticks[1];
         g_eeGeneral.calib[i + 1].mid = 0;
-        g_eeGeneral.calib[i + 1].spanNeg = -crossfireSharedData.sticks[2];
-        g_eeGeneral.calib[i + 1].spanPos = crossfireSharedData.sticks[3];
+        g_eeGeneral.calib[i + 1].spanPos = crossfireSharedData.sticks[2];
+        g_eeGeneral.calib[i + 1].spanNeg = -crossfireSharedData.sticks[3];
         crossfireSharedData.stick_state++;
         reusableBuffer.calib.state = crossfireSharedData.stick_state;
         crossfireSharedData.sticks[0] = crossfireSharedData.sticks[1] = crossfireSharedData.sticks[2] = crossfireSharedData.sticks[3] = 0;
       }
       break;
 
-    case CALIB_SYNC1: //for rx & ry
+    case CALIB_SYNC2: //for rx & ry
       if(crossfireSharedData.sticks[0] && crossfireSharedData.sticks[1] && crossfireSharedData.sticks[2] && crossfireSharedData.sticks[3] ) {
         i = STICK3;
         g_eeGeneral.calib[i].mid = 0;
         g_eeGeneral.calib[i].spanNeg = -crossfireSharedData.sticks[0];
         g_eeGeneral.calib[i].spanPos = crossfireSharedData.sticks[1];
         g_eeGeneral.calib[i + 1].mid = 0;
-        g_eeGeneral.calib[i + 1].spanNeg = -crossfireSharedData.sticks[2];
-        g_eeGeneral.calib[i + 1].spanPos = crossfireSharedData.sticks[3];
+        g_eeGeneral.calib[i + 1].spanPos = crossfireSharedData.sticks[2];
+        g_eeGeneral.calib[i + 1].spanNeg = -crossfireSharedData.sticks[3];
         crossfireSharedData.stick_state++;
         isCalValid = true;
         reusableBuffer.calib.state = crossfireSharedData.stick_state;
@@ -289,7 +289,7 @@ void menuCommonCalib(event_t event)
   }
 
 #if defined(PCBTANGO)
-  if( reusableBuffer.calib.state < CALIB_SYNC0 )
+  if( reusableBuffer.calib.state < CALIB_SYNC1 )
 #endif
   doMainScreenGraphics();
 }
@@ -312,7 +312,7 @@ void menuFirstCalib(event_t event)
   }
   else {
 #if defined(PCBTANGO) && !defined(SIMU)
-    if ( crossfireSharedData.stick_state < CALIB_SYNC0 ){
+    if ( crossfireSharedData.stick_state < CALIB_SYNC1 ){
 #endif
     lcdDrawTextAlignedCenter(0*FH, MENUCALIBRATION);
     lcdInvertLine(0);
