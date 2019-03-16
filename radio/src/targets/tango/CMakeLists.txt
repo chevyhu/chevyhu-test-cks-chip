@@ -33,8 +33,8 @@ if(PCB STREQUAL X9E)
   set(LCD_DRIVER lcd_driver_spi.cpp)
   set(GVAR_SCREEN model_gvars.cpp)
 elseif(PCB STREQUAL TANGO)
-  #set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
-  set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
+  option(CROSSFIRE_TASK "Crossfire task" YES)
+  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   set(STICKS "STANDARD" CACHE STRING "Sticks type (STANDARD/HORUS)")
   set(CPU_TYPE STM32F4)
   set(CPU_TYPE_FULL STM32F407xE)  # for size report
@@ -60,6 +60,12 @@ elseif(PCB STREQUAL TANGO)
   if(STICKS STREQUAL HORUS)
     add_definitions(-DHORUS_STICKS)
   endif()
+  
+  if (CROSSFIRE_TASK)
+  	add_definitions(-DCROSSFIRE_TASK)
+  endif()
+
+  add_definitions(-DCROSSFIRE)
 
   set(GUI_DIR 128x96)
   set(NAVIGATION_TYPE tango)

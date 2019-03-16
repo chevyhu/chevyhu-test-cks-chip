@@ -298,11 +298,27 @@ void tasksStart()
 
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);
   RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE, MENUS_TASK_PRIO);
+#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
+  extern RTOS_TASK_HANDLE crossfireTaskId;
+  extern RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
+  extern RTOS_TASK_HANDLE systemTaskId;
+  extern RTOS_DEFINE_STACK(systemStack, SYSTEM_STACK_SIZE);
+  extern TASK_FUNCTION(systemTask);
+  // Test if crossfire task is available and start it
+  if (*(uint32_t *)CROSSFIRE_TASK_ADDRESS != 0xFFFFFFFF ) {
+    RTOS_CREATE_TASK(crossfireTaskId, (FUNCPtr)CROSSFIRE_TASK_ADDRESS, "crossfire", crossfireStack, CROSSFIRE_STACK_SIZE, 5);
+  }
+
+  //henry need fix
+//  RTOS_CREATE_TASK(systemTaskId, systemTask, "system", systemStack, SYSTEM_STACK_SIZE, RTOS_SYS_TASK_PRIORITY);
+#endif
 
 #if !defined(SIMU)
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
 #endif
 
+#if 0
+//henry: will cause hardfault and need fix @tommy
 #if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
   TRACE("otaXfTask");
   RTOS_CREATE_TASK(otaXfTaskId, otaXfTask, "otaXf", otaXfStack, OTA_XF_STACK_SIZE, OTA_XF_TASK_PRIO);
@@ -311,6 +327,7 @@ void tasksStart()
 #if defined(CRSF_SD) && !defined(SIMU)
   TRACE("otaTask");
   RTOS_CREATE_TASK(otaTaskId, otaTask, "ota", otaStack, OTA_STACK_SIZE, OTA_TASK_PRIO);
+#endif
 #endif
 
   RTOS_CREATE_MUTEX(audioMutex);

@@ -90,7 +90,7 @@ extern "C" {
 }
 #endif
 
-#define FLASHSIZE                       0x80000
+#define FLASHSIZE                       0x60000
 #define BOOTLOADER_SIZE                 0x9000
 #define FIRMWARE_ADDRESS                0x08000000
 
@@ -675,7 +675,7 @@ void hapticOff(void);
 
 // Second serial port driver
 #if defined(SERIAL_GPIO)
-#define DEBUG_BAUDRATE                  500000//115200
+#define DEBUG_BAUDRATE                  500000
 #define SERIAL2
 extern uint8_t serial2Mode;
 void serial2Init(unsigned int mode, unsigned int protocol);
@@ -769,6 +769,17 @@ void checkTrainerSettings(void);
 #define TELEMETRY_FIFO_SIZE             64
 #endif
 
+#define KERNEL_API_ADDRESS      		0x10000000
+#define SHARED_MEMORY_ADDRESS   		0x10000040
+//#define DIO_INT_TRAMPOLINE      		0x9D060000
+
+#define CROSSFIRE_STACK_SIZE   			700
+#define CROSSFIRE_TASK_ADDRESS 			0x8060008
+#define SYSTEM_STACK_SIZE      			500
+#define RTOS_SYS_TASK_PRIORITY  		1
+
+
+
 extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 extern DMAFifo<32> serial2RxFifo;
 #endif
@@ -776,7 +787,6 @@ extern DMAFifo<32> serial2RxFifo;
 #define DISPLAY_PROGRESS_BAR(...) do{} while(0)
 
 void CRSF_Init( void );
-#define SHARED_MEMORY_ADDRESS   0x2001fd80 // allocate at end of SRAM
 
 #if defined(ESP_SERIAL)
 void espInit(uint32_t baudrate, bool use_dma);
