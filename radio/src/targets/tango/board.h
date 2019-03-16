@@ -551,7 +551,7 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
 #elif defined(PCBX7)
   #define BATT_SCALE                    123
 #elif defined(PCBTANGO)
-  #define BATT_SCALE                    47
+  #define BATT_SCALE                    120
 #else
   #define BATT_SCALE                    150
 #endif
