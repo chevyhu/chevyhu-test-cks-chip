@@ -8,7 +8,7 @@
     
 #ifdef DEF_API_CMD
     //          id,   function                          ,  return_type, params  
-    DEF_API_CMD( 1, RTOS_WAIT_TICKS                     , const void  , const TickType_t xTicksToDelay)
+    DEF_API_CMD( 1, RTOS_WAIT_TICKS                     , uint8_t       , const TickType_t xTicksToDelay)
 //    DEF_API_CMD( 2, ulTaskNotifyTake                    , uint32_t    , BaseType_t xClearCountOnExit, TickType_t xTicksToWait)
 //    DEF_API_CMD( 3, vTaskNotifyGiveFromISR              , void        , TaskHandle_t xTaskToNotify, BaseType_t *pxHigherPriorityTaskWoken)
     DEF_API_CMD( 4, Crossfire_Get_Firmware_Task_Handle  , RTOS_TASK_HANDLE, void)

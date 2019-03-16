@@ -1193,18 +1193,8 @@ tmr10ms_t jitterResetTime = 0;
 uint16_t anaIn(uint8_t chan)
 {
 #if defined(PCBTANGO)
-  switch(chan){
-  case 0:
-	  return -crossfireSharedData.sticks[0];
-  case 1:
-	  return -crossfireSharedData.sticks[1];
-  case 2:
-	  return -crossfireSharedData.sticks[3];
-  case 3:
-	  return -crossfireSharedData.sticks[2];
-  default:
-	  break;
-  }
+  if( chan <= STICK4 )
+	  return crossfireSharedData.sticks[chan];
 #endif
   return ANA_FILT(chan);
 }
