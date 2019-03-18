@@ -444,6 +444,7 @@ long Open9xSim::onTimeout(FXObject*, FXSelector, void*)
     timeToRefresh = 0;
     refreshDisplay();
   }
+
   getApp()->addTimeout(this, 2, 10);
   return 0;
 }

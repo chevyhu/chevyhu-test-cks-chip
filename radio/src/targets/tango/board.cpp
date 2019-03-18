@@ -215,13 +215,11 @@ void boardInit()
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP|DBGMCU_TIM1_STOP|DBGMCU_TIM2_STOP|DBGMCU_TIM3_STOP|DBGMCU_TIM6_STOP|DBGMCU_TIM8_STOP|DBGMCU_TIM10_STOP|DBGMCU_TIM13_STOP|DBGMCU_TIM14_STOP, ENABLE);
 #endif
 
-#if defined(PWR_BUTTON_PRESS)
-  if (!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
+#if 1//defined(PWR_BUTTON_PRESS)
+  if (true) {//(!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
     lcdClear();
 #if defined(PCBX9E)
     lcdDrawBitmap(76, 2, bmp_lock, 0, 60);
-#elif defined(PCBTANGO)
-    lcdDrawBitmap(40, 2, bmp_lock);
 #else
     lcdDrawFilledRect(LCD_W / 2 - 18, LCD_H / 2 - 3, 6, 6, SOLID, 0);
 #endif
@@ -238,8 +236,6 @@ void boardInit()
         lcdClear();
 #if defined(PCBX9E)
         lcdDrawBitmap(76, 2, bmp_startup, index*60, 60);
-#elif defined(PCBTANGO)
-        lcdDrawNornalBitmap(40, 2, bmp_startup, index*60, 60);
 #else
         for(uint8_t i= 0; i < 4; i++) {
           if (index >= i) {
@@ -282,6 +278,8 @@ void boardInit()
     sportUpdateInit();
   }
 #endif // !defined(SIMU)
+
+  //TRACE("PWR_BUTTON = %s\n", PWR_BUTTON_PRESS);
 }
 
 void boardOff()

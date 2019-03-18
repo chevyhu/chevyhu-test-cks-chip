@@ -209,8 +209,7 @@ TASK_FUNCTION(menusTask)
       continue;
     }
 #else
-  //while (pwrCheck() != e_power_off) {
-  while (1) {
+  while (pwrCheck() != e_power_off) {
 #endif
     uint32_t start = (uint32_t)RTOS_GET_TIME();
     DEBUG_TIMER_START(debugTimerPerMain);

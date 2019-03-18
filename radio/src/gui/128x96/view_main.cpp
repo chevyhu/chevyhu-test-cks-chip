@@ -300,8 +300,13 @@ void onMainViewMenu(const char *result)
 }
 #endif
 
+const unsigned char bmp_lock[]  = {
+#include "lock.lbm"
+};
+
 void menuMainView(event_t event)
 {
+#if 1
   //STICK_SCROLL_DISABLE();
   static bool secondPage = false;
 
@@ -550,6 +555,11 @@ void menuMainView(event_t event)
     // Issue 98
     lcdDrawText(15*FW, 0, PSTR("BIND"), 0);
   }
+#endif
+
+#else
+
+  lcdDrawBitmap(36, 16, bmp_lock);
 #endif
 }
 
