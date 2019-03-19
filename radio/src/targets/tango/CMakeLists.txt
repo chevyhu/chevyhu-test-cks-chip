@@ -35,6 +35,7 @@ if(PCB STREQUAL X9E)
 elseif(PCB STREQUAL TANGO)
   option(CROSSFIRE_TASK "Crossfire task" YES)
   set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
+  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
   set(STICKS "STANDARD" CACHE STRING "Sticks type (STANDARD/HORUS)")
   set(CPU_TYPE STM32F4)
   set(CPU_TYPE_FULL STM32F407xE)  # for size report
@@ -60,7 +61,7 @@ elseif(PCB STREQUAL TANGO)
   if(STICKS STREQUAL HORUS)
     add_definitions(-DHORUS_STICKS)
   endif()
-  
+
   if (CROSSFIRE_TASK)
   	add_definitions(-DCROSSFIRE_TASK)
   endif()

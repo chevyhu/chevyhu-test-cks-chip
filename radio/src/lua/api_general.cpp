@@ -1395,6 +1395,10 @@ const luaR_value_entry opentxConstants[] = {
   { "MIXSRC_SF", MIXSRC_SF },
   { "MIXSRC_SH", MIXSRC_SH },
 #endif
+#if defined(PCBTANGO)
+  { "MIXSRC_SE", MIXSRC_SE },
+  { "MIXSRC_SF", MIXSRC_SF },
+#endif
   { "MIXSRC_CH1", MIXSRC_CH1 },
   { "SWSRC_LAST", SWSRC_LAST_LOGICAL_SWITCH },
 #if defined(COLORLCD)

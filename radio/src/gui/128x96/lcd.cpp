@@ -606,6 +606,63 @@ void lcdDraw1bitBitmap(coord_t x, coord_t y, const pm_uchar * img, uint8_t idx, 
   }
 }
 
+void lcdDrawBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offset, coord_t width)
+{
+  const uint8_t *q = img;
+  uint8_t w = *q++;
+  if (!width || width > w) {
+    width = w;
+  }
+  if (x+width > LCD_W) {
+    if (x >= LCD_W ) return;
+    width = LCD_W-x;
+  }
+  uint8_t rows = (*q++ + 1) / 2;
+
+  for (uint8_t row=0; row<rows; row++) {
+    q = img + 2 + row*w + offset;
+    uint8_t *p = &displayBuf[(row + (y/2)) * LCD_W + x];
+    for (coord_t i=0; i<width; i++) {
+      if (p >= DISPLAY_END) return;
+      uint8_t b = *q++;
+      if (y & 1) {
+        *p = (*p & 0x0f) + ((b & 0x0f) << 4);
+        if ((p+LCD_W) < DISPLAY_END) {
+          *(p+LCD_W) = (*(p+LCD_W) & 0xf0) + ((b & 0xf0) >> 4);
+        }
+      }
+      else {
+        *p = b;
+      }
+      p++;
+    }
+  }
+}
+
+void lcdDrawNornalBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offset, coord_t width)
+{
+  const uint8_t *q = img;
+  uint8_t w = *q++;
+  if (!width || width > w) {
+    width = w;
+  }
+  if (x+width > LCD_W) {
+    if (x >= LCD_W ) return;
+    width = LCD_W-x;
+  }
+
+  uint8_t rows = *q++;
+
+  for (uint8_t row=0; row<rows; row++) {
+    q = img + 2 + row * (w / 2) + (offset / 2);
+    uint8_t * p = &displayBuf[(row + y) * (LCD_W / 2) + (x / 2)];
+    for (coord_t i=0; i<width; i+=2) {
+      if (p >= DISPLAY_END) return;
+      *p++ = *q++;
+    }
+  }
+}
+
 
 void drawSwitch(coord_t x, coord_t y, swsrc_t idx, LcdFlags flags)
 {
@@ -809,29 +866,6 @@ void drawTelemetryTopBar()
   lcdInvertLine(0);
 }
 
-void lcdDrawNornalBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offset, coord_t width)
-{
-  const uint8_t *q = img;
-  uint8_t w = *q++;
-  if (!width || width > w) {
-    width = w;
-  }
-  if (x+width > LCD_W) {
-    if (x >= LCD_W ) return;
-    width = LCD_W-x;
-  }
-
-  uint8_t rows = *q++;
-
-  for (uint8_t row=0; row<rows; row++) {
-    q = img + 2 + row * (w / 2) + (offset / 2);
-    uint8_t * p = &displayBuf[(row + y) * (LCD_W / 2) + (x / 2)];
-    for (coord_t i=0; i<width; i+=2) {
-      if (p >= DISPLAY_END) return;
-      *p++ = *q++;
-    }
-  }
-}
 
 void drawSource(coord_t x, coord_t y, uint32_t idx, LcdFlags att)
 {
@@ -942,7 +976,6 @@ void putsModelName(coord_t x, coord_t y, char *name, uint8_t id, LcdFlags att)
   }
   else {
     lcdDrawSizedText(x, y, name, sizeof(g_model.header.name), ZCHAR|att);
-    //lcdDrawSizedText(x, y, name, sizeof(g_model.header.name), att);
   }
 }
 
