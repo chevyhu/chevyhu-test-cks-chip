@@ -141,15 +141,8 @@ void readKeysAndTrims()
   }
 }
 
-uint8_t keyState(uint8_t index)
-{
-  return keys[index].state();
-}
-
-#if !defined(SIMU)
-
 #if defined(PCBX9E)
-  #define ADD_2POS_CASE(x) \
+#define ADD_2POS_CASE(x) \
     case SW_S ## x ## 2: \
       xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break; \
@@ -157,7 +150,7 @@ uint8_t keyState(uint8_t index)
       xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break;
 #else
-  #define ADD_2POS_CASE(x) \
+#define ADD_2POS_CASE(x) \
     case SW_S ## x ## 0: \
       xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break; \
@@ -165,7 +158,7 @@ uint8_t keyState(uint8_t index)
       xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break;
 #endif
-  #define ADD_3POS_CASE(x, i) \
+#define ADD_3POS_CASE(x, i) \
     case SW_S ## x ## 0: \
       xxx = (SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H); \
       if (IS_CONFIG_3POS(i)) { \
@@ -182,6 +175,10 @@ uint8_t keyState(uint8_t index)
       } \
       break
 
+uint8_t keyState(uint8_t index)
+{
+  return keys[index].state();
+}
 
 #if !defined(BOOT)
 uint32_t switchState(uint8_t index)
@@ -189,26 +186,18 @@ uint32_t switchState(uint8_t index)
   uint32_t xxx = 0;
 
   switch (index) {
-#if defined(PCBTANGO)
     ADD_2POS_CASE(A);
-    ADD_3POS_CASE(B, 1);
-    ADD_3POS_CASE(C, 2);
+    ADD_3POS_CASE(B, 0);
+    ADD_3POS_CASE(C, 1);
     ADD_2POS_CASE(D);
-    ADD_2POS_CASE(E);
-    ADD_2POS_CASE(F);
-    ADD_2POS_CASE(G);
-    ADD_2POS_CASE(H);
-    ADD_2POS_CASE(I);
-#else
-    ADD_3POS_CASE(A, 0);
-    ADD_3POS_CASE(B, 1);
-    ADD_3POS_CASE(C, 2);
-    ADD_3POS_CASE(D, 3);
 #if defined(PCBXLITE)
     // no SWF, SWG and SWH on XLITE
 #elif defined(PCBX7)
     ADD_2POS_CASE(F);
     ADD_2POS_CASE(H);
+#elif defined(PCBTANGO)
+    ADD_2POS_CASE(E);
+    ADD_2POS_CASE(F);
 #else
     ADD_3POS_CASE(E, 4);
     ADD_2POS_CASE(F);
@@ -227,7 +216,7 @@ uint32_t switchState(uint8_t index)
     ADD_3POS_CASE(Q, 16);
     ADD_3POS_CASE(R, 17);
 #endif
-#endif  // PCBTANGO
+
     default:
       break;
   }
@@ -235,7 +224,6 @@ uint32_t switchState(uint8_t index)
   // TRACE("switch %d => %d", index, xxx);
   return xxx;
 }
-#endif
 #endif
 
 #if defined(ROTARY_ENCODER_NAVIGATION)

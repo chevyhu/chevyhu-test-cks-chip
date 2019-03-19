@@ -341,6 +341,15 @@ void menuMainView(event_t event)
 #endif
 
     case EVT_KEY_BREAK(KEY_PAGE):
+      g_eeGeneral.view = (event == EVT_KEY_PREVIOUS_VIEW ? (view_base == VIEW_COUNT-1 ? 0 : view_base+1) : (view_base == 0 ? VIEW_COUNT-1 : view_base-1));
+      storageDirty(EE_GENERAL);
+      break;
+    case EVT_KEY_FIRST(KEY_RIGHT):
+    case EVT_KEY_FIRST(KEY_LEFT):
+#if defined(ROTARY_ENCODER_NAVIGATION)
+    case EVT_ROTARY_LEFT:
+    case EVT_ROTARY_RIGHT:
+#endif
       if (view_base <= VIEW_INPUTS) {
         if (view_base == VIEW_INPUTS)
           g_eeGeneral.view ^= ALTERNATE_VIEW;
@@ -350,18 +359,6 @@ void menuMainView(event_t event)
         AUDIO_KEY_PRESS();
       }
       break;
-#if defined(EVT_KEY_PREVIOUS_VIEW)
-    case EVT_KEY_PREVIOUS_VIEW:
-    case EVT_KEY_NEXT_VIEW:
-      g_eeGeneral.view = (event == EVT_KEY_PREVIOUS_VIEW ? (view_base == VIEW_COUNT-1 ? 0 : view_base+1) : (view_base == 0 ? VIEW_COUNT-1 : view_base-1));
-      storageDirty(EE_GENERAL);
-      break;
-#else
-    case EVT_KEY_NEXT_VIEW:
-      g_eeGeneral.view = (view_base == 0 ? VIEW_COUNT-1 : view_base-1);
-      storageDirty(EE_GENERAL);
-      break;
-#endif
 
     case EVT_KEY_LONG(KEY_PAGE):
       chainMenu(menuViewTelemetryFrsky);
@@ -415,14 +412,6 @@ void menuMainView(event_t event)
 #endif
   }
 
-  //sticks
-  //doMainScreenGraphics();
-
-  // switches
-  //drawSwitches();
-
-
-
   if (view_base < VIEW_INPUTS) {
     // scroll bar
     lcdDrawHorizontalLine(38, 34, 54, DOTTED);
@@ -445,7 +434,7 @@ void menuMainView(event_t event)
       switch (view_base) {
         case VIEW_OUTPUTS_VALUES:
           x0 = (i%4*9+3)*FW/2;
-          y0 = i/4*FH+40;
+          y0 = i/4*FH*2+50;
 #if defined(PPM_UNIT_US)
           lcdDrawNumber(x0+4*FW , y0, PPM_CH_CENTER(chan)+val/2, RIGHT);
 #elif defined(PPM_UNIT_PERCENT_PREC1)
@@ -458,7 +447,7 @@ void menuMainView(event_t event)
         case VIEW_OUTPUTS_BARS:
 #define WBAR2 (50/2)
           x0 = i<4 ? LCD_W/4+2 : LCD_W*3/4-2;
-          y0 = 38+(i%4)*5;
+          y0 = 45+(i%4)*10;
 
           const uint16_t lim = (g_model.extendedLimits ? (512 * (long)LIMIT_EXT_PERCENT / 100) : 512) * 2;
           int8_t len = (abs(val) * WBAR2 + lim/2) / lim;
@@ -486,9 +475,9 @@ void menuMainView(event_t event)
 #if defined(PCBTARANIS) || defined(PCBTANGO)
       for (int i=0; i<NUM_SWITCHES; ++i) {
         if (SWITCH_EXISTS(i)) {
-          uint8_t x = 2*FW-2, y = 4*FH+i*FH+1;
+          uint8_t x = 2*FW-2, y = 4*FH+i*FH+20;
           if (i >= NUM_SWITCHES/2) {
-            x = 16*FW+1;
+            x = 16*FW+6;
             y -= (NUM_SWITCHES/2)*FH;
           }
           getvalue_t val = getValue(MIXSRC_FIRST_SWITCH+i);

@@ -319,32 +319,24 @@ enum EnumSwitchesPositions
 {
 #if defined(PCBTANGO)
   SW_SA0,
-  SW_SA1,
   SW_SA2,
+
   SW_SB0,
   SW_SB1,
   SW_SB2,
+
   SW_SC0,
   SW_SC1,
   SW_SC2,
+
   SW_SD0,
-  SW_SD1,
   SW_SD2,
+
   SW_SE0,
-  SW_SE1,
   SW_SE2,
+
   SW_SF0,
-  SW_SF1,
   SW_SF2,
-  SW_SG0,
-  SW_SG1,
-  SW_SG2,
-  SW_SH0,
-  SW_SH1,
-  SW_SH2,
-  SW_SI0,
-  SW_SI1,
-  SW_SI2,
 #else
   SW_SA0,
   SW_SA1,
@@ -410,7 +402,7 @@ enum EnumSwitchesPositions
   SW_SR1,
   SW_SR2,
 #endif
-#endif // PCBTANGO
+#endif
 };
 #if defined(PCBTANGO)
   #define NUM_SWITCHES                  6

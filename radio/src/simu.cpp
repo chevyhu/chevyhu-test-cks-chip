@@ -353,6 +353,13 @@ void Open9xSim::updateKeysAndSwitches(bool start)
   SWITCH_KEY(F, 5, 2);
   SWITCH_KEY(G, 6, 3);
   SWITCH_KEY(H, 7, 2);
+#elif defined(PCBTANGO)
+  SWITCH_KEY(A, 0, 2);
+  SWITCH_KEY(B, 1, 3);
+  SWITCH_KEY(C, 2, 3);
+  SWITCH_KEY(D, 3, 2);
+  SWITCH_KEY(E, 4, 2);
+  SWITCH_KEY(F, 5, 2);
 #else
   SWITCH_KEY(1, 0, 2);
   SWITCH_KEY(2, 1, 2);
@@ -427,6 +434,13 @@ long Open9xSim::onTimeout(FXObject*, FXSelector, void*)
     SWITCH_KEY(G, 6, 3);
     SWITCH_KEY(H, 7, 2);
 #endif
+#elif defined(PCBTANGO)
+    SWITCH_KEY(A, 0, 3);
+    SWITCH_KEY(B, 1, 3);
+    SWITCH_KEY(C, 2, 3);
+    SWITCH_KEY(D, 3, 3);
+    SWITCH_KEY(E, 4, 3);
+    SWITCH_KEY(F, 5, 3);
 #else
     SWITCH_KEY(1, 0, 2);
     SWITCH_KEY(2, 1, 2);
