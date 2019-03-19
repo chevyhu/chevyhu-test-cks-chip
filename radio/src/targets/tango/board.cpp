@@ -20,6 +20,14 @@
 
 #include "opentx.h"
 
+RTOS_TASK_HANDLE crossfireTaskId;
+RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
+
+RTOS_TASK_HANDLE systemTaskId;
+RTOS_DEFINE_STACK(systemStack, SYSTEM_STACK_SIZE);
+
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void);
+
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
 #endif
@@ -28,6 +36,13 @@ extern "C" {
 #if defined(__cplusplus) && !defined(SIMU)
 }
 #endif
+
+typedef void (*Kernel_API_PTR)(void);
+Kernel_API_PTR *Kernel_API = (Kernel_API_PTR*)KERNEL_API_ADDRESS;
+void KernelApiInit( void ){
+#define DEF_API_CMD(_id, _function, _return_type, ...)  (Kernel_API[_id] = (Kernel_API_PTR)&_function);
+#include "rtos_api.h"
+}
 
 void watchdogInit(unsigned int duration)
 {
@@ -162,7 +177,7 @@ void boardInit()
                          HAPTIC_RCC_APB2Periph | INTMODULE_RCC_APB2Periph |
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph, ENABLE);
-
+  KernelApiInit();
 #if !defined(PCBX9E)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();
@@ -364,3 +379,105 @@ uint16_t getBatteryVoltage()
   instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
   return (uint16_t)instant_vbat;
 }
+
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
+{
+  return crossfireTaskId;
+};
+
+#if !defined(SIMU)
+TASK_FUNCTION(systemTask)
+{
+  while(1) {
+
+//      SYS_Tasks();
+//      USB_APP_Tasks();
+//      crsfSharedFifoHandler();
+  }
+  TASK_RETURN();
+}
+#endif
+
+
+extern "C" {
+#include <stdio.h>
+#include <stdarg.h>
+void uart_tx(uint8_t byte)
+{
+	while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+    USART_SendData(USART3, byte);
+}
+
+void hf_printf(const char * TxBuf, ...)
+{
+	uint8_t UartBuf[200];
+	va_list arglist;
+	volatile uint8_t *fp;
+	uint32_t length=0;
+
+	va_start(arglist, TxBuf);
+	vsprintf((char*)UartBuf, (const char*)TxBuf, arglist);
+	va_end(arglist);
+
+	fp = UartBuf;
+	while(*fp)
+	{
+		uart_tx(*fp);
+		fp++;
+	}
+}
+
+void _general_exception_handler (unsigned int * hardfault_args)
+{
+    unsigned int stacked_r0;
+    unsigned int stacked_r1;
+    unsigned int stacked_r2;
+    unsigned int stacked_r3;
+    unsigned int stacked_r12;
+    unsigned int stacked_lr;
+    unsigned int stacked_pc;
+    unsigned int stacked_psr;
+
+    stacked_r0 = ((unsigned long) hardfault_args[0]);
+    stacked_r1 = ((unsigned long) hardfault_args[1]);
+    stacked_r2 = ((unsigned long) hardfault_args[2]);
+    stacked_r3 = ((unsigned long) hardfault_args[3]);
+
+    stacked_r12 = ((unsigned long) hardfault_args[4]);
+    stacked_lr = ((unsigned long) hardfault_args[5]);
+    stacked_pc = ((unsigned long) hardfault_args[6]);
+    stacked_psr = ((unsigned long) hardfault_args[7]);
+
+    hf_printf ("\r\n\n***Hard Fault Handler Debug Printing***\r\n");
+    hf_printf ("R0\t\t= 0x%.8x\r\n", stacked_r0);
+    hf_printf ("R1\t\t= 0x%.8x\r\n", stacked_r1);
+    hf_printf ("R2\t\t= 0x%.8x\r\n", stacked_r2);
+    hf_printf ("R3\t\t= 0x%.8x\r\n", stacked_r3);
+    hf_printf ("R12\t\t= 0x%.8x\r\n", stacked_r12);
+    hf_printf ("LR [R14]\t= 0x%.8x\r\n", stacked_lr);
+    hf_printf ("PC [R15]\t= 0x%.8x\r\n", stacked_pc);
+    hf_printf ("PSR\t\t= 0x%.8x\r\n", stacked_psr);
+    hf_printf ("BFAR\t\t= 0x%.8x\r\n", (*((volatile unsigned long *)(0xE000ED38))));
+    hf_printf ("CFSR\t\t= 0x%.8x\r\n", (*((volatile unsigned long *)(0xE000ED28))));
+    hf_printf ("HFSR\t\t= 0x%.8x\r\n", (*((volatile unsigned long *)(0xE000ED2C))));
+    hf_printf ("AFSR\t\t= 0x%.8x\r\n", (*((volatile unsigned long *)(0xE000ED3C))));
+    hf_printf ("SCB_SHCSR\t= 0x%.8x\r\n", SCB->SHCSR);
+
+    while (1){
+#ifdef RELEASE_CONFIGURATION
+        SOFT_RESET();
+        while(1);
+#endif
+    }
+}
+
+void HardFault_Handler(void)
+{
+    __asm("TST LR, #4");
+    __asm("ITE EQ");
+    __asm("MRSEQ R0, MSP");
+    __asm("MRSNE R0, PSP");
+    __asm("B _general_exception_handler");
+}
+
+}	//extern "C" {

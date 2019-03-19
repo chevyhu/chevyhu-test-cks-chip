@@ -64,6 +64,10 @@
   #define FIRST_ANALOG_ADC             0
   #define NUM_ANALOGS_ADC              10
   #define NUM_ANALOGS_ADC_EXT          (NUM_ANALOGS - 10)
+#elif defined(PCBTANGO)
+  #define FIRST_ANALOG_ADC             4
+  #define NUM_ANALOGS_ADC              10
+  #define NUM_ANALOGS_ADC_EXT          (NUM_ANALOGS - 10)
 #else
   #define FIRST_ANALOG_ADC             0
   #define NUM_ANALOGS_ADC              NUM_ANALOGS

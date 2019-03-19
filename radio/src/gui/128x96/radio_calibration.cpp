@@ -19,10 +19,25 @@
  */
 
 #include "opentx.h"
+#include "../../io/crsf/crossfire.h"
 
 #define XPOT_DELTA 10
 #define XPOT_DELAY 10 /* cycles */
 
+#if defined(PCBTANGO)
+enum CalibrationState {
+  CALIB_START = 0,
+  CALIB_START_MIDPOINT,
+  CALIB_SET_MIDPOINT,
+  CALIB_MOVE_STICKS_EXTREMA,
+  CALIB_MOVE_STICKS_EXTREMA2,
+  CALIB_STORE,
+  CALIB_SYNC1,
+  CALIB_SYNC2,
+  CALIB_FINISHED,
+  CALIB_INVALID
+};
+#else
 enum CalibrationState {
   CALIB_START = 0,
   CALIB_SET_MIDPOINT,
@@ -30,9 +45,20 @@ enum CalibrationState {
   CALIB_STORE,
   CALIB_FINISHED
 };
+#endif
 
 void menuCommonCalib(event_t event)
 {
+
+#if defined(PCBTANGO)
+#if defined(SIMU)
+  reusableBuffer.calib.state = CALIB_FINISHED;
+  return;
+#endif  //#if defined(SIMU)
+
+  uint8_t i;
+  static bool isCalValid = false;
+#else  
   for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) { // get low and high vals for sticks and trims
     int16_t vt = anaIn(i);
     reusableBuffer.calib.loVals[i] = min(vt, reusableBuffer.calib.loVals[i]);
@@ -75,12 +101,38 @@ void menuCommonCalib(event_t event)
 #endif
     }
   }
+#endif  //#if defined(PCBTANGO)
+
+#if defined(PCBTANGO)
+  if( crossfireSharedData.stick_state == CALIB_INVALID ) {
+    // the validity of calibration values is checked at XF side
+    // CALIB_INVALID indicates no calibration values stored or stored calibration values are corrupted
+    reusableBuffer.calib.state = crossfireSharedData.stick_state = CALIB_START;
+  }
+  else if( crossfireSharedData.stick_state == CALIB_FINISHED && reusableBuffer.calib.state == CALIB_START_MIDPOINT ) {
+    // to force starting a new calibration
+    crossfireSharedData.stick_state = CALIB_START_MIDPOINT;
+  }
+  else if( crossfireSharedData.stick_state == CALIB_SYNC1 ) {
+    // to sync the valid calibration values found only
+    reusableBuffer.calib.state = crossfireSharedData.stick_state;
+  }
+  else if( reusableBuffer.calib.state > CALIB_START && crossfireSharedData.stick_state > reusableBuffer.calib.state ) {
+    // to update the state for normal calibration fsm
+    reusableBuffer.calib.state = crossfireSharedData.stick_state;
+  }
+#endif  //#if defined(PCBTANGO)
 
   menuCalibrationState = reusableBuffer.calib.state; // make sure we don't scroll while calibrating
 
   switch (event) {
     case EVT_ENTRY:
     case EVT_KEY_BREAK(KEY_EXIT):
+#if defined(PCBTANGO)
+      if( isCalValid )
+        reusableBuffer.calib.state = crossfireSharedData.stick_state = CALIB_FINISHED;
+      else if( crossfireSharedData.stick_state != CALIB_SYNC1 )
+#endif
       reusableBuffer.calib.state = CALIB_START;
       break;
 
@@ -97,8 +149,20 @@ void menuCommonCalib(event_t event)
       }
       break;
 
+#if defined(PCBTANGO)
+    case CALIB_START_MIDPOINT:
+      crossfireSharedData.stick_state = reusableBuffer.calib.state;
+      lcdDrawText(0*FW, MENU_HEADER_HEIGHT+FH, STR_SETMIDPOINT, INVERS);
+      lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+2*FH, TR_MENUTOSTART);
+      // TRACE("\nradio cal midpopint");
+      break;
+#endif
+
     case CALIB_SET_MIDPOINT:
       // SET MIDPOINT
+#if defined(PCBTANGO)
+      crossfireSharedData.stick_state = reusableBuffer.calib.state;
+#else
       lcdDrawText(0*FW, MENU_HEADER_HEIGHT+FH, STR_SETMIDPOINT, INVERS);
       lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+2*FH, STR_MENUWHENDONE);
       for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
@@ -114,8 +178,26 @@ void menuCommonCalib(event_t event)
         reusableBuffer.calib.midVals[i] = anaIn(i);
 #endif
       }
+#endif  //#if defined(PCBTANGO)
       break;
 
+#if defined(PCBTANGO)
+    case CALIB_MOVE_STICKS_EXTREMA:
+      // MOVE STICKS/POTS ALONG BOUNDARY TO GET EXTREMA
+      crossfireSharedData.stick_state = reusableBuffer.calib.state;
+      lcdDrawText(0*FW, MENU_HEADER_HEIGHT+FH, STR_MOVESTICKSPOTS_BOUNDARY, INVERS);
+#warning henry: added STR_MOVESTICKSPOTS_BOUNDARY in english only
+      lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+2*FH, STR_MENUWHENDONE);
+      break;
+
+    case CALIB_MOVE_STICKS_EXTREMA2:
+      // MOVE STICKS/POTS ALONG BOUNDARY TO CALCULATE CALIBRATION OFFSET & SCALE
+      crossfireSharedData.stick_state = reusableBuffer.calib.state;
+      lcdDrawText(0*FW, MENU_HEADER_HEIGHT+FH, STR_MOVESTICKSPOTS_AGAIN, INVERS);
+#warning henry: added STR_MOVESTICKSPOTS_AGAIN in english only
+      lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+2*FH, STR_MENUWHENDONE);
+      break;
+#else
     case CALIB_MOVE_STICKS:
       // MOVE STICKS/POTS
       lcdDrawText(0*FW, MENU_HEADER_HEIGHT+FH, STR_MOVESTICKSPOTS, INVERS);
@@ -130,6 +212,7 @@ void menuCommonCalib(event_t event)
         }
       }
       break;
+#endif  //#if defined(PCBTANGO)
 
     case CALIB_STORE:
 #if defined(PCBTARANIS)
@@ -157,16 +240,57 @@ void menuCommonCalib(event_t event)
         }
       }
 #endif
+#if defined(PCBTANGO)
+      crossfireSharedData.stick_state = reusableBuffer.calib.state;
+      memset(crossfireSharedData.sticks, 0, sizeof(crossfireSharedData.sticks));
+#else
       g_eeGeneral.chkSum = evalChkSum();
       storageDirty(EE_GENERAL);
       reusableBuffer.calib.state = CALIB_FINISHED;
+#endif  //#if defined(PCBTANGO)
       break;
+
+#if defined(PCBTANGO)
+    case CALIB_SYNC1: //for lx & ly
+      if(crossfireSharedData.sticks[0] && crossfireSharedData.sticks[1] && crossfireSharedData.sticks[2] && crossfireSharedData.sticks[3] ) {
+        i = STICK1;
+        g_eeGeneral.calib[i].mid = 0;
+        g_eeGeneral.calib[i].spanNeg = -crossfireSharedData.sticks[0];
+        g_eeGeneral.calib[i].spanPos = crossfireSharedData.sticks[1];
+        g_eeGeneral.calib[i + 1].mid = 0;
+        g_eeGeneral.calib[i + 1].spanPos = crossfireSharedData.sticks[2];
+        g_eeGeneral.calib[i + 1].spanNeg = -crossfireSharedData.sticks[3];
+        crossfireSharedData.stick_state++;
+        reusableBuffer.calib.state = crossfireSharedData.stick_state;
+        crossfireSharedData.sticks[0] = crossfireSharedData.sticks[1] = crossfireSharedData.sticks[2] = crossfireSharedData.sticks[3] = 0;
+      }
+      break;
+
+    case CALIB_SYNC2: //for rx & ry
+      if(crossfireSharedData.sticks[0] && crossfireSharedData.sticks[1] && crossfireSharedData.sticks[2] && crossfireSharedData.sticks[3] ) {
+        i = STICK3;
+        g_eeGeneral.calib[i].mid = 0;
+        g_eeGeneral.calib[i].spanNeg = -crossfireSharedData.sticks[0];
+        g_eeGeneral.calib[i].spanPos = crossfireSharedData.sticks[1];
+        g_eeGeneral.calib[i + 1].mid = 0;
+        g_eeGeneral.calib[i + 1].spanPos = crossfireSharedData.sticks[2];
+        g_eeGeneral.calib[i + 1].spanNeg = -crossfireSharedData.sticks[3];
+        crossfireSharedData.stick_state++;
+        isCalValid = true;
+        reusableBuffer.calib.state = crossfireSharedData.stick_state;
+        crossfireSharedData.sticks[0] = crossfireSharedData.sticks[1] = crossfireSharedData.sticks[2] = crossfireSharedData.sticks[3] = 0;
+      }
+      break;
+#endif  //#if defined(PCBTANGO)
 
     default:
       reusableBuffer.calib.state = CALIB_START;
       break;
   }
 
+#if defined(PCBTANGO)
+  if( reusableBuffer.calib.state < CALIB_SYNC1 )
+#endif
   doMainScreenGraphics();
 }
 
@@ -187,8 +311,14 @@ void menuFirstCalib(event_t event)
     chainMenu(menuMainView);
   }
   else {
+#if defined(PCBTANGO) && !defined(SIMU)
+    if ( crossfireSharedData.stick_state < CALIB_SYNC1 ){
+#endif
     lcdDrawTextAlignedCenter(0*FH, MENUCALIBRATION);
     lcdInvertLine(0);
+#if defined(PCBTANGO) && !defined(SIMU)
+    }
+#endif
     menuCommonCalib(event);
   }
 }

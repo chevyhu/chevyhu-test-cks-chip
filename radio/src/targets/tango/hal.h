@@ -798,9 +798,9 @@
   #define EXTMODULE_PWR_GPIO_PIN        GPIO_Pin_8  // PD.08
   #define EXTMODULE_TX_GPIO             GPIOA
   #define EXTMODULE_TX_GPIO_PIN         0//GPIO_Pin_7  // PA.07
-  #define EXTMODULE_TX_GPIO_PinSource   GPIO_PinSource7
+  #define EXTMODULE_TX_GPIO_PinSource   0//GPIO_PinSource7
   #define EXTMODULE_TIMER               TIM8
-  #define EXTMODULE_TIMER_TX_GPIO_AF          GPIO_AF_TIM8 // TIM8_CH1N
+  #define EXTMODULE_TIMER_TX_GPIO_AF    GPIO_AF_TIM8 // TIM8_CH1N
   #define EXTMODULE_TIMER_CC_IRQn       TIM8_CC_IRQn
   #define EXTMODULE_TIMER_CC_IRQHandler TIM8_CC_IRQHandler
   #define EXTMODULE_TIMER_DMA_CHANNEL         DMA_Channel_7

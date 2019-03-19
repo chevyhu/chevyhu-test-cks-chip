@@ -148,7 +148,7 @@ uint8_t keyState(uint8_t index)
 
 #if !defined(SIMU)
 
-#if defined(PCBX9E) || defined(PCBTANGO)
+#if defined(PCBX9E)
   #define ADD_2POS_CASE(x) \
     case SW_S ## x ## 2: \
       xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \

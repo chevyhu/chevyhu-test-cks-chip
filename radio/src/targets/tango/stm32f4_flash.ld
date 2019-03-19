@@ -23,7 +23,7 @@ ENTRY(Reset_Handler)
 /*_estack = 0x10010000;*/    /* end of 64K CCM */
 /*_heap_end = 0x20020000;*/  /* end of 128K SRAM */
 _estack = 0x10010000;    /* end of 64K CCM */
-_heap_end = 0x2001fd80;  /* end of 128K SRAM - shared memory*/
+_heap_end = 0x20010000;  /* end of first 64KB of 128K SRAM */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
@@ -35,9 +35,10 @@ _main_stack_start = _estack - _Main_Stack_Size;
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K
-  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
-  CCM (xrw)       : ORIGIN = 0x10000000, LENGTH = 64K
+  FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 384K
+  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 64K
+  SHAREDRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 1K 
+  CCM (xrw)       : ORIGIN = 0x10000400, LENGTH = 63K  
   MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
 }
 
@@ -146,6 +147,14 @@ SECTIONS
     _eram = .;
     /* __ccm_end__ = _eccm; */
   } >RAM
+  
+  .sharedram (NOLOAD) :
+  {
+    . = ALIGN(4);
+    *(.sharedram)           /* .data sections */
+    *(.sharedram*)          /* .data* sections */
+    . = ALIGN(4);
+  } >SHAREDRAM
   
   PROVIDE ( end = _eram );
   PROVIDE ( _end = _eram );

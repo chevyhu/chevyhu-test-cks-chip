@@ -1187,8 +1187,15 @@ tmr10ms_t jitterResetTime = 0;
 #endif
 
 #if !defined(SIMU)
+#if defined(PCBTANGO)
+#include "./io/crsf/crossfire.h"
+#endif
 uint16_t anaIn(uint8_t chan)
 {
+#if defined(PCBTANGO)
+  if( chan <= STICK4 )
+	  return crossfireSharedData.sticks[chan];
+#endif
   return ANA_FILT(chan);
 }
 
@@ -1525,7 +1532,11 @@ void opentxStart(const uint8_t startType = OPENTX_START_DEFAULT_ARGS)
     return;
   }
 
+#if defined(PCBTANGO)
+  uint8_t calibration_needed = 1; //either full calibration or synchronization of calibrated values
+#else
   uint8_t calibration_needed = (g_eeGeneral.chkSum != evalChkSum());
+#endif
 
 #if defined(GUI)
   if (!calibration_needed && !(startType & OPENTX_START_NO_SPLASH)) {
@@ -1550,7 +1561,7 @@ void opentxStart(const uint8_t startType = OPENTX_START_DEFAULT_ARGS)
 #if defined(GUI)
   if (calibration_needed) {
     /* Disable the first calibration for testing, by Chevy 2019.03.06 */
-    //chainMenu(menuFirstCalib);
+    chainMenu(menuFirstCalib);
   }
   else {
     /* Disable all check for testing, by Chevy 2019.03.05 */
@@ -1912,7 +1923,7 @@ void opentxInit(OPENTX_INIT_ARGS)
 #endif
 
 
-  //startPulses();
+  startPulses();
 
   wdt_enable(WDTO_500MS);
 }
