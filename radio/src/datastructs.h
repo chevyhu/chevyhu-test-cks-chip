@@ -774,7 +774,7 @@ PACK(struct RadioData {
 
   THEME_DATA
 
-};
+});
 
 #undef SWITCHES_WARNING_DATA
 #undef MODEL_GVARS_DATA

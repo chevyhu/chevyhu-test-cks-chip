@@ -471,6 +471,7 @@ void _general_exception_handler (unsigned int * hardfault_args)
     }
 }
 
+#if !defined(SIMU)
 void HardFault_Handler(void)
 {
     __asm("TST LR, #4");
@@ -479,5 +480,5 @@ void HardFault_Handler(void)
     __asm("MRSNE R0, PSP");
     __asm("B _general_exception_handler");
 }
-
+#endif
 }	//extern "C" {
