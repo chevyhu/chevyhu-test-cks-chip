@@ -408,6 +408,12 @@ void guiMain(event_t evt)
 
 void perMain()
 {
+	static bool started = false;
+	if(!started){
+		  keysInit();
+		  started = true;
+	}
+
 #if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
   static bool startOnce = false;
   if(!startOnce){
@@ -424,7 +430,7 @@ void perMain()
   checkSpeakerVolume();
   checkEeprom();
   logsWrite();
-  //handleUsbConnection();
+  handleUsbConnection();
   //checkTrainerSettings();
   periodicTick();
   DEBUG_TIMER_STOP(debugTimerPerMain1);

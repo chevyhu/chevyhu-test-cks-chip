@@ -129,6 +129,14 @@ uint64_t check3PosSwitchPosition(uint8_t idx, uint8_t sw, bool startup)
 void getSwitchesPosition(bool startup)
 {
   uint64_t newPos = 0;
+#if defined(PCBTANGO)
+  CHECK_2POS(SW_SA);
+  CHECK_3POS(1, SW_SB);
+  CHECK_3POS(2, SW_SC);
+  CHECK_2POS(SW_SD);
+  CHECK_2POS(SW_SE);
+  CHECK_2POS(SW_SF);
+#else
   CHECK_3POS(0, SW_SA);
   CHECK_3POS(1, SW_SB);
   CHECK_3POS(2, SW_SC);
@@ -140,13 +148,13 @@ void getSwitchesPosition(bool startup)
 #if !defined(PCBXLITE)
   CHECK_2POS(SW_SF);
 #endif
-#if !defined(PCBX7) && !defined(PCBXLITE) && !defined(PCBTANGO)
+#if !defined(PCBX7) && !defined(PCBXLITE)
   CHECK_3POS(5, SW_SG);
 #endif
-#if !defined(PCBXLITE) && !defined(PCBTANGO)
+#if !defined(PCBXLITE)
   CHECK_2POS(SW_SH);
 #endif
-#if defined(PCBX9E) && !defined(PCBTANGO)
+#if defined(PCBX9E) &&
   CHECK_3POS(6, SW_SI);
   CHECK_3POS(7, SW_SJ);
   CHECK_3POS(8, SW_SK);
@@ -158,8 +166,10 @@ void getSwitchesPosition(bool startup)
   CHECK_3POS(14, SW_SQ);
   CHECK_3POS(15, SW_SR);
 #endif
+#endif // PCBTANGO
 
   switchesPos = newPos;
+//  TRACE("%lx", (uint32_t)switchesPos);
 
   for (int i=0; i<NUM_XPOTS; i++) {
     if (IS_POT_MULTIPOS(POT1+i)) {

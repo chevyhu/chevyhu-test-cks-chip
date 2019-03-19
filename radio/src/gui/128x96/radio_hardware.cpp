@@ -110,8 +110,8 @@ enum MenuRadioHardwareItems {
   ITEM_RADIO_HARDWARE_SC,
   ITEM_RADIO_HARDWARE_SD,
 #if NUM_SWITCHES > 4
+  ITEM_RADIO_HARDWARE_SE,
   ITEM_RADIO_HARDWARE_SF,
-  ITEM_RADIO_HARDWARE_SH,
 #endif
   ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE,
 #if defined(BLUETOOTH)
@@ -207,8 +207,8 @@ void menuRadioHardware(event_t event)
       case ITEM_RADIO_HARDWARE_SC:
       case ITEM_RADIO_HARDWARE_SD:
 #if NUM_SWITCHES > 4
+      case ITEM_RADIO_HARDWARE_SE:
       case ITEM_RADIO_HARDWARE_SF:
-      case ITEM_RADIO_HARDWARE_SH:
 #endif
       {
         int index = k-ITEM_RADIO_HARDWARE_SA;
@@ -285,4 +285,4 @@ void menuRadioHardware(event_t event)
     }
   }
 }
-#endif // PCBSKY9X
+#endif // PCBTARANIS || PCBTANGO
