@@ -416,12 +416,10 @@ void menuMainView(event_t event)
   }
 
   //sticks
-  //doMainScreenGraphics();
+  doMainScreenGraphics();
 
   // switches
-  //drawSwitches();
-
-
+  drawSwitches();
 
   if (view_base < VIEW_INPUTS) {
     // scroll bar

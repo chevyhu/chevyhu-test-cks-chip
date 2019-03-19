@@ -102,7 +102,7 @@ void pwrOff()
 
 uint32_t pwrPressed()
 {
-  return GPIO_ReadInputDataBit(PWR_SWITCH_GPIO, PWR_SWITCH_GPIO_PIN) == Bit_RESET;
+  return GPIO_ReadInputDataBit(PWR_SWITCH_GPIO, PWR_SWITCH_GPIO_PIN) == Bit_SET;
 }
 
 void pwrResetHandler()
