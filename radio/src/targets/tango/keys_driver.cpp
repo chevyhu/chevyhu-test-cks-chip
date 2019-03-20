@@ -186,18 +186,23 @@ uint32_t switchState(uint8_t index)
   uint32_t xxx = 0;
 
   switch (index) {
+#if defined(PCBTANGO)
     ADD_2POS_CASE(A);
-    ADD_3POS_CASE(B, 0);
-    ADD_3POS_CASE(C, 1);
+    ADD_3POS_CASE(B, 1);
+    ADD_3POS_CASE(C, 2);
     ADD_2POS_CASE(D);
+    ADD_2POS_CASE(E);
+    ADD_2POS_CASE(F);
+#else
+    ADD_3POS_CASE(A, 0);
+    ADD_3POS_CASE(B, 1);
+    ADD_3POS_CASE(C, 2);
+    ADD_3POS_CASE(D, 3);
 #if defined(PCBXLITE)
     // no SWF, SWG and SWH on XLITE
 #elif defined(PCBX7)
     ADD_2POS_CASE(F);
     ADD_2POS_CASE(H);
-#elif defined(PCBTANGO)
-    ADD_2POS_CASE(E);
-    ADD_2POS_CASE(F);
 #else
     ADD_3POS_CASE(E, 4);
     ADD_2POS_CASE(F);
@@ -216,7 +221,7 @@ uint32_t switchState(uint8_t index)
     ADD_3POS_CASE(Q, 16);
     ADD_3POS_CASE(R, 17);
 #endif
-
+#endif
     default:
       break;
   }
