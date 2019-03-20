@@ -48,7 +48,9 @@
 #define CURVE_CENTER_X                 (LCD_W-CURVE_SIDE_WIDTH-2)
 #define CURVE_CENTER_Y                 (LCD_H/2)
 
-#define MIXES_2ND_COLUMN               (18*FW)
+#if defined(PCBTANGO)
+#define MIXES_2ND_COLUMN               (10*FW)
+#endif
 
 #define MENUS_SCROLLBAR_WIDTH          2
 
