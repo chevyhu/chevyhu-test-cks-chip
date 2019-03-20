@@ -26,8 +26,13 @@ const unsigned char sticks[]  = {
 #include "sticks.lbm"
 };
 
+#if defined(PCBTANGO)
+#define RADIO_SETUP_2ND_COLUMN  (LCD_W-8*FW-MENUS_SCROLLBAR_WIDTH)
+#define RADIO_SETUP_DATE_COLUMN RADIO_SETUP_2ND_COLUMN + 4*FWNUM - 2*FW
+#else
 #define RADIO_SETUP_2ND_COLUMN  (LCD_W-10*FW-MENUS_SCROLLBAR_WIDTH)
 #define RADIO_SETUP_DATE_COLUMN RADIO_SETUP_2ND_COLUMN + 4*FWNUM
+#endif
 #define RADIO_SETUP_TIME_COLUMN RADIO_SETUP_2ND_COLUMN + 2*FWNUM
 
 #define SLIDER_5POS(y, value, label, event, attr) { \
@@ -281,21 +286,33 @@ void menuRadioSetup(event_t event)
 
       case ITEM_SETUP_VARIO_PITCH:
         lcdDrawTextAlignedLeft(y, STR_PITCH_AT_ZERO);
+#if defined(PCBTANGO)
+        lcdDrawNumber(RADIO_SETUP_2ND_COLUMN+2*FW, y, VARIO_FREQUENCY_ZERO+(g_eeGeneral.varioPitch*10), attr|LEFT);
+#else
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, VARIO_FREQUENCY_ZERO+(g_eeGeneral.varioPitch*10), attr|LEFT);
+#endif
         lcdDrawText(lcdLastRightPos, y, "Hz", attr);
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.varioPitch, -40, 40);
         break;
 
       case ITEM_SETUP_VARIO_RANGE:
         lcdDrawTextAlignedLeft(y, STR_PITCH_AT_MAX);
+#if defined(PCBTANGO)
+        lcdDrawNumber(RADIO_SETUP_2ND_COLUMN+2*FW, y, VARIO_FREQUENCY_ZERO+(g_eeGeneral.varioPitch*10)+VARIO_FREQUENCY_RANGE+(g_eeGeneral.varioRange*10), attr|LEFT);
+#else
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, VARIO_FREQUENCY_ZERO+(g_eeGeneral.varioPitch*10)+VARIO_FREQUENCY_RANGE+(g_eeGeneral.varioRange*10), attr|LEFT);
+#endif
         lcdDrawText(lcdLastRightPos, y, "Hz", attr);
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.varioRange, -80, 80);
         break;
 
       case ITEM_SETUP_VARIO_REPEAT:
         lcdDrawTextAlignedLeft(y, STR_REPEAT_AT_ZERO);
+#if defined(PCBTANGO)
+        lcdDrawNumber(RADIO_SETUP_2ND_COLUMN+2*FW, y, VARIO_REPEAT_ZERO+(g_eeGeneral.varioRepeat*10), attr|LEFT);
+#else
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, VARIO_REPEAT_ZERO+(g_eeGeneral.varioRepeat*10), attr|LEFT);
+#endif
         lcdDrawText(lcdLastRightPos, y, STR_MS, attr);
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.varioRepeat, -30, 50);
         break;

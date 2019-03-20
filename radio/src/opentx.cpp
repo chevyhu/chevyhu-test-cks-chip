@@ -256,18 +256,12 @@ void generalDefault()
   g_eeGeneral.switchConfig = 0x00007bff; // 6x3POS, 1x2POS, 1xTOGGLE
 #endif
 
-//#if defined(PCBTANGO)
-//  g_eeGeneral.vBatWarn = BATTERY_WARN;
-//  g_eeGeneral.vBatMin = BATTERY_MIN;
-//  g_eeGeneral.vBatMax = BATTERY_MAX;
-//#else
   // vBatWarn is voltage in 100mV, vBatMin is in 100mV but with -9V offset, vBatMax has a -12V offset
   g_eeGeneral.vBatWarn = BATTERY_WARN;
   if (BATTERY_MIN != 90)
     g_eeGeneral.vBatMin = BATTERY_MIN - 90;
   if (BATTERY_MAX != 120)
     g_eeGeneral.vBatMax = BATTERY_MAX - 120;
-//#endif
 
 #if defined(DEFAULT_MODE)
   g_eeGeneral.stickMode = DEFAULT_MODE-1;

@@ -101,6 +101,8 @@ void menuRadioDiagKeys(event_t event)
     lcdDrawNumber(x, y, rotencValue[i], LEFT|(keyState(BTN_REa+i) ? INVERS : 0));
   #elif defined(PCBX7)
     lcdDrawNumber(x, y, rotencValue[i], RIGHT);
+  #elif defined(PCBTANGO)
+    lcdDrawNumber(x+2*FW, y, rotencValue[i], RIGHT);
   #else
     lcdDrawNumber(x, y, rotencValue[i], LEFT);
   #endif
