@@ -205,9 +205,17 @@ void menuRadioSetup(event_t event)
         if (attr && menuHorizontalPosition < 0) lcdDrawFilledRect(RADIO_SETUP_2ND_COLUMN, y, LCD_W-RADIO_SETUP_2ND_COLUMN-MENUS_SCROLLBAR_WIDTH, 8);
         if (attr && s_editMode>0) {
           if (menuHorizontalPosition==0)
+#if defined(PCBTANGO)
+            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMin, -90, g_eeGeneral.vBatMax+29); // min=0.0V
+#else
             CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMin, -50, g_eeGeneral.vBatMax+29); // min=4.0V
+#endif
           else
+#if defined(PCBTANGO)
             CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMax, g_eeGeneral.vBatMin-29, +40); // max=16.0V
+#else
+            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMax, g_eeGeneral.vBatMin-29, +40); // max=16.0V
+#endif
         }
         break;
 
@@ -327,7 +335,11 @@ void menuRadioSetup(event_t event)
       case ITEM_SETUP_BATTERY_WARNING:
         lcdDrawTextAlignedLeft(y, STR_BATTERYWARNING);
         putsVolts(RADIO_SETUP_2ND_COLUMN, y, g_eeGeneral.vBatWarn, attr|LEFT);
+#if defined(PCBTABGO)
+        if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatWarn, 0, 120); // 0-12V
+#else
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatWarn, 40, 120); // 4-12V
+#endif
         break;
 
       case ITEM_SETUP_MEMORY_WARNING:
