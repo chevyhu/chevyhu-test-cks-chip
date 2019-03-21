@@ -49,7 +49,8 @@ event_t getEvent(bool trim)
   bool trim_evt = (k>=0 && k<TRM_LAST-TRM_BASE+1);
 
   if (trim == trim_evt) {
-    s_evt = 0;
+    if (s_evt != 0)
+      s_evt = 0;
     return evt;
   }
   else {

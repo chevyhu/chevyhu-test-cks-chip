@@ -24,6 +24,9 @@
 uint32_t rotencPosition;
 #endif
 
+#if defined(PCBTANGO)
+uint8_t  g_trimState = 0;
+#endif
 
 uint32_t readKeys()
 {
@@ -75,10 +78,16 @@ uint32_t readKeys()
   return result;
 }
 
+
 uint32_t readTrims()
 {
   uint32_t result = 0;
 
+#if defined(PCBTANGO)
+  // the trim state from the events of main view
+  result = g_trimState;
+  g_trimState = 0;
+ #else
   if (~TRIMS_GPIO_REG_LHL & TRIMS_GPIO_PIN_LHL)
     result |= 0x01;
   if (~TRIMS_GPIO_REG_LHR & TRIMS_GPIO_PIN_LHR)
@@ -88,10 +97,10 @@ uint32_t readTrims()
   if (~TRIMS_GPIO_REG_LVU & TRIMS_GPIO_PIN_LVU)
     result |= 0x08;
 
-#if defined(PCBXLITE)
+ #if defined(PCBXLITE)
   if (IS_SHIFT_PRESSED())
     result = ((result & 0x03) << 6) | ((result & 0x0c) << 2);
-#else
+ #else
   if (~TRIMS_GPIO_REG_RVD & TRIMS_GPIO_PIN_RVD)
     result |= 0x10;
   if (~TRIMS_GPIO_REG_RVU & TRIMS_GPIO_PIN_RVU)
@@ -100,10 +109,8 @@ uint32_t readTrims()
     result |= 0x40;
   if (~TRIMS_GPIO_REG_RHR & TRIMS_GPIO_PIN_RHR)
     result |= 0x80;
+ #endif
 #endif
-
-  // TRACE("readTrims(): result=0x%02x", result);
-
   return result;
 }
 
@@ -111,6 +118,7 @@ uint8_t trimDown(uint8_t idx)
 {
   return readTrims() & (1 << idx);
 }
+
 
 bool keyDown()
 {

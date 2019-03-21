@@ -239,10 +239,28 @@ void simuSetKey(uint8_t key, bool state)
   }
 }
 
-bool trimsStates[NUM_TRIMS*2] = { 0 };
 void simuSetTrim(uint8_t trim, bool state)
 {
-  trimsStates[trim] = state;
+  // TRACE_SIMPGMSPACE("trim=%d state=%d", trim, state);
+
+  switch (trim) {
+    TRIM_CASE(0, TRIMS_GPIO_REG_LHL, TRIMS_GPIO_PIN_LHL)
+    TRIM_CASE(1, TRIMS_GPIO_REG_LHR, TRIMS_GPIO_PIN_LHR)
+    TRIM_CASE(2, TRIMS_GPIO_REG_LVD, TRIMS_GPIO_PIN_LVD)
+    TRIM_CASE(3, TRIMS_GPIO_REG_LVU, TRIMS_GPIO_PIN_LVU)
+#if defined(TRIMS_GPIO_REG_RVD)
+    TRIM_CASE(4, TRIMS_GPIO_REG_RVD, TRIMS_GPIO_PIN_RVD)
+    TRIM_CASE(5, TRIMS_GPIO_REG_RVU, TRIMS_GPIO_PIN_RVU)
+    TRIM_CASE(6, TRIMS_GPIO_REG_RHL, TRIMS_GPIO_PIN_RHL)
+    TRIM_CASE(7, TRIMS_GPIO_REG_RHR, TRIMS_GPIO_PIN_RHR)
+#endif
+#if defined(PCBHORUS)
+    TRIM_CASE(8, TRIMS_GPIO_REG_LSD, TRIMS_GPIO_PIN_LSD)
+    TRIM_CASE(9, TRIMS_GPIO_REG_LSU, TRIMS_GPIO_PIN_LSU)
+    TRIM_CASE(10, TRIMS_GPIO_REG_RSD, TRIMS_GPIO_PIN_RSD)
+    TRIM_CASE(11, TRIMS_GPIO_REG_RSU, TRIMS_GPIO_PIN_RSU)
+#endif
+  }
 }
 
 void simuSetSwitch(uint8_t swtch, int8_t state)

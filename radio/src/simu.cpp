@@ -304,9 +304,11 @@ void Open9xSim::updateKeysAndSwitches(bool start)
   static FXuint trimKeys[] = { KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12 };
 #endif
 
+#if 0
   for (unsigned i=0; i<DIM(trimKeys); i++) {
     simuSetTrim(i, getApp()->getKeyState(trimKeys[i]));
   }
+#endif
 
 #define SWITCH_KEY(key, swtch, states) \
   static bool state##key = 0; \
