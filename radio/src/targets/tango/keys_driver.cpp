@@ -139,10 +139,6 @@ void readKeysAndTrims()
   uint32_t trims_input = readTrims();
   for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
     keys[index++].input(trims_input & i);
-    if (trims_input != 0)
-    {
-      TRACE("index = %d, trims_input = %d, i = %d\n", index - 1, trims_input, i);
-    }
   }
 
 #if defined(PWR_BUTTON_PRESS)
