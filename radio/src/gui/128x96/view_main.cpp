@@ -401,7 +401,6 @@ void menuMainView(event_t event)
           g_trimState = 0x01 << (key + 1);
         }
       }
-
       break;
 
     case EVT_KEY_LONG(KEY_PAGE):

@@ -50,12 +50,14 @@ uint32_t readKeys()
   if (~KEYS_GPIO_REG_EXIT & KEYS_GPIO_PIN_EXIT)
     result |= 1 << KEY_EXIT;
 
+
 #if defined(KEYS_GPIO_PIN_PLUS)
   if (~KEYS_GPIO_REG_PLUS & KEYS_GPIO_PIN_PLUS)
     result |= 1 << KEY_PLUS;
   if (~KEYS_GPIO_REG_MINUS & KEYS_GPIO_PIN_MINUS)
     result |= 1 << KEY_MINUS;
 #endif
+
 
 #if defined(KEYS_GPIO_PIN_LEFT)
   if (~KEYS_GPIO_REG_LEFT & KEYS_GPIO_PIN_LEFT)
@@ -137,6 +139,10 @@ void readKeysAndTrims()
   uint32_t trims_input = readTrims();
   for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
     keys[index++].input(trims_input & i);
+    if (trims_input != 0)
+    {
+      TRACE("index = %d, trims_input = %d, i = %d\n", index - 1, trims_input, i);
+    }
   }
 
 #if defined(PWR_BUTTON_PRESS)

@@ -31,6 +31,10 @@
 #define FILTERBITS                4   // defines how many bits are used for debounce
 #endif
 
+#if defined(PCBTANGO)
+#define  ROTORY_FILTERBITS        1   // when make the rotary as the key, reduce the hold time
+#endif
+
 #define KSTATE_OFF                  0
 #define KSTATE_RPTDELAY             95
 #define KSTATE_START                97
@@ -49,8 +53,7 @@ event_t getEvent(bool trim)
   bool trim_evt = (k>=0 && k<TRM_LAST-TRM_BASE+1);
 
   if (trim == trim_evt) {
-    if (s_evt != 0)
-      s_evt = 0;
+    s_evt = 0;
     return evt;
   }
   else {
@@ -62,6 +65,7 @@ void Key::input(bool val)
 {
   // store new value in the bits that hold the key state history (used for debounce)
   uint8_t t_vals = m_vals ;
+  uint8_t filterBits = 0;
   t_vals <<= 1 ;
   if (val) t_vals |= 1;
   m_vals = t_vals ;
@@ -81,7 +85,17 @@ void Key::input(bool val)
 
   switch (m_state) {
     case KSTATE_OFF:
+#if defined(PCBTANGO) && !defined(BOOT)
+      if (g_trimEditMode != EDIT_TRIM_DISABLED) {
+        filterBits = ROTORY_FILTERBITS;
+      }
+      else {
+        filterBits = FILTERBITS;
+      }
+      if (m_vals == ((1<<filterBits)-1)) {
+#else
       if (m_vals == ((1<<FILTERBITS)-1)) {
+#endif
         m_state = KSTATE_START;
         m_cnt = 0;
       }
