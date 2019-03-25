@@ -49,6 +49,8 @@
 
 #define TRIM_LEN      23
 
+
+
 const unsigned char logo_tango[]  = {
 #include "logo.lbm"
 };
@@ -56,6 +58,8 @@ const unsigned char logo_tango[]  = {
 const unsigned char icons[]  = {
 #include "icons.lbm"
 };
+
+uint8_t g_trimEditMode = EDIT_TRIM_DISABLED;
 
 
 #if defined(TELEMETRY_FRSKY) && defined(CPUARM)
@@ -113,7 +117,7 @@ void doMainScreenGraphics()
   drawPotsBars();
 }
 
-void displayTrims(uint8_t phase)
+void displayTrims(uint8_t phase, uint8_t editMode)
 {
   for (uint8_t i=0; i<4; i++) {
     static coord_t x[4] = {TRIM_LH_X, TRIM_LV_X, TRIM_RV_X, TRIM_RH_X};
@@ -143,10 +147,19 @@ void displayTrims(uint8_t phase)
 
     if (vert[i]) {
       ym = 61;
-      lcdDrawSolidVerticalLine(xm, ym-TRIM_LEN, TRIM_LEN*2);
-      if (i!=2 || !g_model.thrTrim) {
-        lcdDrawSolidVerticalLine(xm-1, ym-1,  3);
-        lcdDrawSolidVerticalLine(xm+1, ym-1,  3);
+      if (editMode == i+1) {
+        lcdDrawSolidVerticalLine(xm, ym-TRIM_LEN, TRIM_LEN*2);
+        if (i!=2 || !g_model.thrTrim) {
+          lcdDrawSolidVerticalLine(xm-1, ym-TRIM_LEN,  TRIM_LEN*2);
+          lcdDrawSolidVerticalLine(xm+1, ym-TRIM_LEN,  TRIM_LEN*2);
+        }
+      }
+      else {
+        lcdDrawSolidVerticalLine(xm, ym-TRIM_LEN, TRIM_LEN*2);
+        if (i!=2 || !g_model.thrTrim) {
+          lcdDrawSolidVerticalLine(xm-1, ym-1,  3);
+          lcdDrawSolidVerticalLine(xm+1, ym-1,  3);
+        }
       }
       ym -= val;
 #if !defined(CPUM64) || !defined(TELEMETRY_FRSKY)
@@ -172,9 +185,16 @@ void displayTrims(uint8_t phase)
     }
     else {
       ym = 92;
-      lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym, TRIM_LEN*2);
-      lcdDrawSolidHorizontalLine(xm-1, ym-1,  3);
-      lcdDrawSolidHorizontalLine(xm-1, ym+1,  3);
+      if (editMode == i+1) {
+        lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym,   TRIM_LEN*2);
+        lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym-1, TRIM_LEN*2);
+        lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym+1, TRIM_LEN*2);
+      }
+      else {
+        lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym, TRIM_LEN*2);
+        lcdDrawSolidHorizontalLine(xm-1, ym-1,  3);
+        lcdDrawSolidHorizontalLine(xm-1, ym+1,  3);
+      }
       xm += val;
 #if !defined(CPUM64) || !defined(TELEMETRY_FRSKY)
       lcdDrawFilledRect(xm-3, ym-3, 7, 7, SOLID, att|ERASE);
@@ -240,7 +260,7 @@ void displayBattVoltage()
 #define displayVoltageOrAlarm() displayBattVoltage()
 
 
-#define EVT_KEY_CONTEXT_MENU           EVT_KEY_BREAK(KEY_ENTER)
+#define EVT_KEY_CONTEXT_MENU           EVT_KEY_LONG(KEY_ENTER)
 #define EVT_KEY_PREVIOUS_VIEW          EVT_KEY_BREAK(KEY_RIGHT)
 #define EVT_KEY_NEXT_VIEW              EVT_KEY_BREAK(KEY_LEFT)
 #define EVT_KEY_NEXT_PAGE              EVT_KEY_BREAK(KEY_RIGHT)
@@ -339,29 +359,49 @@ void menuMainView(event_t event)
       killEvents(event);
       break;
 #endif
-
-    case EVT_KEY_BREAK(KEY_PAGE):
-      if (view_base <= VIEW_INPUTS) {
-        if (view_base == VIEW_INPUTS)
-          g_eeGeneral.view ^= ALTERNATE_VIEW;
-        else
-          g_eeGeneral.view = (g_eeGeneral.view + (4*ALTERNATE_VIEW) + ((event==EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (4*ALTERNATE_VIEW);
-        storageDirty(EE_GENERAL);
-        AUDIO_KEY_PRESS();
+    case EVT_KEY_BREAK(KEY_ENTER):
+      if (++g_trimEditMode > EDIT_TRIM_MAX) {
+        g_trimEditMode = EDIT_TRIM_1;
       }
+      AUDIO_KEY_PRESS();
+      killEvents(event);
       break;
-#if defined(EVT_KEY_PREVIOUS_VIEW)
-    case EVT_KEY_PREVIOUS_VIEW:
-    case EVT_KEY_NEXT_VIEW:
+    case EVT_KEY_BREAK(KEY_PAGE):
       g_eeGeneral.view = (event == EVT_KEY_PREVIOUS_VIEW ? (view_base == VIEW_COUNT-1 ? 0 : view_base+1) : (view_base == 0 ? VIEW_COUNT-1 : view_base-1));
       storageDirty(EE_GENERAL);
       break;
-#else
-    case EVT_KEY_NEXT_VIEW:
-      g_eeGeneral.view = (view_base == 0 ? VIEW_COUNT-1 : view_base-1);
-      storageDirty(EE_GENERAL);
-      break;
+    case EVT_KEY_FIRST(KEY_RIGHT):
+    case EVT_KEY_FIRST(KEY_LEFT):
+#if defined(ROTARY_ENCODER_NAVIGATION)
+    case EVT_ROTARY_LEFT:
+    case EVT_ROTARY_RIGHT:
 #endif
+      if (g_trimEditMode == EDIT_TRIM_DISABLED) {
+        if (view_base <= VIEW_INPUTS) {
+          if (view_base == VIEW_INPUTS)
+            g_eeGeneral.view ^= ALTERNATE_VIEW;
+          else
+            g_eeGeneral.view = (g_eeGeneral.view + (4*ALTERNATE_VIEW) + ((event==EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (4*ALTERNATE_VIEW);
+          storageDirty(EE_GENERAL);
+          AUDIO_KEY_PRESS();
+        }
+      }
+      else {
+        uint8_t key = (g_trimEditMode - 1) * 2;
+#if defined(ROTARY_ENCODER_NAVIGATION)
+        if (event == EVT_KEY_FIRST(KEY_RIGHT) || event == EVT_ROTARY_LEFT) {
+#else
+        if (event == EVT_KEY_FIRST(KEY_RIGHT)) {
+#endif
+          TRACE("rotary up\n");
+          g_trimState = 0x01 << key;
+        }
+        else {
+          TRACE("rotary down\n");
+          g_trimState = 0x01 << (key + 1);
+        }
+      }
+      break;
 
     case EVT_KEY_LONG(KEY_PAGE):
       chainMenu(menuViewTelemetryFrsky);
@@ -374,6 +414,9 @@ void menuMainView(event_t event)
         gvarDisplayTimer = 0;
       }
 #endif
+      if (g_trimEditMode != EDIT_TRIM_DISABLED) {
+        g_trimEditMode = EDIT_TRIM_DISABLED;
+      }
       break;
 
 #if !defined(NAVIGATION_MENUS)
@@ -405,7 +448,7 @@ void menuMainView(event_t event)
     drawTimerWithMode(125, 2*FH, 0);
 
     // Trims sliders
-    displayTrims(mode);
+    displayTrims(mode, g_trimEditMode);
 
 #if defined(TELEMETRY_FRSKY) && defined(CPUARM)
     // RSSI gauge
@@ -414,12 +457,6 @@ void menuMainView(event_t event)
     }
 #endif
   }
-
-  //sticks
-  doMainScreenGraphics();
-
-  // switches
-  drawSwitches();
 
   if (view_base < VIEW_INPUTS) {
     // scroll bar
@@ -443,7 +480,7 @@ void menuMainView(event_t event)
       switch (view_base) {
         case VIEW_OUTPUTS_VALUES:
           x0 = (i%4*9+3)*FW/2;
-          y0 = i/4*FH+40;
+          y0 = i/4*FH*2+50;
 #if defined(PPM_UNIT_US)
           lcdDrawNumber(x0+4*FW , y0, PPM_CH_CENTER(chan)+val/2, RIGHT);
 #elif defined(PPM_UNIT_PERCENT_PREC1)
@@ -456,7 +493,7 @@ void menuMainView(event_t event)
         case VIEW_OUTPUTS_BARS:
 #define WBAR2 (50/2)
           x0 = i<4 ? LCD_W/4+2 : LCD_W*3/4-2;
-          y0 = 38+(i%4)*5;
+          y0 = 45+(i%4)*10;
 
           const uint16_t lim = (g_model.extendedLimits ? (512 * (long)LIMIT_EXT_PERCENT / 100) : 512) * 2;
           int8_t len = (abs(val) * WBAR2 + lim/2) / lim;
@@ -484,9 +521,9 @@ void menuMainView(event_t event)
 #if defined(PCBTARANIS) || defined(PCBTANGO)
       for (int i=0; i<NUM_SWITCHES; ++i) {
         if (SWITCH_EXISTS(i)) {
-          uint8_t x = 2*FW-2, y = 4*FH+i*FH+1;
+          uint8_t x = 2*FW-2, y = 4*FH+i*FH+20;
           if (i >= NUM_SWITCHES/2) {
-            x = 16*FW+1;
+            x = 16*FW+6;
             y -= (NUM_SWITCHES/2)*FH;
           }
           getvalue_t val = getValue(MIXSRC_FIRST_SWITCH+i);

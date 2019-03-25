@@ -150,6 +150,24 @@
   #define TRIMS_GPIO_REG_RHR            GPIOE->IDR
   #define TRIMS_GPIO_PIN_RHR            GPIO_Pin_4  // PE.04
 #elif defined(PCBTANGO)
+ #if defined(SIMU)
+  #define TRIMS_GPIO_REG_LHL            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_LHL            GPIO_Pin_0  // PG.00
+  #define TRIMS_GPIO_REG_LHR            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_LHR            GPIO_Pin_1  // PG.01
+  #define TRIMS_GPIO_REG_LVD            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_LVD            GPIO_Pin_2  // PG.02
+  #define TRIMS_GPIO_REG_LVU            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_LVU            GPIO_Pin_3  // PG.03
+  #define TRIMS_GPIO_REG_RVD            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_RVD            GPIO_Pin_4  // PG.04
+  #define TRIMS_GPIO_REG_RHL            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_RHL            GPIO_Pin_5  // PG.05
+  #define TRIMS_GPIO_REG_RVU            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_RVU            GPIO_Pin_6  // PG.06
+  #define TRIMS_GPIO_REG_RHR            GPIOG->IDR
+  #define TRIMS_GPIO_PIN_RHR            GPIO_Pin_7  // PG.07
+ #else
 	// no use trims
   #define TRIMS_GPIO_REG_LHL            GPIOE->IDR
   #define TRIMS_GPIO_PIN_LHL            0
@@ -167,6 +185,7 @@
   #define TRIMS_GPIO_PIN_RVU            0
   #define TRIMS_GPIO_REG_RHR            GPIOC->IDR
   #define TRIMS_GPIO_PIN_RHR            0
+ #endif
 #else
   #define TRIMS_GPIO_REG_LHL            GPIOE->IDR
   #define TRIMS_GPIO_PIN_LHL            GPIO_Pin_4  // PE.04

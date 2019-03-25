@@ -281,6 +281,17 @@ enum EnumKeys
   NUM_KEYS
 };
 
+#if defined(PCBTANGO)
+enum EnumTrimMode{
+    EDIT_TRIM_DISABLED = 0,
+    EDIT_TRIM_1,
+    EDIT_TRIM_2,
+    EDIT_TRIM_3,
+    EDIT_TRIM_4,
+    EDIT_TRIM_MAX = EDIT_TRIM_4,
+};
+#endif
+
 #if defined(PCBX9E) && !defined(SIMU)
   #define KEY_UP                        KEY_MINUS
   #define KEY_DOWN                      KEY_PLUS
@@ -336,15 +347,6 @@ enum EnumSwitchesPositions
   SW_SF0,
   SW_SF1,
   SW_SF2,
-  SW_SG0,
-  SW_SG1,
-  SW_SG2,
-  SW_SH0,
-  SW_SH1,
-  SW_SH2,
-  SW_SI0,
-  SW_SI1,
-  SW_SI2,
 #else
   SW_SA0,
   SW_SA1,
@@ -410,7 +412,7 @@ enum EnumSwitchesPositions
   SW_SR1,
   SW_SR2,
 #endif
-#endif // PCBTANGO
+#endif
 };
 #if defined(PCBTANGO)
   #define NUM_SWITCHES                  6
@@ -428,6 +430,11 @@ uint8_t keyState(uint8_t index);
 uint32_t switchState(uint8_t index);
 uint32_t readKeys(void);
 uint32_t readTrims(void);
+#if defined(PCBTANGO)
+extern uint8_t g_trimEditMode;
+extern uint8_t g_trimState;
+#endif
+
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
