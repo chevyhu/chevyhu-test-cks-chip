@@ -393,11 +393,9 @@ void menuMainView(event_t event)
 #else
         if (event == EVT_KEY_FIRST(KEY_RIGHT)) {
 #endif
-          TRACE("rotary up\n");
           g_trimState = 0x01 << key;
         }
         else {
-          TRACE("rotary down\n");
           g_trimState = 0x01 << (key + 1);
         }
       }
