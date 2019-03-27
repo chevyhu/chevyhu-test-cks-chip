@@ -563,7 +563,6 @@ void menuMainView(event_t event)
     // Timer2
     drawTimerWithMode(87, 5*FH, 1);
   }
-
   // And ! in case of unexpected shutdown
 #if defined(LOG_TELEMETRY) || defined(WATCHDOG_DISABLED)
   lcdDrawChar(REBOOT_X, 0*FH, '!', INVERS);
