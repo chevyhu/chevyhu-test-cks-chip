@@ -20,6 +20,12 @@
 
 #include "opentx.h"
 
+#define T_CURVE_H                        (64)
+#define T_CURVE_SIDE_WIDTH               (T_CURVE_H/2)
+#define T_CURVE_CENTER_X                 (LCD_W-T_CURVE_SIDE_WIDTH-2)
+#define T_CURVE_CENTER_Y                 (T_CURVE_H/2)
+#define T_CURVE_OFFSET_Y                 (16)
+
 #define EXPO_ONE_2ND_COLUMN (7*FW+3*FW+2)
 #define EXPO_ONE_FM_WIDTH   (5*FW)
 
@@ -33,20 +39,20 @@ int expoFn(int x)
 
 void drawFunction(FnFuncP fn, uint8_t offset)
 {
-  lcdDrawVerticalLine(CURVE_CENTER_X-offset, 0/*TODO CURVE_CENTER_Y-CURVE_SIDE_WIDTH*/, CURVE_SIDE_WIDTH*2, 0xee);
-  lcdDrawHorizontalLine(CURVE_CENTER_X-CURVE_SIDE_WIDTH-offset, CURVE_CENTER_Y, CURVE_SIDE_WIDTH*2, 0xee);
+  lcdDrawVerticalLine(T_CURVE_CENTER_X-offset, T_CURVE_OFFSET_Y/*TODO CURVE_CENTER_Y-CURVE_SIDE_WIDTH*/, T_CURVE_SIDE_WIDTH*2, 0xee);
+  lcdDrawHorizontalLine(T_CURVE_CENTER_X-T_CURVE_SIDE_WIDTH-offset, T_CURVE_CENTER_Y + T_CURVE_OFFSET_Y, T_CURVE_SIDE_WIDTH*2, 0xee);
 
   coord_t prev_yv = (coord_t)-1;
 
-  for (int xv=-CURVE_SIDE_WIDTH; xv<=CURVE_SIDE_WIDTH; xv++) {
-    coord_t yv = (LCD_H-1) - (((uint16_t)RESX + fn(xv * (RESX/CURVE_SIDE_WIDTH))) / 2 * (LCD_H-1) / RESX);
+  for (int xv=-T_CURVE_SIDE_WIDTH; xv<=T_CURVE_SIDE_WIDTH; xv++) {
+    coord_t yv = (T_CURVE_H-1) - (((uint16_t)RESX + fn(xv * (RESX/T_CURVE_SIDE_WIDTH))) / 2 * (T_CURVE_H-1) / RESX);
     if (prev_yv != (coord_t)-1) {
       if (abs((int8_t)yv-prev_yv) <= 1) {
-        lcdDrawPoint(CURVE_CENTER_X+xv-offset-1, prev_yv, FORCE);
+        lcdDrawPoint(T_CURVE_CENTER_X+xv-offset-1, prev_yv + T_CURVE_OFFSET_Y, FORCE);
       }
       else {
         uint8_t tmp = (prev_yv < yv ? 0 : 1);
-        lcdDrawSolidVerticalLine(CURVE_CENTER_X+xv-offset-1, yv+tmp, prev_yv-yv);
+        lcdDrawSolidVerticalLine(T_CURVE_CENTER_X+xv-offset-1, yv+tmp + T_CURVE_OFFSET_Y, prev_yv-yv);
       }
     }
     prev_yv = yv;
@@ -162,20 +168,20 @@ void menuModelExpoOne(event_t event)
 
   int x512 = getValue(ed->srcRaw);
   if (ed->srcRaw >= MIXSRC_FIRST_TELEM) {
-    drawSensorCustomValue(LCD_W-FW, 6*FH, (ed->srcRaw - MIXSRC_FIRST_TELEM) / 3, x512, 0);
+    drawSensorCustomValue(LCD_W-FW, 6*FH+T_CURVE_OFFSET_Y, (ed->srcRaw - MIXSRC_FIRST_TELEM) / 3, x512, 0);
     if (ed->scale > 0) x512 = (x512 * 1024) / convertTelemValue(ed->srcRaw - MIXSRC_FIRST_TELEM + 1, ed->scale);
   }
   else {
-    lcdDrawNumber(LCD_W-FW, 6*FH, calcRESXto1000(x512), RIGHT | PREC1);
+    lcdDrawNumber(LCD_W-FW, 6*FH + T_CURVE_OFFSET_Y, calcRESXto1000(x512), RIGHT | PREC1);
   }
   x512 = limit(-1024, x512, 1024);
   int y512 = expoFn(x512);
   y512 = limit(-1024, y512, 1024);
-  lcdDrawNumber(CURVE_CENTER_X-FWNUM, 1*FH, calcRESXto1000(y512), RIGHT | PREC1);
+  lcdDrawNumber(T_CURVE_CENTER_X-FWNUM, 1*FH + T_CURVE_OFFSET_Y, calcRESXto1000(y512), RIGHT | PREC1);
 
-  x512 = CURVE_CENTER_X+x512/(RESX/CURVE_SIDE_WIDTH);
-  y512 = (LCD_H-1) - ((y512+RESX)/2) * (LCD_H-1) / RESX;
+  x512 = T_CURVE_CENTER_X+x512/(RESX/T_CURVE_SIDE_WIDTH);
+  y512 = (T_CURVE_H-1) - ((y512+RESX)/2) * (T_CURVE_H-1) / RESX;
 
-  lcdDrawSolidVerticalLine(x512, y512-3, 3*2+1);
-  lcdDrawSolidHorizontalLine(x512-3, y512, 3*2+1);
+  lcdDrawSolidVerticalLine(x512, y512-3+T_CURVE_OFFSET_Y, 3*2+1);
+  lcdDrawSolidHorizontalLine(x512-3, y512+T_CURVE_OFFSET_Y, 3*2+1);
 }
