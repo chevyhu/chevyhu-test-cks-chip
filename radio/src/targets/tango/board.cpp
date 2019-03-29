@@ -320,8 +320,6 @@ void boardOff()
 #endif
   lcdOff();
   SysTick->CTRL = 0; // turn off systick
-  delay_ms(100);
-  delay_ms(100);
   pwrOff();
 }
 
