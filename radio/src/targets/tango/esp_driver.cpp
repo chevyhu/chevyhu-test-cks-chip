@@ -78,12 +78,12 @@ void espInit(uint32_t baudrate, bool use_dma)
   espTxFifo.clear();
   espRxFifo.clear();
   
-  GPIO_ResetBits(ESP_EN_GPIO, ESP_EN_GPIO_PIN); // open esp
+  GPIO_SetBits(ESP_EN_GPIO, ESP_EN_GPIO_PIN); // open esp
 }
 
 void espDone()
 {
-  GPIO_SetBits(ESP_EN_GPIO, ESP_EN_GPIO_PIN); // close esp
+  GPIO_ResetBits(ESP_EN_GPIO, ESP_EN_GPIO_PIN); // close esp
 }
 
 void espWriteBuffer(uint8_t* buf, uint8_t len){

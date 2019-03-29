@@ -178,7 +178,7 @@ void boardInit()
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph, ENABLE);
   KernelApiInit();
-#if !defined(PCBX9E)
+#if !defined(PCBX9E) || !defined(PCBTANGO)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();
 #endif
@@ -231,7 +231,11 @@ void boardInit()
 #endif
 
 #if defined(PWR_BUTTON_PRESS)
+#if defined(PCBTANGO)
+  if (!WAS_RESET_BY_WATCHDOG()) {
+#else
   if (!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
+#endif
     lcdClear();
 #if defined(PCBX9E)
     lcdDrawBitmap(76, 2, bmp_lock, 0, 60);
@@ -314,9 +318,10 @@ void boardOff()
     wdt_reset();
   }
 #endif
-
   lcdOff();
   SysTick->CTRL = 0; // turn off systick
+  delay_ms(100);
+  delay_ms(100);
   pwrOff();
 }
 

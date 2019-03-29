@@ -1406,8 +1406,8 @@
 #if defined(ESP_SERIAL)
   #define ESP_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_DMA1)
   #define ESP_RCC_APB1Periph            RCC_APB1Periph_UART4
-  #define ESP_EN_GPIO                   GPIOE
-  #define ESP_EN_GPIO_PIN               GPIO_Pin_11 // PE.11
+  #define ESP_EN_GPIO                   GPIOA
+  #define ESP_EN_GPIO_PIN               GPIO_Pin_3 // PA.03
   #define ESP_TX_GPIO                   GPIOA
   #define ESP_TX_GPIO_PIN               GPIO_Pin_0 // PA.00
   #define ESP_RX_GPIO                   GPIOA

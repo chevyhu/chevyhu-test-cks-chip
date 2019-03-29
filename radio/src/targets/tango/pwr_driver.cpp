@@ -79,6 +79,19 @@ void pwrOff()
   // disable interrupts
   __disable_irq();
 
+#if defined(PCBTANGO)
+  while (1) {
+    wdt_reset();
+    if (!pwrPressed()) {
+    	while(1){
+    	    wdt_reset();
+    		if(pwrPressed()){
+    			NVIC_SystemReset();
+    		}
+    	}
+    }
+  }
+#else
   while (1) {
     wdt_reset();
 #if defined(PWR_BUTTON_PRESS)
@@ -99,6 +112,7 @@ void pwrOff()
 #endif
   }
   // this function must not return!
+#endif // PCBTANGO
 }
 
 uint32_t pwrPressed()
