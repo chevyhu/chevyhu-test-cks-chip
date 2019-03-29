@@ -25,7 +25,9 @@
 enum usbMode {
   USB_UNSELECTED_MODE,
   USB_JOYSTICK_MODE,
+#if defined(AGENT)
   USB_AGENT_MODE,
+#endif
   USB_MASS_STORAGE_MODE,
   USB_SERIAL_MODE,
 #if defined(USB_SERIAL)
