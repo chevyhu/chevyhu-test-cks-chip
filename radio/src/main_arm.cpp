@@ -141,6 +141,10 @@ void checkBattery()
   static uint8_t sampleCount;
   // filter battery voltage by averaging it
   if (g_vbat100mV == 0) {
+#if defined(PCBTANGO)
+	// wait for power stable
+	delay_ms(200);
+#endif
     g_vbat100mV = (getBatteryVoltage() + 5) / 10;
     batSum = 0;
     sampleCount = 0;
