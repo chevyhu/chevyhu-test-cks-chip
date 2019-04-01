@@ -741,8 +741,6 @@ const char* getOtherVersion(char* buffer);
 extern uint8_t g_vbat100mV;
 #if LCD_W > 128
   #define GET_TXBATT_BARS() (limit<int8_t>(0, div_and_round(10 * (g_vbat100mV - g_eeGeneral.vBatMin - 90), 30 + g_eeGeneral.vBatMax - g_eeGeneral.vBatMin), 10))
-#elif defined(PCBTANGO)
-  #define GET_TXBATT_BARS() (limit<int8_t>(0, div_and_round(20 * (g_vbat100mV - (g_eeGeneral.vBatMin == 0 ? BATTERY_MIN : g_eeGeneral.vBatMin)), (g_eeGeneral.vBatMax == 0 ? BATTERY_MAX : g_eeGeneral.vBatMax) - (g_eeGeneral.vBatMin == 0 ? BATTERY_MIN : g_eeGeneral.vBatMin)), 20))
 #else
   #define GET_TXBATT_BARS() (limit<int8_t>(2, 20 * (g_vbat100mV - g_eeGeneral.vBatMin - 90) / (30 + g_eeGeneral.vBatMax - g_eeGeneral.vBatMin), 20))
 #endif
@@ -1241,6 +1239,8 @@ void varioWakeup();
 
 #if defined(PCBTARANIS)
   extern const unsigned char logo_taranis[];
+#elif defined(PCBTANGO)
+  extern const unsigned char logo_tango[];
 #endif
 
 #if defined(STM32)

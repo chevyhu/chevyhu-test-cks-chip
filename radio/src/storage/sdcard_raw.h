@@ -28,6 +28,7 @@
 
 // opens radio.bin or model file
 const char * openFile(const char * fullpath, FIL* file, uint16_t* size);
+extern ModelHeader modelHeaders[MAX_MODELS];
 
 void getModelPath(char * path, const char * filename);
 

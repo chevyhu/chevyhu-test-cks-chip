@@ -256,18 +256,12 @@ void generalDefault()
   g_eeGeneral.switchConfig = 0x00007bff; // 6x3POS, 1x2POS, 1xTOGGLE
 #endif
 
-#if defined(PCBTANGO)
-  g_eeGeneral.vBatWarn = BATTERY_WARN;
-  g_eeGeneral.vBatMin = BATTERY_MIN;
-  g_eeGeneral.vBatMax = BATTERY_MAX;
-#else
   // vBatWarn is voltage in 100mV, vBatMin is in 100mV but with -9V offset, vBatMax has a -12V offset
   g_eeGeneral.vBatWarn = BATTERY_WARN;
   if (BATTERY_MIN != 90)
     g_eeGeneral.vBatMin = BATTERY_MIN - 90;
   if (BATTERY_MAX != 120)
     g_eeGeneral.vBatMax = BATTERY_MAX - 120;
-#endif
 
 #if defined(DEFAULT_MODE)
   g_eeGeneral.stickMode = DEFAULT_MODE-1;
@@ -1784,10 +1778,6 @@ void opentxInit(OPENTX_INIT_ARGS)
 {
   TRACE("opentxInit");
 
-  //ALERT(STR_STORAGE_WARNING, "Chevy debugging", AU_NONE);
-
-  //while (1);
-
 #if defined(GUI)
   menuHandlers[0] = menuMainView;
   #if MENUS_LOCK != 2/*no menus*/
@@ -1972,7 +1962,7 @@ int main()
   // lcdSetRefVolt(25);
 #endif
 
-#if defined(SPLASH) && (defined(PCBTARANIS) || defined(PCBHORUS))
+#if defined(SPLASH) && (defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBHORUS))
   drawSplash();
 #endif
 

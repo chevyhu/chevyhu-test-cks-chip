@@ -521,7 +521,7 @@ PACK(struct CustomScreenData {
   NOBACKUP(CustomScreenData screenData[MAX_CUSTOM_SCREENS]); \
   NOBACKUP(Topbar::PersistentData topbarData); \
   NOBACKUP(uint8_t view);
-#elif defined(PCBTARANIS)
+#elif defined(PCBTARANIS) || defined(PCBTANGO)
 #define CUSTOM_SCREENS_DATA \
   NOBACKUP(uint8_t view);
 #else
@@ -873,7 +873,7 @@ static inline void check_struct()
   CHKSIZE(FrSkyBarData, 5);
   CHKSIZE(FrSkyLineData, 2);
   CHKSIZE(FrSkyTelemetryData, 96);
-  CHKSIZE(ModelHeader, 12);
+  CHKSIZE(ModelHeader, 22);
   CHKTYPE(CurveData, 4);
 
   CHKSIZE(MixData, 20);
@@ -907,7 +907,7 @@ static inline void check_struct()
   CHKSIZE(ModelData, 6520);
 #elif defined(PCBTANGO)
   CHKSIZE(RadioData, 723);
-  CHKSIZE(ModelData, 5886);
+  CHKSIZE(ModelData, 5897);
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);

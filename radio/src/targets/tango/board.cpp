@@ -121,7 +121,7 @@ extern "C" void INTERRUPT_xMS_IRQHandler()
   #define PWR_PRESS_DURATION_MAX        500 // 5s
 #endif
 
-#if (defined(PCBX9E) && !defined(SIMU))
+#if (defined(PCBX9E) || defined(PCBTANGO) && !defined(SIMU))
 const unsigned char bmp_startup[]  = {
   #include "startup.lbm"
 };
@@ -211,7 +211,7 @@ void boardInit()
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
-  TRACE("\Tango board started :)");
+  TRACE("Tango board started :)\r\n");
 #endif
 
 #if defined(ESP_SERIAL)
@@ -293,6 +293,8 @@ void boardInit()
     sportUpdateInit();
   }
 #endif // !defined(SIMU)
+
+  //TRACE("PWR_BUTTON = %s\n", PWR_BUTTON_PRESS);
 }
 
 void boardOff()
@@ -478,6 +480,7 @@ void _general_exception_handler (unsigned int * hardfault_args)
     }
 }
 
+#if !defined(SIMU)
 void HardFault_Handler(void)
 {
     __asm("TST LR, #4");
@@ -486,5 +489,5 @@ void HardFault_Handler(void)
     __asm("MRSNE R0, PSP");
     __asm("B _general_exception_handler");
 }
-
+#endif
 }	//extern "C" {

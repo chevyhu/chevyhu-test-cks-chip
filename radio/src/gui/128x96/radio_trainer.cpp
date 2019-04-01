@@ -34,7 +34,11 @@ void menuRadioTrainer(event_t event)
     uint8_t attr;
     uint8_t blink = ((s_editMode>0) ? BLINK|INVERS : INVERS);
 
+#if defined(PCBTANGO)
+    lcdDrawText(5*FW, MENU_HEADER_HEIGHT+1, STR_MODESRC);
+#else
     lcdDrawText(3*FW, MENU_HEADER_HEIGHT+1, STR_MODESRC);
+#endif
 
     y = MENU_HEADER_HEIGHT + 1 + FH;
 
@@ -50,17 +54,29 @@ void menuRadioTrainer(event_t event)
 
         switch (j) {
           case 0:
+#if defined(PCBTANGO)
+		    lcdDrawTextAtIndex(6*FW, y, STR_TRNMODE, td->mode, attr);
+#else
             lcdDrawTextAtIndex(4*FW, y, STR_TRNMODE, td->mode, attr);
+#endif
             if (attr&BLINK) CHECK_INCDEC_GENVAR(event, td->mode, 0, 2);
             break;
 
           case 1:
+#if defined(PCBTANGO)
+            lcdDrawNumber(13*FW, y, td->studWeight, attr|RIGHT);
+#else
             lcdDrawNumber(11*FW, y, td->studWeight, attr|RIGHT);
+#endif
             if (attr&BLINK) CHECK_INCDEC_GENVAR(event, td->studWeight, -125, 125);
             break;
 
           case 2:
+#if defined(PCBTANGO)
+            lcdDrawTextAtIndex(14*FW, y, STR_TRNCHN, td->srcChn, attr);
+#else
             lcdDrawTextAtIndex(12*FW, y, STR_TRNCHN, td->srcChn, attr);
+#endif
             if (attr&BLINK) CHECK_INCDEC_GENVAR(event, td->srcChn, 0, 3);
             break;
         }

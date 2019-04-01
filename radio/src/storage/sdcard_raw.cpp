@@ -21,6 +21,8 @@
 #include "opentx.h"
 #include "modelslist.h"
 
+ModelHeader modelHeaders[MAX_MODELS];
+
 void getModelPath(char * path, const char * filename)
 {
   strcpy(path, STR_MODELS_PATH);

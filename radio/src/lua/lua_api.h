@@ -155,9 +155,9 @@ extern uint16_t maxLuaInterval;
 extern uint16_t maxLuaDuration;
 extern uint8_t instructionsPercent;
 
-#if defined(PCBXLITE) || defined(PCBTANGO)
+#if defined(PCBXLITE)
   #define IS_MASKABLE(key) ((key) != KEY_EXIT && (key) != KEY_ENTER)
-#elif defined(PCBTARANIS)
+#elif defined(PCBTARANIS) || defined(PCBTANGO)
   #define IS_MASKABLE(key) ((key) != KEY_EXIT && (key) != KEY_ENTER && ((luaState & INTERPRETER_RUNNING_STANDALONE_SCRIPT) || (key) != KEY_PAGE))
 #elif defined(PCBHORUS)
   #define IS_MASKABLE(key) ((key) != KEY_EXIT && (key) != KEY_ENTER)

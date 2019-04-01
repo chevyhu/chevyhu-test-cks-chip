@@ -37,10 +37,6 @@ void pwrInit()
   GPIO_InitStructure.GPIO_Pin = EXTMODULE_PWR_GPIO_PIN;
   GPIO_Init(EXTMODULE_PWR_GPIO, &GPIO_InitStructure);
 
-  GPIO_InitStructure.GPIO_Pin = PWR_SWITCH_GPIO_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_Init(PWR_SWITCH_GPIO, &GPIO_InitStructure);
-
 #if defined(TRAINER_DETECT_GPIO_PIN)
   GPIO_InitStructure.GPIO_Pin = TRAINER_DETECT_GPIO_PIN;
   GPIO_Init(TRAINER_DETECT_GPIO, &GPIO_InitStructure);
@@ -53,6 +49,11 @@ void pwrInit()
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_Init(PCBREV_GPIO, &GPIO_InitStructure);
 #endif
+
+  GPIO_InitStructure.GPIO_Pin = PWR_SWITCH_GPIO_PIN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_Init(PWR_SWITCH_GPIO, &GPIO_InitStructure);
 
   pwrOn();
 }
@@ -102,7 +103,7 @@ void pwrOff()
 
 uint32_t pwrPressed()
 {
-  return GPIO_ReadInputDataBit(PWR_SWITCH_GPIO, PWR_SWITCH_GPIO_PIN) == Bit_RESET;
+  return GPIO_ReadInputDataBit(PWR_SWITCH_GPIO, PWR_SWITCH_GPIO_PIN) == Bit_SET;
 }
 
 void pwrResetHandler()

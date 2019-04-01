@@ -215,10 +215,8 @@ void drawTelemetryTopBar();
 
 void lcdClear(void);
 void lcdDraw1bitBitmap(coord_t x, coord_t y, const unsigned char * img, uint8_t idx, LcdFlags att=0);
-inline void lcdDrawBitmap(coord_t x, coord_t y, const uint8_t * bitmap)
-{
-  lcdDraw1bitBitmap(x, y, bitmap, 0);
-}
+void lcdDrawBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offset=0, coord_t width=0);
+void lcdDrawNornalBitmap(coord_t x, coord_t y, const uint8_t * img, coord_t offset, coord_t width);
 
 uint8_t * lcdLoadBitmap(uint8_t * dest, const char * filename, uint8_t width, uint8_t height);
 

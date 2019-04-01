@@ -24,6 +24,9 @@
 uint32_t rotencPosition;
 #endif
 
+#if defined(PCBTANGO)
+uint8_t  g_trimState = 0;
+#endif
 
 uint32_t readKeys()
 {
@@ -47,12 +50,14 @@ uint32_t readKeys()
   if (~KEYS_GPIO_REG_EXIT & KEYS_GPIO_PIN_EXIT)
     result |= 1 << KEY_EXIT;
 
+
 #if defined(KEYS_GPIO_PIN_PLUS)
   if (~KEYS_GPIO_REG_PLUS & KEYS_GPIO_PIN_PLUS)
     result |= 1 << KEY_PLUS;
   if (~KEYS_GPIO_REG_MINUS & KEYS_GPIO_PIN_MINUS)
     result |= 1 << KEY_MINUS;
 #endif
+
 
 #if defined(KEYS_GPIO_PIN_LEFT)
   if (~KEYS_GPIO_REG_LEFT & KEYS_GPIO_PIN_LEFT)
@@ -75,10 +80,16 @@ uint32_t readKeys()
   return result;
 }
 
+
 uint32_t readTrims()
 {
   uint32_t result = 0;
 
+#if defined(PCBTANGO)
+  // the trim state from the events of main view
+  result = g_trimState;
+  g_trimState = 0;
+ #else
   if (~TRIMS_GPIO_REG_LHL & TRIMS_GPIO_PIN_LHL)
     result |= 0x01;
   if (~TRIMS_GPIO_REG_LHR & TRIMS_GPIO_PIN_LHR)
@@ -88,10 +99,10 @@ uint32_t readTrims()
   if (~TRIMS_GPIO_REG_LVU & TRIMS_GPIO_PIN_LVU)
     result |= 0x08;
 
-#if defined(PCBXLITE)
+ #if defined(PCBXLITE)
   if (IS_SHIFT_PRESSED())
     result = ((result & 0x03) << 6) | ((result & 0x0c) << 2);
-#else
+ #else
   if (~TRIMS_GPIO_REG_RVD & TRIMS_GPIO_PIN_RVD)
     result |= 0x10;
   if (~TRIMS_GPIO_REG_RVU & TRIMS_GPIO_PIN_RVU)
@@ -100,10 +111,8 @@ uint32_t readTrims()
     result |= 0x40;
   if (~TRIMS_GPIO_REG_RHR & TRIMS_GPIO_PIN_RHR)
     result |= 0x80;
+ #endif
 #endif
-
-  // TRACE("readTrims(): result=0x%02x", result);
-
   return result;
 }
 
@@ -111,6 +120,7 @@ uint8_t trimDown(uint8_t idx)
 {
   return readTrims() & (1 << idx);
 }
+
 
 bool keyDown()
 {
@@ -141,15 +151,8 @@ void readKeysAndTrims()
   }
 }
 
-uint8_t keyState(uint8_t index)
-{
-  return keys[index].state();
-}
-
-#if !defined(SIMU)
-
-#if defined(PCBX9E) || defined(PCBTANGO)
-  #define ADD_2POS_CASE(x) \
+#if defined(PCBX9E)
+#define ADD_2POS_CASE(x) \
     case SW_S ## x ## 2: \
       xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break; \
@@ -157,7 +160,7 @@ uint8_t keyState(uint8_t index)
       xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break;
 #else
-  #define ADD_2POS_CASE(x) \
+#define ADD_2POS_CASE(x) \
     case SW_S ## x ## 0: \
       xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break; \
@@ -165,7 +168,7 @@ uint8_t keyState(uint8_t index)
       xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break;
 #endif
-  #define ADD_3POS_CASE(x, i) \
+#define ADD_3POS_CASE(x, i) \
     case SW_S ## x ## 0: \
       xxx = (SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H); \
       if (IS_CONFIG_3POS(i)) { \
@@ -182,6 +185,10 @@ uint8_t keyState(uint8_t index)
       } \
       break
 
+uint8_t keyState(uint8_t index)
+{
+  return keys[index].state();
+}
 
 #if !defined(BOOT)
 uint32_t switchState(uint8_t index)
@@ -196,9 +203,6 @@ uint32_t switchState(uint8_t index)
     ADD_2POS_CASE(D);
     ADD_2POS_CASE(E);
     ADD_2POS_CASE(F);
-    ADD_2POS_CASE(G);
-    ADD_2POS_CASE(H);
-    ADD_2POS_CASE(I);
 #else
     ADD_3POS_CASE(A, 0);
     ADD_3POS_CASE(B, 1);
@@ -227,7 +231,7 @@ uint32_t switchState(uint8_t index)
     ADD_3POS_CASE(Q, 16);
     ADD_3POS_CASE(R, 17);
 #endif
-#endif  // PCBTANGO
+#endif
     default:
       break;
   }
@@ -235,7 +239,6 @@ uint32_t switchState(uint8_t index)
   // TRACE("switch %d => %d", index, xxx);
   return xxx;
 }
-#endif
 #endif
 
 #if defined(ROTARY_ENCODER_NAVIGATION)

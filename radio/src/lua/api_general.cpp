@@ -1395,6 +1395,10 @@ const luaR_value_entry opentxConstants[] = {
   { "MIXSRC_SF", MIXSRC_SF },
   { "MIXSRC_SH", MIXSRC_SH },
 #endif
+#if defined(PCBTANGO)
+  { "MIXSRC_SE", MIXSRC_SE },
+  { "MIXSRC_SF", MIXSRC_SF },
+#endif
   { "MIXSRC_CH1", MIXSRC_CH1 },
   { "SWSRC_LAST", SWSRC_LAST_LOGICAL_SWITCH },
 #if defined(COLORLCD)
@@ -1448,7 +1452,7 @@ const luaR_value_entry opentxConstants[] = {
   { "EVT_SYS_FIRST",  EVT_KEY_FIRST(KEY_RADIO) },
   { "EVT_RTN_FIRST",  EVT_KEY_FIRST(KEY_EXIT) },
 #elif defined(PCBXLITE)
-  { "EVT_DOWN_FIRST", EVT_KEY_FIRST(KEY_DOWN) },
+{ "EVT_DOWN_FIRST", EVT_KEY_FIRST(KEY_DOWN) },
   { "EVT_UP_FIRST", EVT_KEY_FIRST(KEY_UP) },
   { "EVT_LEFT_FIRST", EVT_KEY_FIRST(KEY_LEFT) },
   { "EVT_RIGHT_FIRST", EVT_KEY_FIRST(KEY_RIGHT) },
@@ -1470,7 +1474,7 @@ const luaR_value_entry opentxConstants[] = {
   { "FORCE", FORCE },
   { "ERASE", ERASE },
   { "ROUND", ROUND },
-#elif defined(PCBTARANIS)
+#elif defined(PCBTARANIS) || defined(PCBTANGO)
   { "EVT_MENU_BREAK", EVT_KEY_BREAK(KEY_MENU) },
   { "EVT_MENU_LONG", EVT_KEY_LONG(KEY_MENU) },
   { "EVT_PAGE_BREAK", EVT_KEY_BREAK(KEY_PAGE) },

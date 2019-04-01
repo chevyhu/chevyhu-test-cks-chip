@@ -132,6 +132,18 @@ enum CurveType {
   #define LEN_FUNCTION_NAME            8
   #define MAX_CURVES                   32
   #define MAX_CURVE_POINTS             512
+#elif defined(PCBTANGO)
+  #define LEN_MODEL_NAME               10
+  #define LEN_TIMER_NAME               3
+  #define LEN_FLIGHT_MODE_NAME         6
+  #define LEN_BITMAP_NAME              10
+  #define LEN_EXPOMIX_NAME             6
+  #define LEN_CHANNEL_NAME             4
+  #define LEN_INPUT_NAME               3
+  #define LEN_CURVE_NAME               3
+  #define LEN_FUNCTION_NAME            6
+  #define MAX_CURVES                   16   // TODO next EEPROM check if can be changed to 32 to have all ARM the same
+  #define MAX_CURVE_POINTS             512
 #else
   #define LEN_MODEL_NAME               10
   #define LEN_TIMER_NAME               3
@@ -391,8 +403,27 @@ enum SwitchSources {
   SWSRC_NONE = 0,
 
   SWSRC_FIRST_SWITCH,
-
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTANGO)
+  SWSRC_SA0 = SWSRC_FIRST_SWITCH,
+  SWSRC_SA1,
+  SWSRC_SA2,
+  SWSRC_SB0,
+  SWSRC_SB1,
+  SWSRC_SB2,
+  SWSRC_SC0,
+  SWSRC_SC1,
+  SWSRC_SC2,
+  SWSRC_SD0,
+  SWSRC_SD1,
+  SWSRC_SD2,
+  SWSRC_SE0,
+  SWSRC_SE1,
+  SWSRC_SE2,
+  SWSRC_SF0,
+  SWSRC_SF1,
+  SWSRC_SF2,
+  SWSRC_LAST_SWITCH = SWSRC_SF2,
+#elif defined(PCBTARANIS) || defined(PCBHORUS)
   SWSRC_SA0 = SWSRC_FIRST_SWITCH,
   SWSRC_SA1,
   SWSRC_SA2,

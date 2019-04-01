@@ -81,6 +81,8 @@ FXIMPLEMENT(Open9xSim,FXMainWindow,Open9xSimMap,ARRAYNUMBER(Open9xSimMap))
 Open9xSim::Open9xSim(FXApp* a):
   FXMainWindow(a, "OpenTX Simu", NULL, NULL, DECOR_ALL, 20, 90, 0, 0)
 {
+  int test = 85;
+
   firstTime = true;
   memset(displayBuf, 0, DISPLAY_BUFFER_SIZE * sizeof(display_t));
   bmp = new FXPPMImage(getApp(),NULL,IMAGE_OWNED|IMAGE_KEEP|IMAGE_SHMI|IMAGE_SHMP, W2, H2);
@@ -302,9 +304,11 @@ void Open9xSim::updateKeysAndSwitches(bool start)
   static FXuint trimKeys[] = { KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12 };
 #endif
 
+#if 0
   for (unsigned i=0; i<DIM(trimKeys); i++) {
     simuSetTrim(i, getApp()->getKeyState(trimKeys[i]));
   }
+#endif
 
 #define SWITCH_KEY(key, swtch, states) \
   static bool state##key = 0; \
@@ -351,6 +355,13 @@ void Open9xSim::updateKeysAndSwitches(bool start)
   SWITCH_KEY(F, 5, 2);
   SWITCH_KEY(G, 6, 3);
   SWITCH_KEY(H, 7, 2);
+#elif defined(PCBTANGO)
+  SWITCH_KEY(A, 0, 2);
+  SWITCH_KEY(B, 1, 3);
+  SWITCH_KEY(C, 2, 3);
+  SWITCH_KEY(D, 3, 2);
+  SWITCH_KEY(E, 4, 2);
+  SWITCH_KEY(F, 5, 2);
 #else
   SWITCH_KEY(1, 0, 2);
   SWITCH_KEY(2, 1, 2);
@@ -425,6 +436,13 @@ long Open9xSim::onTimeout(FXObject*, FXSelector, void*)
     SWITCH_KEY(G, 6, 3);
     SWITCH_KEY(H, 7, 2);
 #endif
+#elif defined(PCBTANGO)
+    SWITCH_KEY(A, 0, 3);
+    SWITCH_KEY(B, 1, 3);
+    SWITCH_KEY(C, 2, 3);
+    SWITCH_KEY(D, 3, 3);
+    SWITCH_KEY(E, 4, 3);
+    SWITCH_KEY(F, 5, 3);
 #else
     SWITCH_KEY(1, 0, 2);
     SWITCH_KEY(2, 1, 2);
@@ -442,6 +460,7 @@ long Open9xSim::onTimeout(FXObject*, FXSelector, void*)
     timeToRefresh = 0;
     refreshDisplay();
   }
+
   getApp()->addTimeout(this, 2, 10);
   return 0;
 }

@@ -157,3 +157,22 @@ uint8_t * lcdLoadBitmap(uint8_t * bmp, const char * filename, uint8_t width, uin
   f_close(&bmpFile);
   return bmp;
 }
+
+uint8_t modelBitmap[MODEL_BITMAP_SIZE] __DMA;
+
+bool loadModelBitmap(char * name, uint8_t * bitmap)
+{
+  uint8_t len = zlen(name, LEN_BITMAP_NAME);
+  if (len > 0) {
+    char lfn[] = BITMAPS_PATH "/xxxxxxxxxx.bmp";
+    strncpy(lfn+sizeof(BITMAPS_PATH), name, len);
+    strcpy(lfn+sizeof(BITMAPS_PATH)+len, BMP_EXT);
+    if (lcdLoadBitmap(bitmap, lfn, MODEL_BITMAP_WIDTH, MODEL_BITMAP_HEIGHT)) {
+      return true;
+    }
+  }
+
+  // In all error cases, we set the default logo
+  memcpy(bitmap, logo_tango, MODEL_BITMAP_SIZE);
+  return false;
+}

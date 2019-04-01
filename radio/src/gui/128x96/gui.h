@@ -25,6 +25,7 @@
 #include "lcd.h"
 #include "menus.h"
 #include "popups.h"
+#include "widget.h"
 
 #define HEADER_LINE                    0
 #define HEADER_LINE_COLUMNS
@@ -47,9 +48,16 @@
 #define CURVE_CENTER_X                 (LCD_W-CURVE_SIDE_WIDTH-2)
 #define CURVE_CENTER_Y                 (LCD_H/2)
 
-#define MIXES_2ND_COLUMN               (18*FW)
+#if defined(PCBTANGO)
+#define MIXES_2ND_COLUMN               (10*FW)
+#endif
 
 #define MENUS_SCROLLBAR_WIDTH          2
+
+#define INVERT_HORZ_MARGIN             2
+#define INVERT_VERT_MARGIN             1
+#define INVERT_LINE_HEIGHT             20
+
 
 inline void drawFieldLabel(coord_t x, coord_t y, const char * str)
 {
