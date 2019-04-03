@@ -84,12 +84,12 @@ void CRSF_This_Device( uint8_t *p_arr )
       // Buffer telemetry data inside a FIFO to let telemetryWakeup read from it and keep the
       // compatibility with the existing telemetry infrastructure.
       // TODO: perna clean debug printf
-      debugPrintf("\r\n");
+//      debugPrintf("\r\n");
       for(i = 0; i < *(p_arr + LIBCRSF_LENGTH_ADD) + 2; i++) {
-        debugPrintf("%x,", *(p_arr + i) );
+//        debugPrintf("%x,", *(p_arr + i) );
         crsf_telemetry_buffer.push(*(p_arr + i));
       }
-      debugPrintf("\r\n");
+//      debugPrintf("\r\n");
       break;
   }
 }
