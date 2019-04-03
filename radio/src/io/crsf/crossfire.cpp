@@ -100,14 +100,14 @@ uint8_t telemetryGetByte(uint8_t * byte)
 {
   bool res = crsf_telemetry_buffer.pop(*byte);
 #if defined(LUA)
-//  //  if (telemetryProtocol == PROTOCOL_FRSKY_SPORT) //henry: what is the protocol?
-//  {
-//    static uint8_t prevdata;
-//    if (prevdata == 0x7E && outputTelemetryBufferSize > 0 && *byte == outputTelemetryBufferTrigger) {
-//      sportSendBuffer(outputTelemetryBuffer, outputTelemetryBufferSize);
-//    }
-//    prevdata = *byte;
-//  }
+  if (telemetryProtocol == PROTOCOL_PULSES_CROSSFIRE) //henry: what is the protocol?
+  {
+    static uint8_t prevdata;
+    if (prevdata == 0x7E && outputTelemetryBufferSize > 0 && *byte == outputTelemetryBufferTrigger) {
+      sportSendBuffer(outputTelemetryBuffer, outputTelemetryBufferSize);
+    }
+    prevdata = *byte;
+  }
 #endif
   return res;
 }
