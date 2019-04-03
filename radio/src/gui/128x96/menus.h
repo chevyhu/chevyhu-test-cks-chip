@@ -74,7 +74,7 @@ enum MenuRadioIndexes
   MENU_RADIO_SETUP,
   CASE_SDCARD(MENU_RADIO_SD_MANAGER)
   MENU_RADIO_SPECIAL_FUNCTIONS,
-  MENU_RADIO_TRAINER,
+  //MENU_RADIO_TRAINER,
   MENU_RADIO_VERSION,
   MENU_RADIO_SWITCHES_TEST,
   MENU_RADIO_ANALOGS_TEST,
@@ -97,7 +97,7 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
   menuRadioSetup,
   CASE_SDCARD(menuRadioSdManager)
   menuRadioSpecialFunctions,
-  menuRadioTrainer,
+  //menuRadioTrainer,
   menuRadioVersion,
   menuRadioDiagKeys,
   menuRadioDiagAnalogs,

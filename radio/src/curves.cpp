@@ -20,6 +20,14 @@
 
 #include "opentx.h"
 
+#if defined(PCBTANGO)
+#define T_CURVE_H                        (64)
+#define T_CURVE_SIDE_WIDTH               (T_CURVE_H/2)
+#define T_CURVE_CENTER_X                 (LCD_W-T_CURVE_SIDE_WIDTH-2)
+#define T_CURVE_CENTER_Y                 (T_CURVE_H/2)
+#define T_CURVE_OFFSET_Y                 (16)
+#endif
+
 uint8_t s_curveChan;
 
 int8_t * curveEnd[MAX_CURVES];
@@ -321,6 +329,15 @@ point_t getPoint(uint8_t i)
   int8_t * points = curveAddress(s_curveChan);
   bool custom = (crv.type == CURVE_TYPE_CUSTOM);
   uint8_t count = 5+crv.points;
+#if defined(PCBTANGO)
+  if (i < count) {
+    result.x = T_CURVE_CENTER_X-1-T_CURVE_SIDE_WIDTH + i*T_CURVE_SIDE_WIDTH*2/(count-1);
+    result.y = CURVE_CENTER_Y - (points[i]) * (T_CURVE_SIDE_WIDTH-1) / 100;
+    if (custom && i>0 && i<count-1) {
+      result.x = T_CURVE_CENTER_X - 1 - T_CURVE_SIDE_WIDTH + (100 + (100 + points[count + i - 1]) * (2 * T_CURVE_SIDE_WIDTH)) / 200;
+    }
+  }
+#else
   if (i < count) {
     result.x = CURVE_CENTER_X-1-CURVE_SIDE_WIDTH + i*CURVE_SIDE_WIDTH*2/(count-1);
     result.y = CURVE_CENTER_Y - (points[i]) * (CURVE_SIDE_WIDTH-1) / 100;
@@ -328,6 +345,7 @@ point_t getPoint(uint8_t i)
       result.x = CURVE_CENTER_X - 1 - CURVE_SIDE_WIDTH + (100 + (100 + points[count + i - 1]) * (2 * CURVE_SIDE_WIDTH)) / 200;
     }
   }
+#endif
   return result;
 }
 

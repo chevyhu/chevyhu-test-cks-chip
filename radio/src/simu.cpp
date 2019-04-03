@@ -81,8 +81,6 @@ FXIMPLEMENT(Open9xSim,FXMainWindow,Open9xSimMap,ARRAYNUMBER(Open9xSimMap))
 Open9xSim::Open9xSim(FXApp* a):
   FXMainWindow(a, "OpenTX Simu", NULL, NULL, DECOR_ALL, 20, 90, 0, 0)
 {
-  int test = 85;
-
   firstTime = true;
   memset(displayBuf, 0, DISPLAY_BUFFER_SIZE * sizeof(display_t));
   bmp = new FXPPMImage(getApp(),NULL,IMAGE_OWNED|IMAGE_KEEP|IMAGE_SHMI|IMAGE_SHMP, W2, H2);
@@ -304,11 +302,9 @@ void Open9xSim::updateKeysAndSwitches(bool start)
   static FXuint trimKeys[] = { KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12 };
 #endif
 
-#if 0
   for (unsigned i=0; i<DIM(trimKeys); i++) {
     simuSetTrim(i, getApp()->getKeyState(trimKeys[i]));
   }
-#endif
 
 #define SWITCH_KEY(key, swtch, states) \
   static bool state##key = 0; \
@@ -602,7 +598,7 @@ int main(int argc,char **argv)
   StartEepromThread(argc >= 2 ? argv[1] : "eeprom.bin");
 #endif
   StartAudioThread();
-  StartSimu(false, argc >= 3 ? argv[2] : 0, argc >= 4 ? argv[3] : 0);
+  StartSimu(true, argc >= 3 ? argv[2] : 0, argc >= 4 ? argv[3] : 0);
 
   return application.run();
 }

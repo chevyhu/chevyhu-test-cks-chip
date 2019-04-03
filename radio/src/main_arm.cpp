@@ -33,9 +33,11 @@ void onUSBConnectMenu(const char *result)
   else if (result == STR_USB_JOYSTICK) {
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
+#if defined(PCBTANGO)
   else if (result == STR_USB_AGENT) {
     setSelectedUsbMode(USB_AGENT_MODE);
   }
+#endif
   else if (result == STR_USB_SERIAL) {
     setSelectedUsbMode(USB_SERIAL_MODE);
   }
@@ -55,6 +57,9 @@ void handleUsbConnection()
   if (!usbStarted() && usbPlugged() && getSelectedUsbMode() == USB_UNSELECTED_MODE) {
     if((g_eeGeneral.USBMode == USB_UNSELECTED_MODE) && (popupMenuNoItems == 0)) {
       POPUP_MENU_ADD_ITEM(STR_USB_JOYSTICK);
+#if defined(PCBTANGO)
+      POPUP_MENU_ADD_ITEM(STR_USB_AGENT);
+#endif
       POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
 #if defined(DEBUG)
       POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
@@ -141,6 +146,10 @@ void checkBattery()
   static uint8_t sampleCount;
   // filter battery voltage by averaging it
   if (g_vbat100mV == 0) {
+#if defined(PCBTANGO)
+	// wait for power stable
+	delay_ms(200);
+#endif
     g_vbat100mV = (getBatteryVoltage() + 5) / 10;
     batSum = 0;
     sampleCount = 0;
@@ -431,7 +440,9 @@ void perMain()
   checkEeprom();
   logsWrite();
   handleUsbConnection();
-  //checkTrainerSettings();
+#if !defined(PCBTANGO)
+  checkTrainerSettings();
+#endif
   periodicTick();
   DEBUG_TIMER_STOP(debugTimerPerMain1);
 

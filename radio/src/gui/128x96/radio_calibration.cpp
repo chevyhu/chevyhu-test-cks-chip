@@ -58,7 +58,7 @@ void menuCommonCalib(event_t event)
 
   uint8_t i;
   static bool isCalValid = false;
-
+#else
   for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) { // get low and high vals for sticks and trims
     int16_t vt = anaIn(i);
     reusableBuffer.calib.loVals[i] = min(vt, reusableBuffer.calib.loVals[i]);
@@ -101,7 +101,9 @@ void menuCommonCalib(event_t event)
 #endif
     }
   }
+#endif  //#if defined(PCBTANGO)
 
+#if defined(PCBTANGO)
   if( crossfireSharedData.stick_state == CALIB_INVALID ) {
     // the validity of calibration values is checked at XF side
     // CALIB_INVALID indicates no calibration values stored or stored calibration values are corrupted

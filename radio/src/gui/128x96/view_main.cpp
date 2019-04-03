@@ -393,11 +393,9 @@ void menuMainView(event_t event)
 #else
         if (event == EVT_KEY_FIRST(KEY_RIGHT)) {
 #endif
-          TRACE("rotary up\n");
           g_trimState = 0x01 << key;
         }
         else {
-          TRACE("rotary down\n");
           g_trimState = 0x01 << (key + 1);
         }
       }
@@ -565,9 +563,8 @@ void menuMainView(event_t event)
     // Timer2
     drawTimerWithMode(87, 5*FH, 1);
   }
-
   // And ! in case of unexpected shutdown
-#if defined(LOG_TELEMETRY) || defined(WATCHDOG_DISABLED)
+#if defined(LOG_TELEMETRY) || defined(WATCHDOG_DISABLED) && !defined(PCBTANGO)
   lcdDrawChar(REBOOT_X, 0*FH, '!', INVERS);
 #else
   if (unexpectedShutdown) {

@@ -19,6 +19,7 @@
  */
 
 #include "opentx.h"
+#include "io/crsf/crossfire.h"
 
 RTOS_TASK_HANDLE crossfireTaskId;
 RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
@@ -178,7 +179,7 @@ void boardInit()
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph, ENABLE);
   KernelApiInit();
-#if !defined(PCBX9E)
+#if !defined(PCBX9E) || !defined(PCBTANGO)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();
 #endif
@@ -231,7 +232,11 @@ void boardInit()
 #endif
 
 #if defined(PWR_BUTTON_PRESS)
+#if defined(PCBTANGO)
+  if (!WAS_RESET_BY_WATCHDOG()) {
+#else
   if (!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
+#endif
     lcdClear();
 #if defined(PCBX9E)
     lcdDrawBitmap(76, 2, bmp_lock, 0, 60);
@@ -314,7 +319,6 @@ void boardOff()
     wdt_reset();
   }
 #endif
-
   lcdOff();
   SysTick->CTRL = 0; // turn off systick
   pwrOff();
@@ -389,10 +393,7 @@ RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 TASK_FUNCTION(systemTask)
 {
   while(1) {
-
-//      SYS_Tasks();
-//      USB_APP_Tasks();
-//      crsfSharedFifoHandler();
+      crsfSharedFifoHandler();
   }
   TASK_RETURN();
 }

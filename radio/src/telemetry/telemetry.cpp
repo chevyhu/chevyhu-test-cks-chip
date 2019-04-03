@@ -66,7 +66,11 @@ void processTelemetryData(uint8_t data)
 
 void telemetryWakeup()
 {
+#if defined(PCBTANGO)
+  uint8_t requiredTelemetryProtocol = PROTOCOL_PULSES_CROSSFIRE;
+#else
   uint8_t requiredTelemetryProtocol = modelTelemetryProtocol();
+#endif
 #if defined(REVX)
   uint8_t requiredSerialInversion = g_model.moduleData[EXTERNAL_MODULE].invertedSerial;
   if (telemetryProtocol != requiredTelemetryProtocol || serialInversion != requiredSerialInversion) {

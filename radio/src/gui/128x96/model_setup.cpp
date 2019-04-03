@@ -731,6 +731,7 @@ void menuModelSetup(event_t event)
         break;
 #endif
 
+#if 0
       case ITEM_MODEL_EXTERNAL_MODULE_LABEL:
         lcdDrawTextAlignedLeft(y, TR_EXTERNALRF);
         break;
@@ -843,6 +844,7 @@ void menuModelSetup(event_t event)
       }
       break;
 #endif
+#endif
 
 #if defined(PCBTARANIS)
       case ITEM_MODEL_TRAINER_LABEL:
@@ -920,6 +922,8 @@ void menuModelSetup(event_t event)
 #if defined(PCBSKY9X)
         case ITEM_MODEL_EXTRA_MODULE_CHANNELS:
 #endif
+
+#if 0
       case ITEM_MODEL_EXTERNAL_MODULE_CHANNELS:
       {
         uint8_t moduleIdx = CURRENT_MODULE_EDITED(k);
@@ -946,6 +950,7 @@ void menuModelSetup(event_t event)
         }
         break;
       }
+#endif
 
 #if defined(PCBX7)
         case ITEM_MODEL_TRAINER_PARAMS:

@@ -48,9 +48,15 @@ class hapticQueue
     }
 
   protected:
+#if defined(PCBTANGO)
+    inline uint8_t getHapticLength(uint8_t tLen) {
+      return ((g_eeGeneral.hapticLength * 2) + tLen);
+    }
+#else
     inline uint8_t getHapticLength(uint8_t tLen) {
       return ((g_eeGeneral.hapticLength * 2) + tLen) * 2;
     }
+#endif
 
   private:
     uint8_t t_queueRidx;
