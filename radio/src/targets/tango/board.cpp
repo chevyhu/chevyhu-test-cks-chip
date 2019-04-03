@@ -19,6 +19,7 @@
  */
 
 #include "opentx.h"
+#include "io/crsf/crossfire.h"
 
 RTOS_TASK_HANDLE crossfireTaskId;
 RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
@@ -392,10 +393,7 @@ RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 TASK_FUNCTION(systemTask)
 {
   while(1) {
-
-//      SYS_Tasks();
-//      USB_APP_Tasks();
-//      crsfSharedFifoHandler();
+      crsfSharedFifoHandler();
   }
   TASK_RETURN();
 }

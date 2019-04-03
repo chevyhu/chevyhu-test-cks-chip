@@ -40,9 +40,9 @@ _libCrsf_CRSF_Port CRSF_Ports[] = {
 };
 
 // TODO: perna link to correct data
-static uint8_t libCrsf_MySlaveAddress = 0xEE;
+static uint8_t libCrsf_MySlaveAddress = 0xEA;
 static char *libCrsf_MyDeviceName = "Tango V2";
-static uint32_t libCrsf_MySerialNo = 1;
+static uint32_t libCrsf_MySerialNo = 6;
 static uint32_t libCrsf_MyHwID = 0x0100;
 static uint32_t libCrsf_MyFwID = 0x0100;
 
@@ -51,6 +51,10 @@ Fifo<uint8_t, TELEMETRY_BUFFER_SIZE> crsf_telemetry_buffer;
 void CRSF_Init( void )
 {
   /* init crsf library */
+
+  crossfireSharedData.crsf_tx.clear();
+  crossfireSharedData.crsf_rx.clear();
+
   libCrsf_Init( libCrsf_MySlaveAddress, libCrsf_MyDeviceName, libCrsf_MySerialNo, libCrsf_MyHwID, libCrsf_MyFwID );
 
   libCrsf_CRSF_Add_Device_Function_List( &CRSF_Ports[0], ARRAY_SIZE(CRSF_Ports));
@@ -92,21 +96,21 @@ void CRSF_This_Device( uint8_t *p_arr )
 }
 
 // disable for temp run
-//uint8_t telemetryGetByte(uint8_t * byte)
-//{
-//  bool res = crsf_telemetry_buffer.pop(*byte);
-//#if defined(LUA)
-////  //  if (telemetryProtocol == PROTOCOL_FRSKY_SPORT) //henry: what is the protocol?
-////  {
-////    static uint8_t prevdata;
-////    if (prevdata == 0x7E && outputTelemetryBufferSize > 0 && *byte == outputTelemetryBufferTrigger) {
-////      sportSendBuffer(outputTelemetryBuffer, outputTelemetryBufferSize);
-////    }
-////    prevdata = *byte;
-////  }
-//#endif
-//  return res;
-//}
+uint8_t telemetryGetByte(uint8_t * byte)
+{
+  bool res = crsf_telemetry_buffer.pop(*byte);
+#if defined(LUA)
+//  //  if (telemetryProtocol == PROTOCOL_FRSKY_SPORT) //henry: what is the protocol?
+//  {
+//    static uint8_t prevdata;
+//    if (prevdata == 0x7E && outputTelemetryBufferSize > 0 && *byte == outputTelemetryBufferTrigger) {
+//      sportSendBuffer(outputTelemetryBuffer, outputTelemetryBufferSize);
+//    }
+//    prevdata = *byte;
+//  }
+#endif
+  return res;
+}
 
 void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 {
@@ -121,10 +125,11 @@ void crsfSharedFifoHandler( void )
 {
   uint8_t byte;
   static _libCrsf_CRSF_PARSE_DATA CRSF_Data;
-
   if ( crossfireSharedData.crsf_tx.pop(byte) ) {
     if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
       libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
+      libCrsf_CRSF_Routing( DEVICE_INTERNAL, CRSF_Data.Payload );
+      libCrsf_CRSF_Routing( USB_HID, CRSF_Data.Payload );
     }
   }
 }

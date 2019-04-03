@@ -51,7 +51,9 @@ enum TaskIndex {
 #ifdef DEBUG_CRSF_SD_READ_TEST
   OTA_CROSSFIRE_TASK_INDEX,
 #endif
+#if defined(CRSF_SD)
   OTA_TASK_INDEX,
+#endif
   CLI_TASK_INDEX,
   BLUETOOTH_TASK_INDEX,
   TASK_INDEX_COUNT,
@@ -159,7 +161,7 @@ TASK_FUNCTION(mixerTask)
       }
 #endif
 
-#if defined(TELEMETRY_FRSKY)
+#if defined(TELEMETRY_FRSKY) || defined(PCBTANGO)
       DEBUG_TIMER_START(debugTimerTelemetryWakeup);
       telemetryWakeup();
       DEBUG_TIMER_STOP(debugTimerTelemetryWakeup);
@@ -309,7 +311,7 @@ void tasksStart()
   }
 
   //henry need fix
-//  RTOS_CREATE_TASK(systemTaskId, systemTask, "system", systemStack, SYSTEM_STACK_SIZE, RTOS_SYS_TASK_PRIORITY);
+  RTOS_CREATE_TASK(systemTaskId, systemTask, "system", systemStack, SYSTEM_STACK_SIZE, RTOS_SYS_TASK_PRIORITY);
 #endif
 
 #if !defined(SIMU)

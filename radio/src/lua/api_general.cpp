@@ -39,6 +39,7 @@
   #include "lua/lua_exports_x9d.inc"
 #elif defined(PCBTANGO)
 #include "lua/lua_exports_tango.inc"
+#include "io/crsf/crossfire.h"
 #endif
 
 #if defined(SIMU)
@@ -510,6 +511,11 @@ static int luaCrossfireTelemetryPush(lua_State * L)
     }
     telemetryOutputPushByte(crc8(outputTelemetryBuffer+2, 1 + length));
     telemetryOutputSetTrigger(command);
+#if defined(PCBTANGO)
+    libCrsf_CRSF_Routing( DEVICE_INTERNAL, outputTelemetryBuffer);
+    outputTelemetryBufferTrigger = 0x00;
+    outputTelemetryBufferSize = 0;
+#endif
     lua_pushboolean(L, true);
   }
   else {
