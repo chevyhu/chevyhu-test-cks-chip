@@ -401,6 +401,15 @@ TASK_FUNCTION(systemTask)
 
 
 extern "C" {
+
+void EXTI15_10_IRQHandler(void)
+{
+	void (*Crossfire_Task)(void);
+	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
+	/* call DIOCN handler of crossfire */
+	Crossfire_Task();
+}
+
 #include <stdio.h>
 #include <stdarg.h>
 void uart_tx(uint8_t byte)
