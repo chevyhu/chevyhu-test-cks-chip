@@ -274,7 +274,10 @@ void displayBattVoltage()
 #if defined(NAVIGATION_MENUS)
 void onMainViewMenu(const char *result)
 {
-  if (result == STR_RESET_TIMER1) {
+  if (result == STR_MODEL_SELECT) {
+    chainMenu(menuModelSelect);
+  }
+  else if (result == STR_RESET_TIMER1) {
     timerReset(0);
   }
   else if (result == STR_RESET_TIMER2) {
@@ -335,13 +338,11 @@ void menuMainView(event_t event)
 #if defined(NAVIGATION_MENUS)
     case EVT_KEY_CONTEXT_MENU:
       killEvents(event);
-
+      POPUP_MENU_ADD_ITEM(STR_MODEL_SELECT);
       if (modelHasNotes()) {
         POPUP_MENU_ADD_ITEM(STR_VIEW_NOTES);
       }
-
       POPUP_MENU_ADD_ITEM(STR_RESET_SUBMENU);
-
       POPUP_MENU_ADD_ITEM(STR_STATISTICS);
       POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
       POPUP_MENU_START(onMainViewMenu);
@@ -351,7 +352,7 @@ void menuMainView(event_t event)
 
 #if MENUS_LOCK != 2/*no menus*/
     case EVT_KEY_BREAK(KEY_MENU):
-      pushMenu(menuModelSelect);
+      pushMenu(menuModelSetup);
       break;
 
     case EVT_KEY_LONG(KEY_MENU):
