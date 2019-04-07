@@ -23,8 +23,7 @@
 
 
 #define CATEGORIES_WIDTH               62
-#define MODELS_LEFT                    123
-#define MODELS_COLUMN_WIDTH            174
+#define MODELES_WIDTH                  126
 
 #define MODELSIZE_POS_X 170
 #define MODELSEL_W 133
@@ -82,12 +81,14 @@ void setCurrentModel(unsigned int index)
   std::list<ModelCell *>::iterator it = currentCategory->begin();
   std::advance(it, index);
   currentModel = *it;
-  if (++index >= currentCategory->size()) {
+  if (index++ >= currentCategory->size()) {
     menuVerticalPosition = 0;
   }
 
+
+  //menuVerticalPosition = index;
  // menuHorizontalPosition = index & 1;
-  menuVerticalOffset = limit<int>(menuVerticalPosition-2, menuVerticalOffset, min<int>(menuVerticalPosition, max<int>(0, (currentCategory->size()-7)/2)));
+  //menuVerticalOffset = limit<int>(menuVerticalPosition-2, menuVerticalOffset, min<int>(menuVerticalPosition, max<int>(0, (currentCategory->size()-7))));
 }
 
 void setCurrentCategory(unsigned int index)
@@ -358,12 +359,12 @@ void menuModelSelect(event_t event) {
   int index = 0;
   coord_t y = 18;
 
-  drawVerticalScrollbar(CATEGORIES_WIDTH-1, y-1, 5*(FH+7)-5, categoriesVerticalOffset, cats.size(), 5);
+  drawVerticalScrollbar(CATEGORIES_WIDTH-1, y-1, 4*(FH+7)-5, categoriesVerticalOffset, cats.size(), 5);
   // Categories
   for (std::list<ModelsCategory *>::const_iterator it = cats.begin(); it != cats.end(); ++it, ++index) {
     if (index >= categoriesVerticalOffset && index < categoriesVerticalOffset+5) {
-      coord_t y = 2 * MENU_HEADER_HEIGHT + 1 + index * FH;
-      uint8_t k = index;
+      coord_t y = MENU_HEADER_HEIGHT + 1 + (index - categoriesVerticalOffset)*FH;
+      uint8_t k = index ;;
       lcdDrawText(2, y, (*it)->name,  ((categoriesVerticalPosition == k) ? INVERS : 0));
 
       if (s_copyMode && categoriesVerticalPosition == k) {
@@ -376,38 +377,35 @@ void menuModelSelect(event_t event) {
   index = 0;
   // Models
   for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
-    if (index >= menuVerticalOffset && index < menuVerticalOffset+4) {
-      coord_t y = 2 * MENU_HEADER_HEIGHT + 1 + index * FH;
-      uint8_t k = index+menuVerticalOffset;
-      bool selected = ((selectMode==MODE_SELECT_MODEL || selectMode==MODE_MOVE_MODEL) && k==menuVerticalPosition);
+    //if (index >= menuVerticalOffset) {
+      coord_t y = MENU_HEADER_HEIGHT + 1 + (index - menuVerticalOffset)*FH;
+      uint8_t k = index;
+      bool selected = ((selectMode == MODE_SELECT_MODEL || selectMode == MODE_MOVE_MODEL) && k == menuVerticalPosition);
       bool current = !strncmp((*it)->modelFilename, g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME);
 
       if (current) {
         lcdDrawChar(9 * FW + 11, y, '*');
         lcdDrawText(9 * FW + 18, y, (*it)->modelName, LEADING0 | ((selected) ? INVERS : 0));
         subModelIndex = k;
-      }
-      else {
+      } else {
         lcdDrawText(9 * FW + 18, y, (*it)->modelName, LEADING0 | ((selected) ? INVERS : 0));
       }
 
       y += 16;
 
       if (selected) {
-        lcdDrawText(5, LCD_H-FH-1, (*it)->modelFilename, SMLSIZE);
+        lcdDrawText(5, LCD_H - FH - 1, (*it)->modelFilename, SMLSIZE);
       }
     }
-  }
 
-  if (currentModel) {
-    if (menuVerticalPosition != subModelIndex) {
-      if (selectMode == MODE_SELECT_MODEL) {
-        setCurrentModel(menuVerticalPosition);
-      }
-      else if (selectMode == MODE_MOVE_MODEL) {
-        //modelslist.moveModel(currentCategory, currentModel, direction);
-        setCurrentModel(menuVerticalPosition);
+    if (currentModel) {
+      if (menuVerticalPosition != subModelIndex) {
+        if (selectMode == MODE_SELECT_MODEL) {
+          setCurrentModel(menuVerticalPosition);
+        } else if (selectMode == MODE_MOVE_MODEL) {
+          //modelslist.moveModel(currentCategory, currentModel, direction);
+          setCurrentModel(menuVerticalPosition);
+        }
       }
     }
-  }
 }
