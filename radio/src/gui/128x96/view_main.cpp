@@ -364,7 +364,8 @@ void menuMainView(event_t event)
       if (++g_trimEditMode > EDIT_TRIM_MAX) {
         g_trimEditMode = EDIT_TRIM_1;
       }
-      AUDIO_KEY_PRESS();
+      //AUDIO_KEY_PRESS();
+      //AUDIO_AILERON_TRIM();
       killEvents(event);
       break;
     case EVT_KEY_BREAK(KEY_PAGE):

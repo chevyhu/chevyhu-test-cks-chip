@@ -1069,6 +1069,26 @@ void checkTrims()
 
     trimsDisplayTimer = 200; // 2 seconds
     trimsDisplayMask |= (1<<idx);
+#if defined(PCBTANGO)
+    static int8_t oldIdx = -1;
+
+    if (oldIdx != idx)
+    {
+      if (idx==RUD_STICK) {
+        AUDIO_RUDDER_TIME();
+      }
+      else if (idx==ELE_STICK) {
+        AUDIO_ELEVATOR_TRIM();
+      }
+      else if (idx==THR_STICK) {
+        AUDIO_THROTTLE_TRIM();
+      }
+      else if (idx==AIL_STICK) {
+        AUDIO_AILERON_TRIM();
+      }
+      oldIdx = idx;
+    }
+#endif
 
 #if defined(GVARS)
     if (TRIM_REUSED(idx)) {
