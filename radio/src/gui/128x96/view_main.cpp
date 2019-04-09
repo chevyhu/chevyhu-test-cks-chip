@@ -147,7 +147,7 @@ void displayTrims(uint8_t phase, uint8_t editMode)
 
     if (vert[i]) {
       ym = 61;
-      if (editMode == i+1) {
+      if (editMode == i) {
         lcdDrawSolidVerticalLine(xm, ym-TRIM_LEN, TRIM_LEN*2);
         if (i!=2 || !g_model.thrTrim) {
           lcdDrawSolidVerticalLine(xm-1, ym-TRIM_LEN,  TRIM_LEN*2);
@@ -185,7 +185,7 @@ void displayTrims(uint8_t phase, uint8_t editMode)
     }
     else {
       ym = 92;
-      if (editMode == i+1) {
+      if (editMode == i) {
         lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym,   TRIM_LEN*2);
         lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym-1, TRIM_LEN*2);
         lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym+1, TRIM_LEN*2);
@@ -322,6 +322,8 @@ void menuMainView(event_t event)
 {
   uint8_t view = g_eeGeneral.view;
   uint8_t view_base = view & 0x0f;
+  static int8_t oldIdx = -1;
+  static int8_t idx = -1;
 
   switch (event) {
 
@@ -364,8 +366,26 @@ void menuMainView(event_t event)
       if (++g_trimEditMode > EDIT_TRIM_MAX) {
         g_trimEditMode = EDIT_TRIM_1;
       }
-      //AUDIO_KEY_PRESS();
-      //AUDIO_AILERON_TRIM();
+
+      idx = CONVERT_MODE_TRIMS(g_trimEditMode - 1);
+
+      if (oldIdx != idx)
+      {
+        if (idx==RUD_STICK) {
+          AUDIO_RUDDER_TIME();
+        }
+        else if (idx==ELE_STICK) {
+          AUDIO_ELEVATOR_TRIM();
+        }
+        else if (idx==THR_STICK) {
+          AUDIO_THROTTLE_TRIM();
+        }
+        else if (idx==AIL_STICK) {
+          AUDIO_AILERON_TRIM();
+        }
+        oldIdx = idx;
+      }
+
       killEvents(event);
       break;
     case EVT_KEY_BREAK(KEY_PAGE):
@@ -416,6 +436,8 @@ void menuMainView(event_t event)
 #endif
       if (g_trimEditMode != EDIT_TRIM_DISABLED) {
         g_trimEditMode = EDIT_TRIM_DISABLED;
+        idx = -1;
+        oldIdx = -1;
       }
       break;
 
@@ -448,7 +470,7 @@ void menuMainView(event_t event)
     drawTimerWithMode(125, 2*FH, 0);
 
     // Trims sliders
-    displayTrims(mode, g_trimEditMode);
+    displayTrims(mode, idx);
 
 #if defined(TELEMETRY_FRSKY) && defined(CPUARM)
     // RSSI gauge
