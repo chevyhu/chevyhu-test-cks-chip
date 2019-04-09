@@ -35,6 +35,7 @@ typedef enum
   DEVICE_INTERNAL = 0,
   USB_HID,
   CRSF_SHARED_FIFO,
+  CRSF_ESP,
   LAST_CRSF_PORT
 } _CRSF_PORT_NAME;
 
@@ -131,7 +132,9 @@ typedef struct CrossfireSharedData CrossfireSharedData_t;
 
 void CRSF_Init( void );
 void crsfSharedFifoHandler( void );
+void crsfEspHandler( void );
 void CRSF_to_Shared_FIFO( uint8_t *p_arr );
+void CRSF_to_ESP( uint8_t *p_arr );
 void CRSF_This_Device( uint8_t *p_arr );
 void AgentLegacyCalls( uint8_t *arr );
 void crsfSdWriteHandler();

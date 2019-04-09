@@ -417,10 +417,14 @@ void guiMain(event_t evt)
 
 void perMain()
 {
+	// these setting are overrided by some where, reinit it for temp run
 	static bool started = false;
 	if(!started){
 		  keysInit();
 		  started = true;
+#if defined(ESP_SERIAL)
+		  espInit(500000, false);
+#endif
 	}
 
 #if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)

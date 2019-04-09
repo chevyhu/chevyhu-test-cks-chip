@@ -216,7 +216,7 @@ void boardInit()
 #endif
 
 #if defined(ESP_SERIAL)
-  espInit(115200, false);
+  espInit(500000, false);
 #endif
 
 #if defined(HAPTIC)
@@ -394,6 +394,7 @@ TASK_FUNCTION(systemTask)
 {
   while(1) {
       crsfSharedFifoHandler();
+      crsfEspHandler();
   }
   TASK_RETURN();
 }

@@ -37,6 +37,7 @@ _libCrsf_CRSF_Port CRSF_Ports[] = {
          { DEVICE_INTERNAL,   &CRSF_This_Device }
         ,{ USB_HID,           &CRSF_To_USB_HID }
         ,{ CRSF_SHARED_FIFO,  &CRSF_to_Shared_FIFO }
+        ,{ CRSF_ESP,  &CRSF_to_ESP }
 };
 
 // TODO: perna link to correct data
@@ -47,6 +48,9 @@ static uint32_t libCrsf_MyHwID = 0x0100;
 static uint32_t libCrsf_MyFwID = 0x0100;
 
 Fifo<uint8_t, TELEMETRY_BUFFER_SIZE> crsf_telemetry_buffer;
+
+extern Fifo<uint8_t, ESP_TX_BUFFER_SIZE> espTxFifo;
+extern Fifo<uint8_t, ESP_RX_BUFFER_SIZE> espRxFifo;
 
 void CRSF_Init( void )
 {
@@ -71,26 +75,26 @@ void CRSF_This_Device( uint8_t *p_arr )
   switch ( *(p_arr + LIBCRSF_TYPE_ADD) )
   {
 //    TODO: perna handle CRSF parameter frames once agent is ready
-//    case LIBCRSF_EX_PARAM_PING_DEVICE:
-//      if ( libCrsf_checkif_devicecalled( p_arr, true )) {
-//        TRACE("LIBCRSF_EX_PARAM_PING_DEVICE");
-//        // Parameter_Pack_Device_Information( &arr[LIBCRSF_LENGTH_ADD] );
-//        libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
-//        libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
-//      }
-//      break;
+    case LIBCRSF_EX_PARAM_PING_DEVICE:
+      if ( libCrsf_checkif_devicecalled( p_arr, true )) {
+        TRACE("LIBCRSF_EX_PARAM_PING_DEVICE");
+        // Parameter_Pack_Device_Information( &arr[LIBCRSF_LENGTH_ADD] );
+        libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
+        libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
+      }
+      break;
 
 
     default:
       // Buffer telemetry data inside a FIFO to let telemetryWakeup read from it and keep the
       // compatibility with the existing telemetry infrastructure.
       // TODO: perna clean debug printf
-      debugPrintf("\r\n");
+//      debugPrintf("\r\n");
       for(i = 0; i < *(p_arr + LIBCRSF_LENGTH_ADD) + 2; i++) {
-        debugPrintf("%x,", *(p_arr + i) );
+//        debugPrintf("%x,", *(p_arr + i) );
         crsf_telemetry_buffer.push(*(p_arr + i));
       }
-      debugPrintf("\r\n");
+//      debugPrintf("\r\n");
       break;
   }
 }
@@ -115,11 +119,18 @@ uint8_t telemetryGetByte(uint8_t * byte)
 void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 {
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
+//	  	TRACE("sharedtx:%x", *(p_arr + i));
     crossfireSharedData.crsf_rx.push(*(p_arr + i));
 //    TRACE("%X", *(p_arr + i));
   }
 }
 
+void CRSF_to_ESP( uint8_t *p_arr )
+{
+  for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
+	  espTxFifo.push(*(p_arr + i));
+  }
+}
 
 void crsfSharedFifoHandler( void )
 {
@@ -128,10 +139,20 @@ void crsfSharedFifoHandler( void )
   if ( crossfireSharedData.crsf_tx.pop(byte) ) {
     if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
       libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
-      libCrsf_CRSF_Routing( DEVICE_INTERNAL, CRSF_Data.Payload );
-      libCrsf_CRSF_Routing( USB_HID, CRSF_Data.Payload );
     }
   }
+}
+
+void crsfEspHandler( void )
+{
+  uint8_t byte;
+  static _libCrsf_CRSF_PARSE_DATA CRSF_Data;
+  if ( espRxFifo.pop(byte) ) {
+    if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
+	  libCrsf_CRSF_Routing( CRSF_ESP, CRSF_Data.Payload );
+    }
+  }
+  ESP_WriteHandler();
 }
 
 #ifdef CRSF_SD

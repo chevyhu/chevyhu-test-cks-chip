@@ -796,8 +796,11 @@ extern DMAFifo<32> serial2RxFifo;
 void CRSF_Init( void );
 
 #if defined(ESP_SERIAL)
+#define ESP_TX_BUFFER_SIZE            256
+#define ESP_RX_BUFFER_SIZE            256
 void espInit(uint32_t baudrate, bool use_dma);
 void espWriteBuffer(uint8_t* buf, uint8_t len);
+void ESP_WriteHandler(void);
 uint8_t espReadBuffer(uint8_t* buf);
 #endif
 
