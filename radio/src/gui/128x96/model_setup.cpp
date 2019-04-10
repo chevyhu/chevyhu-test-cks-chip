@@ -339,6 +339,7 @@ void menuModelSetup(event_t event)
       }
     }
 
+
     LcdFlags blink = ((editMode>0) ? BLINK|INVERS : INVERS);
     LcdFlags attr = (sub == k ? blink : 0);
 

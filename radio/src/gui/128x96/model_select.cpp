@@ -23,10 +23,7 @@
 
 
 #define CATEGORIES_WIDTH               62
-#define MODELES_WIDTH                  126
-
-#define MODELSIZE_POS_X 170
-#define MODELSEL_W 133
+#define MODELSEL_W 62
 
 
 uint16_t categoriesVerticalOffset = 0;
@@ -72,8 +69,6 @@ void setCurrentModel(unsigned int index)
   if (index++ >= currentCategory->size()) {
     menuVerticalPosition = 0;
   }
-
-
   //menuVerticalPosition = index;
   // menuHorizontalPosition = index & 1;
   //menuVerticalOffset = limit<int>(menuVerticalPosition-2, menuVerticalOffset, min<int>(menuVerticalPosition, max<int>(0, (currentCategory->size()-7))));
@@ -129,33 +124,9 @@ void initModelsList()
 }
 
 
-static void displayPresetChoice(event_t event)
-{
-  runPopupWarning(event);
-  lcdDrawNumber(WARNING_LINE_X+FW*7, WARNING_LINE_Y, 45*warningInputValue/4, LEFT|INVERS);
-  lcdDrawChar(lcdLastRightPos, WARNING_LINE_Y, '@', INVERS);
-
-  if (warningResult) {
-    warningResult = 0;
-    CurveInfo & crv = g_model.curves[s_curveChan];
-    int8_t * points = curveAddress(s_curveChan);
-    int k = 25 * warningInputValue;
-    int dx = 2000 / (5+crv.points-1);
-    for (uint8_t i=0; i<5+crv.points; i++) {
-      int x = -1000 + i * dx;
-      points[i] = div_and_round(div_and_round(k * x, 100), 10);
-    }
-    if (crv.type == CURVE_TYPE_CUSTOM) {
-      resetCustomCurveX(points, 5+crv.points);
-    }
-  }
-}
-
-
 void onModelSelectMenu(const char * result)
 {
   if (result == STR_SELECT_MODEL) {
-    // we store the latest changes if any
     storageFlushCurrentModel();
     storageCheck(true);
     memcpy(g_eeGeneral.currModelFilename, currentModel->modelFilename, LEN_MODEL_FILENAME);
@@ -219,6 +190,8 @@ void onModelSelectMenu(const char * result)
   }
 }
 
+#define PHASE_ONE_FIRST_LINE (1+1*FH)
+
 void menuModelSelect(event_t event) {
   static uint8_t subModelIndex = 0;
 
@@ -233,8 +206,7 @@ void menuModelSelect(event_t event) {
     else if (deleteMode == MODE_DELETE_MODEL){
       int modelIndex = MODEL_INDEX();
       modelslist.removeModel(currentCategory, currentModel);
-      s_copyMode = 0;
-      //event = EVT_REFRESH;
+      selectMode = 0;
       if (modelIndex > 0) {
         modelIndex--;
       }
@@ -251,7 +223,6 @@ void menuModelSelect(event_t event) {
       selectMode = MODE_SELECT_MODEL;
       initModelsList();
       break;
-
     case EVT_KEY_BREAK(KEY_ENTER):
       if (selectMode == MODE_MOVE_MODEL)
         selectMode = MODE_SELECT_MODEL;
@@ -342,16 +313,31 @@ void menuModelSelect(event_t event) {
   coord_t y = 18;
 
   drawVerticalScrollbar(CATEGORIES_WIDTH-1, y-1, 4*(FH+7)-5, categoriesVerticalOffset, cats.size(), 5);
+
   // Categories
+  static char categoryName[20][12];
   for (std::list<ModelsCategory *>::const_iterator it = cats.begin(); it != cats.end(); ++it, ++index) {
     if (index >= categoriesVerticalOffset && index < categoriesVerticalOffset+5) {
-      coord_t y = MENU_HEADER_HEIGHT + 1 + (index - categoriesVerticalOffset)*FH;
-      uint8_t k = index ;;
-      lcdDrawText(2, y, (*it)->name,  ((categoriesVerticalPosition == k) ? INVERS : 0));
+      coord_t y = MENU_HEADER_HEIGHT*2 + 1 + (index - categoriesVerticalOffset)*FH*4/3;
+      uint8_t k = index ;
 
-      if (s_copyMode && categoriesVerticalPosition == k) {
+      if (selectMode == MODE_RENAME_CATEGORY && currentCategory == *it) {
+        //lcdDrawSolidFilledRect(0, y-INVERT_VERT_MARGIN+1, CATEGORIES_WIDTH-2, INVERT_LINE_HEIGHT, 0);
         lcdDrawSolidFilledRect(9, y, MODELSEL_W - 1 - 9, 7);
-        lcdDrawRect(8, y - 1, MODELSEL_W - 1 - 7, 9, s_copyMode == COPY_MODE ? SOLID : DOTTED);
+        lcdDrawRect(8, y - 1, MODELSEL_W - 1 - 7, 9,  DOTTED);
+        editName(4, y, currentCategory->name, LEN_MODEL_FILENAME, event, 1, 0);
+        if (s_editMode == 0 || event == EVT_KEY_BREAK(KEY_EXIT)) {
+          modelslist.save();
+          selectMode = MODE_SELECT_MODEL;
+        }
+      }
+      else {
+        lcdDrawText(2, y, (*it)->name,  ((categoriesVerticalPosition == k) ? INVERS : 0));
+
+      }
+      if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition == k) {
+        lcdDrawSolidFilledRect(9, y, MODELSEL_W - 1 - 9, 7);
+        lcdDrawRect(8, y - 1, MODELSEL_W - 1 - 7, 9, selectMode == COPY_MODE ? SOLID : DOTTED);
       }
     }
   }
@@ -359,8 +345,7 @@ void menuModelSelect(event_t event) {
   index = 0;
   // Models
   for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
-    //if (index >= menuVerticalOffset) {
-    coord_t y = MENU_HEADER_HEIGHT + 1 + (index - menuVerticalOffset)*FH;
+    coord_t y = MENU_HEADER_HEIGHT + 1 + (index - menuVerticalOffset)*FH*5/4;
     uint8_t k = index;
     bool selected = ((selectMode == MODE_SELECT_MODEL || selectMode == MODE_MOVE_MODEL) && k == menuVerticalPosition);
     bool current = !strncmp((*it)->modelFilename, g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME);
@@ -383,9 +368,6 @@ void menuModelSelect(event_t event) {
   if (currentModel) {
     if (menuVerticalPosition != subModelIndex) {
       if (selectMode == MODE_SELECT_MODEL) {
-        setCurrentModel(menuVerticalPosition);
-      } else if (selectMode == MODE_MOVE_MODEL) {
-        //modelslist.moveModel(currentCategory, currentModel, direction);
         setCurrentModel(menuVerticalPosition);
       }
     }
