@@ -23,7 +23,7 @@
 
 // Device address
 #define BROADCAST_ADDRESS              0x00
-#define CRSF_SYNC_Byte				   0xC8
+#define CRSF_SYNC_BYTE				   0xC8
 #define RADIO_ADDRESS                  0xEA
 #define MODULE_ADDRESS                 0xEE
 
