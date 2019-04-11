@@ -76,7 +76,7 @@ void CRSF_This_Device( uint8_t *p_arr )
 //    TODO: perna handle CRSF parameter frames once agent is ready
     case LIBCRSF_EX_PARAM_PING_DEVICE:
       if ( libCrsf_checkif_devicecalled( p_arr, true )) {
-        TRACE("LIBCRSF_EX_PARAM_PING_DEVICE");
+//        TRACE("LIBCRSF_EX_PARAM_PING_DEVICE");
         // Parameter_Pack_Device_Information( &arr[LIBCRSF_LENGTH_ADD] );
         libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
         libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
