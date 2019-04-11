@@ -322,7 +322,6 @@ void menuModelSelect(event_t event) {
       uint8_t k = index ;
 
       if (selectMode == MODE_RENAME_CATEGORY && currentCategory == *it) {
-        //lcdDrawSolidFilledRect(0, y-INVERT_VERT_MARGIN+1, CATEGORIES_WIDTH-2, INVERT_LINE_HEIGHT, 0);
         lcdDrawSolidFilledRect(9, y, MODELSEL_W - 1 - 9, 7);
         lcdDrawRect(8, y - 1, MODELSEL_W - 1 - 7, 9,  DOTTED);
         editName(4, y, currentCategory->name, LEN_MODEL_FILENAME, event, 1, 0);
