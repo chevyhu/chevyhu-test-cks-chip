@@ -400,6 +400,13 @@ TASK_FUNCTION(systemTask)
 }
 #endif
 
+void tangoUpdateChannel( void )
+{
+  for (int i = 0; i < 12; ++i) {
+    crossfireSharedData.channels[i] = channelOutputs[i];
+  }
+//  TRACE("%d %d %d %d\n", crossfireSharedData.channels[0], crossfireSharedData.channels[1], crossfireSharedData.channels[2],crossfireSharedData.channels[3]);
+}
 
 extern "C" {
 

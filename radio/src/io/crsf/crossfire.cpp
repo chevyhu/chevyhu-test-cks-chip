@@ -56,8 +56,7 @@ void CRSF_Init( void )
 {
   /* init crsf library */
 
-  crossfireSharedData.crsf_tx.clear();
-  crossfireSharedData.crsf_rx.clear();
+  memset( &crossfireSharedData, 0, sizeof(CrossfireSharedData) );
 
   libCrsf_Init( libCrsf_MySlaveAddress, libCrsf_MyDeviceName, libCrsf_MySerialNo, libCrsf_MyHwID, libCrsf_MyFwID );
 
