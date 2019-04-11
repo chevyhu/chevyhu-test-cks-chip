@@ -587,6 +587,12 @@ void audioTimerCountdown(uint8_t timer, int value);
 #define AUDIO_TELEMETRY_BACK()   audioEvent(AU_TELEMETRY_BACK)
 #define AUDIO_TRAINER_LOST()     audioEvent(AU_TRAINER_LOST)
 #define AUDIO_TRAINER_BACK()     audioEvent(AU_TRAINER_BACK)
+#if defined(PCBTANGO)
+#define AUDIO_AILERON_TRIM()     AUDIO_BUZZER(audioEvent(AU_AILERON_TRIM), beep(2))
+#define AUDIO_ELEVATOR_TRIM()    AUDIO_BUZZER(audioEvent(AU_ELEVATOR_TRIM), beep(2))
+#define AUDIO_THROTTLE_TRIM()    AUDIO_BUZZER(audioEvent(AU_THROTTLE_TRIM), beep(2))
+#define AUDIO_RUDDER_TIME()      AUDIO_BUZZER(audioEvent(AU_RUDDER_TRIME), beep(2))
+#endif
 
 #define AUDIO_HEARTBEAT()
 

@@ -28,6 +28,7 @@ Clipboard clipboard;
 #endif
 
 
+
 uint8_t unexpectedShutdown = 0;
 
 /* AVR: mixer duration in 1/16ms */
