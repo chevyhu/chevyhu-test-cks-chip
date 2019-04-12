@@ -511,7 +511,7 @@ static int luaCrossfireTelemetryPush(lua_State * L)
     }
     telemetryOutputPushByte(crc8(outputTelemetryBuffer+2, 1 + length));
     telemetryOutputSetTrigger(command);
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) && !defined(SIMU)
     libCrsf_CRSF_Routing( DEVICE_INTERNAL, outputTelemetryBuffer);
     outputTelemetryBufferTrigger = 0x00;
     outputTelemetryBufferSize = 0;
