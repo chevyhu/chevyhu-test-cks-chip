@@ -14,12 +14,18 @@ set(GUI_SRC
   model_telemetry.cpp
   menu_radio.cpp
   radio_setup.cpp
-  radio_trainer.cpp
   radio_version.cpp
   radio_calibration.cpp
   view_main.cpp
   view_statistics.cpp
   )
+
+if (NOT PCB STREQUAL TANGO)
+  set(GUI_SRC
+     ${GUI_SRC}
+     radio_trainer.cpp
+     )
+endif()
 
 if(GUI_DIR STREQUAL 128x64 OR GUI_DIR STREQUAL 128x96)
    set(GUI_SRC

@@ -54,6 +54,7 @@ void ModelCell::setModelId(uint8_t moduleIdx, uint8_t id)
   modelId[moduleIdx] = id;
 }
 
+#if !defined(PCBTANGO)
 void ModelCell::resetBuffer()
 {
   if (buffer) {
@@ -125,6 +126,12 @@ void ModelCell::loadBitmap()
   }
   buffer->drawSolidHorizontalLine(5, 19, 143, LINE_COLOR);
 }
+#else
+void ModelCell::resetBuffer()
+{
+  return;
+}
+#endif
 
 void ModelCell::save(FIL* file)
 {
