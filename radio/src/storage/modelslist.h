@@ -42,7 +42,7 @@ class ModelCell
 public:
   char modelFilename[LEN_MODEL_FILENAME+1];
   char modelName[LEN_MODEL_NAME+1];
-  //BitmapBuffer * buffer;
+  BitmapBuffer * buffer;
 
   bool             valid_rfData;
   uint8_t          modelId[NUM_MODULES];
@@ -61,7 +61,7 @@ public:
 
   bool  fetchRfData();
   void  loadBitmap();
-  //const BitmapBuffer * getBuffer();
+  const BitmapBuffer * getBuffer();
   void  resetBuffer();
 };
 
