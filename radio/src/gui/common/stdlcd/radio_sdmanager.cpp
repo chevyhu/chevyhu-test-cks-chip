@@ -178,7 +178,7 @@ void menuRadioSdManager(event_t _event)
   }
 
 #if LCD_DEPTH > 1
-  int lastPos = menuVerticalPosition;
+  //int lastPos = menuVerticalPosition;
 #endif
 
   event_t event = (EVT_KEY_MASK(_event) == KEY_ENTER ? 0 : _event);
@@ -189,7 +189,7 @@ void menuRadioSdManager(event_t _event)
       f_chdir(ROOT_PATH);
       REFRESH_FILES();
 #if LCD_DEPTH > 1
-      lastPos = -1;
+      //lastPos = -1;
 #endif
       break;
 
