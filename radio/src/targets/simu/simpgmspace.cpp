@@ -72,7 +72,9 @@ void lcdInit()
 {
 }
 
-
+void toplcdOff()
+{
+}
 
 uint64_t simuTimerMicros(void)
 {
