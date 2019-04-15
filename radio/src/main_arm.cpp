@@ -417,6 +417,7 @@ void guiMain(event_t evt)
 
 void perMain()
 {
+#if defined(PCBTANGO)
 	// these setting are overrided by some where, reinit it for temp run
 	static bool started = false;
 	if(!started){
@@ -435,7 +436,7 @@ void perMain()
 	  startOnce = true;
   }
 #endif
-
+#endif
   DEBUG_TIMER_START(debugTimerPerMain1);
 #if defined(PCBSKY9X) && !defined(REVA)
   calcConsumption();
