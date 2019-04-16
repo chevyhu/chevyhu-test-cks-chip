@@ -89,6 +89,7 @@ typedef enum {
 	CRSF_SD_ERROR,
 	CRSF_SD_IDLE,
 	CRSF_SD_DATA_READY,
+	CRSF_SD_DATA_TX_COMPLETED,
 	CRSF_SD_INVALID_FILENAME
 } CRSF_SD_STATE;
 
@@ -125,7 +126,9 @@ typedef struct CRSF_SD_STRUCT{
 	BYTE payload[CRSF_SD_DATA_MAX_BUFFER_SIZE];
 } CrsfSd_t;
 
-
+#define CRSF_SD_FW_NAME_LENGTH	22
+extern char fwFilename[CRSF_SD_FW_NAME_LENGTH];
+extern uint32_t fwLength;
 
 typedef struct CrossfireSharedData CrossfireSharedData_t;
 #define crossfireSharedData (*((CrossfireSharedData_t*)SHARED_MEMORY_ADDRESS))

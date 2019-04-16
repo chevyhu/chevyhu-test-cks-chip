@@ -805,4 +805,6 @@ void ESP_WriteHandler(void);
 uint8_t espReadBuffer(uint8_t* buf);
 #endif
 
+void getDefaultSwConfig();
+
 #endif // _BOARD_H_

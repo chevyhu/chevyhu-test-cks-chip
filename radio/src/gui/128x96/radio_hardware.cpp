@@ -121,7 +121,9 @@ enum MenuRadioHardwareItems {
     ITEM_RADIO_HARDWARE_BLUETOOTH_DISTANT_ADDR,
     ITEM_RADIO_HARDWARE_BLUETOOTH_NAME,
 #endif
+#if !defined(PCBTANGO)
     ITEM_RADIO_HARDWARE_JITTER_FILTER,
+#endif
     ITEM_RADIO_HARDWARE_MAX
 };
 
@@ -279,9 +281,11 @@ void menuRadioHardware(event_t event)
         break;
 #endif
 
+#if !defined(PCBTANGO)
       case ITEM_RADIO_HARDWARE_JITTER_FILTER:
         g_eeGeneral.jitterFilter = 1 - editCheckBox(1 - g_eeGeneral.jitterFilter, HW_SETTINGS_COLUMN2, y, STR_JITTER_FILTER, attr, event);
         break;
+#endif
     }
   }
 }

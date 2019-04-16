@@ -201,6 +201,10 @@ TASK_FUNCTION(menusTask)
 {
   opentxInit();
 
+#if defined(PCBTANGO)
+  getDefaultSwConfig();
+#endif
+
 #if defined(PWR_BUTTON_PRESS)
   while (1) {
     uint32_t pwr_check = pwrCheck();

@@ -154,6 +154,30 @@ void sportUpdatePowerOff()
 }
 #endif
 
+void getDefaultSwConfig(){
+	uint8_t hasMem = 0;
+	for(uint8_t i = 0; i < 6; i++){
+		if(SWITCH_CONFIG(i) != 0){
+			hasMem = 1;
+		}
+	}
+	swconfig_t mask;
+	if(!hasMem){
+	    mask = (swconfig_t)0x03 << (2*0);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(1) & 0x03) << (2*0));
+	    mask = (swconfig_t)0x03 << (2*1);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(3) & 0x03) << (2*1));
+	    mask = (swconfig_t)0x03 << (2*2);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(3) & 0x03) << (2*2));
+	    mask = (swconfig_t)0x03 << (2*3);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(1) & 0x03) << (2*3));
+	    mask = (swconfig_t)0x03 << (2*4);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(2) & 0x03) << (2*4));
+	    mask = (swconfig_t)0x03 << (2*5);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(2) & 0x03) << (2*05));
+	}
+}
+
 void boardInit()
 {
 #if !defined(SIMU)
