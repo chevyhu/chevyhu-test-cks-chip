@@ -758,7 +758,6 @@ void doSplash()
   if (SPLASH_NEEDED()) {
     backlightOn();
     drawSplash();
-
 #if defined(PCBSKY9X)
     tmr10ms_t curTime = get_tmr10ms() + 10;
     uint8_t contrast = 10;
@@ -770,7 +769,9 @@ void doSplash()
     inputsMoved();
 
     tmr10ms_t tgtime = get_tmr10ms() + SPLASH_TIMEOUT;
-
+#if defined(PCBTANGO)
+    tmr10ms_t tgtime_opentx = get_tmr10ms() + SPLASH_TIMEOUT / 2;
+#endif
     while (tgtime > get_tmr10ms()) {
       RTOS_WAIT_TICKS(1);
 
@@ -778,7 +779,7 @@ void doSplash()
 
       if (keyDown() || inputsMoved()) return;
 
-#if defined(PWR_BUTTON_PRESS)
+#if defined(PWR_BUTTON_PRESS) && !defined(PCBTANGO)
       uint32_t pwr_check = pwrCheck();
       if (pwr_check == e_power_off) {
         break;
@@ -793,6 +794,15 @@ void doSplash()
 #else
       if (pwrCheck() == e_power_off) {
         return;
+      }
+#endif
+
+#if defined(PCBTANGO)
+      if (!refresh) {
+          if (tgtime_opentx < get_tmr10ms()) {
+            drawSecondSplash();
+            refresh = true;
+          }
       }
 #endif
 

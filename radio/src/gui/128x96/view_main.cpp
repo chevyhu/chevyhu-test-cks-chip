@@ -324,8 +324,11 @@ void menuMainView(event_t event)
   uint8_t view_base = view & 0x0f;
   static int8_t oldIdx = -1;
   static int8_t idx = -1;
+  static tmr10ms_t enterTime;
+  static bool last_enter = false;
 
-  switch (event) {
+
+    switch (event) {
 
     case EVT_ENTRY:
       killEvents(KEY_EXIT);
@@ -363,27 +366,32 @@ void menuMainView(event_t event)
       break;
 #endif
     case EVT_KEY_BREAK(KEY_ENTER):
-      if (++g_trimEditMode > EDIT_TRIM_MAX) {
-        g_trimEditMode = EDIT_TRIM_1;
+      if (!last_enter) {
+        last_enter = true;
+        enterTime = get_tmr10ms();
       }
 
-      idx = CONVERT_MODE_TRIMS(g_trimEditMode - 1);
+      else {
+        last_enter = false;
+        if (++g_trimEditMode > EDIT_TRIM_MAX) {
+            g_trimEditMode = EDIT_TRIM_1;
+        }
 
-      if (oldIdx != idx)
-      {
-        if (idx==RUD_STICK) {
-          AUDIO_RUDDER_TIME();
+        idx = CONVERT_MODE_TRIMS(g_trimEditMode - 1);
+
+        if (oldIdx != idx) {
+            if (idx == RUD_STICK) {
+                AUDIO_RUDDER_TIME();
+            } else if (idx == ELE_STICK) {
+                AUDIO_ELEVATOR_TRIM();
+            } else if (idx == THR_STICK) {
+                AUDIO_THROTTLE_TRIM();
+            } else if (idx == AIL_STICK) {
+                AUDIO_AILERON_TRIM();
+            }
+            oldIdx = idx;
+
         }
-        else if (idx==ELE_STICK) {
-          AUDIO_ELEVATOR_TRIM();
-        }
-        else if (idx==THR_STICK) {
-          AUDIO_THROTTLE_TRIM();
-        }
-        else if (idx==AIL_STICK) {
-          AUDIO_AILERON_TRIM();
-        }
-        oldIdx = idx;
       }
 
       killEvents(event);
@@ -453,6 +461,10 @@ void menuMainView(event_t event)
       flightReset();
       break;
 #endif
+  }
+
+  if (last_enter && (get_tmr10ms() - enterTime) > 50) {
+    last_enter = false;
   }
 
   {
