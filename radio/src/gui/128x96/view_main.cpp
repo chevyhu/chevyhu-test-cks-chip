@@ -416,19 +416,6 @@ void menuMainView(event_t event)
           AUDIO_KEY_PRESS();
         }
       }
-      else {
-        uint8_t key = (g_trimEditMode - 1) * 2;
-#if defined(ROTARY_ENCODER_NAVIGATION)
-        if (event == EVT_KEY_FIRST(KEY_RIGHT) || event == EVT_ROTARY_LEFT) {
-#else
-        if (event == EVT_KEY_FIRST(KEY_RIGHT)) {
-#endif
-          g_trimState = 0x01 << key;
-        }
-        else {
-          g_trimState = 0x01 << (key + 1);
-        }
-      }
       break;
 
     case EVT_KEY_LONG(KEY_PAGE):

@@ -138,7 +138,17 @@ void per10ms()
       if ((g_tmr10ms - lastEvent >= 10) || (cw == new_cw)) { // 100ms
 
         putEvent(new_cw ? EVT_ROTARY_RIGHT : EVT_ROTARY_LEFT);
-
+#if defined(PCBTANGO)
+        if (g_trimEditMode != EDIT_TRIM_DISABLED) {
+          uint8_t key = (g_trimEditMode - 1) * 2;
+          if (new_cw) {
+            g_trimState = 0x01 << key;
+          }
+          else {
+            g_trimState = 0x01 << (key + 1);
+          }
+        }
+#endif
         // rotary encoder navigation speed (acceleration) detection/calculation
         static uint32_t delay = 2*ROTENC_DELAY_MIDSPEED;
 
