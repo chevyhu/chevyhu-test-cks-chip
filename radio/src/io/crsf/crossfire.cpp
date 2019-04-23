@@ -60,6 +60,7 @@ static uint8_t isOpentxBufSet = 0;
 
 uint8_t enableOpentxSdWriteHandler = 0;
 uint8_t enableOpentxSdReadHandler = 0;
+uint8_t enableOpentxSdEraseHandler = 0;
 
 static void SetXfBuf(uint8_t* p_arr){
 	memcpy(XfBuf, p_arr, LIBCRSF_MAX_BUFFER_SIZE);
@@ -110,10 +111,11 @@ void CRSF_This_Device( uint8_t *p_arr )
       }
       else if( *(p_arr + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_WRITE ){
     	  SetOpentxBuf(p_arr);
-		  enableOpentxSdReadHandler = 1;
+    	  enableOpentxSdReadHandler = 1;
       }
       else if( *(p_arr + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_ERASE ){
-
+    	  SetOpentxBuf(p_arr);
+		  enableOpentxSdEraseHandler = 1;
       }
       break;
 #endif
@@ -175,16 +177,16 @@ void crsfSharedFifoHandler( void )
     }
   }
 
-  static _libCrsf_CRSF_PARSE_DATA CRSF_DataRx;
-  if ( crossfireSharedData.crsf_rx.pop(byte) ) {
-//  	TRACE("opentx2xf_rx:%x", byte);
-    if ( libCrsf_CRSF_Parse( &CRSF_DataRx, byte )) {
-//      libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
-    	if(*(CRSF_DataRx.Payload + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_READ || *(CRSF_DataRx.Payload + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_WRITE ){
-    		SetXfBuf(CRSF_DataRx.Payload);
-    	}
-    }
-  }
+//  static _libCrsf_CRSF_PARSE_DATA CRSF_DataRx;
+//  if ( crossfireSharedData.crsf_rx.pop(byte) ) {
+////  	TRACE("opentx2xf_rx:%x", byte);
+//    if ( libCrsf_CRSF_Parse( &CRSF_DataRx, byte )) {
+////      libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
+//    	if(*(CRSF_DataRx.Payload + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_READ || *(CRSF_DataRx.Payload + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_WRITE ){
+//    		SetXfBuf(CRSF_DataRx.Payload);
+//    	}
+//    }
+//  }
 }
 
 void crsfEspHandler( void )
@@ -490,6 +492,168 @@ static void crsfSdXfReadHandler( char* filename, BYTE* pData, uint16_t Length, u
 //	TraceFlag("crsfSdXfReadHandler:", CrsfSdXf.flag);
 }
 
+void crsfSdEraseHandler(){
+	static CrsfSd_t CrsfSdOpentx;
+	static uint8_t state = CRSF_SD_START;
+	static uint8_t targetDst = 0;
+//	TraceState("crsfSdWriteHandler:", state);
+	switch(state){
+		case CRSF_SD_START:
+		{
+//			if(crossfireSharedData.crsf_tx.size() > 0){
+			if(isOpentxBufSet){
+				isOpentxBufSet = 0;
+//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
+//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
+//						break;
+//					}
+//					#ifdef DEBUG_CRSF_SD_WRITE
+//					TRACE("crsfSdWriteHandler:CRSF_SD_START:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
+//					#endif
+//				}
+				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
+				crsfSdUnpackFrame(&CrsfSdOpentx);
+				#ifdef DEBUG_CRSF_SD_WRITE
+				TRACE("crsfSdWriteHandler:CRSF_SD_START:sync:%x:length:%d:cmd:%x:subcmd:%d:flag:%d:chunk:%d:crc:%d:calCrc:%d", CrsfSdOpentx.sync, CrsfSdOpentx.length, CrsfSdOpentx.cmd, CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.chunk, CrsfSdOpentx.crc, CrsfSdOpentx.calCrc);
+				#endif
+
+				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_START){
+					state = CRSF_SD_WRITE;
+//					targetDst = LIBCRSF_REMOTE_ADD;
+					targetDst = CrsfSdOpentx.org;
+					#ifdef DEBUG_CRSF_SD_WRITE
+					TRACE("crsfSdWriteHandler:CRSF_SD_START:start to write");
+					TRACE("crsfSdWriteHandler:CRSF_SD_START:file:%s", CrsfSdOpentx.payload);
+					#endif
+
+					CrsfSdOpentx.result = f_unlink((char*)CrsfSdOpentx.payload);
+					if( CrsfSdOpentx.result == FR_OK ){
+						#if defined(DEBUG_CRSF_SD_WRITE) || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
+						TRACE("crsfSdWriteHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
+						TRACE("crsfSdWriteHandler:CRSF_SD_START:open %s successful", CrsfSdOpentx.payload);
+						#endif
+					}
+					else{
+						#ifdef DEBUG_CRSF_SD_WRITE
+						TRACE("crsfSdWriteHandler:CRSF_SD_START:result:%x", CrsfSdOpentx.result);
+						TRACE("crsfSdWriteHandler:CRSF_SD_START:open failed");
+						#endif
+						state = CRSF_SD_IDLE;
+					}
+				}
+				else{
+					CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_REMOTE_ADD;
+//					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
+//					CrsfSdOpentx.org = LIBCRSF_RC_TX;
+//					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
+					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
+					CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_ERASE;
+					CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY_START;
+					CrsfSdOpentx.requestDataLength = 0;
+					CrsfSdOpentx.numOfBytesRead = 0;
+					crsfSdPackFrame(&CrsfSdOpentx);
+					CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
+					state = CRSF_SD_START;
+					#ifdef DEBUG_CRSF_SD_WRITE
+					TRACE("crsfSdWriteHandler:CRSF_SD_START:retry to write start");
+					#endif
+				}
+			}
+			break;
+		}
+
+		case CRSF_SD_WRITE:
+		{
+			if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
+				CrsfSdOpentx.dst = targetDst;
+//				CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
+//				CrsfSdOpentx.org = LIBCRSF_RC_TX;
+//					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
+				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
+				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_ERASE;
+				CrsfSdOpentx.flag = CRSF_SD_FLAG_OK;
+				crsfSdPackFrame(&CrsfSdOpentx);
+				CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
+				state = CRSF_SD_ACK;
+				#ifdef DEBUG_CRSF_SD_WRITE
+				TRACE("crsfSdWriteHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
+				#endif
+			}
+			break;
+		}
+
+		case CRSF_SD_ACK:
+		{
+//			if(crossfireSharedData.crsf_tx.size() > 0){
+			if(isOpentxBufSet){
+				isOpentxBufSet = 0;
+//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
+//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
+//						break;
+//					}
+//					#ifdef DEBUG_CRSF_SD_WRITE
+//					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
+//					#endif
+//				}
+				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
+				crsfSdUnpackFrame(&CrsfSdOpentx);
+				#ifdef DEBUG_CRSF_SD_WRITE
+				TRACE("crsfSdWriteHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d:numOfBytesRead:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk, CrsfSdOpentx.numOfBytesRead);
+				#endif
+				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH){
+					state = CRSF_SD_FLAG_FINISH;
+					#if defined(DEBUG_CRSF_SD_WRITE) // || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
+					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
+					#endif
+					#ifdef DEBUG_CRSF_SD_WRITE
+					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:success to write");
+					#endif
+				}
+				else{
+					CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
+					state = CRSF_SD_WRITE;
+					#ifdef DEBUG_CRSF_SD_WRITE
+					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:retry to write");
+					#endif
+				}
+			}
+			break;
+		}
+
+		case CRSF_SD_FINISH:
+		{
+			#if defined(DEBUG_CRSF_SD_WRITE) || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
+			TRACE("crsfSdWriteHandler:CRSF_SD_FINISH");
+			#endif
+			state = CRSF_SD_START;
+			enableOpentxSdEraseHandler = 0;
+			break;
+		}
+
+		case CRSF_SD_ERROR:
+		{
+			#ifdef DEBUG_CRSF_SD_WRITE
+			TRACE("crsfSdWriteHandler:CRSF_SD_ERROR:%d", CrsfSdOpentx.result);
+			#endif
+			f_close(&CrsfSdOpentx.file);
+			state = CRSF_SD_IDLE;
+
+			break;
+		}
+
+		case CRSF_SD_IDLE:
+		{
+			enableOpentxSdEraseHandler = 0;
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+}
+
 void crsfSdWriteHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
@@ -517,8 +681,8 @@ void crsfSdWriteHandler(){
 
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_START){
 					state = CRSF_SD_WRITE;
-					targetDst = LIBCRSF_REMOTE_ADD;
-//					targetDst = CrsfSdOpentx.org;
+//					targetDst = LIBCRSF_REMOTE_ADD;
+					targetDst = CrsfSdOpentx.org;
 					#ifdef DEBUG_CRSF_SD_WRITE
 					TRACE("crsfSdWriteHandler:CRSF_SD_START:start to write");
 					TRACE("crsfSdWriteHandler:CRSF_SD_START:file:%s", CrsfSdOpentx.payload);
@@ -554,11 +718,11 @@ void crsfSdWriteHandler(){
 					}
 				}
 				else{
-//					CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_REMOTE_ADD;
-					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-					CrsfSdOpentx.org = LIBCRSF_RC_TX;
+					CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_REMOTE_ADD;
+//					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
+//					CrsfSdOpentx.org = LIBCRSF_RC_TX;
 //					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
+					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 					CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY_START;
 					CrsfSdOpentx.requestDataLength = 0;
@@ -588,11 +752,14 @@ void crsfSdWriteHandler(){
 					if(CrsfSdOpentx.chunk == 1 && (CrsfSdOpentx.bytesPendingToSend - CrsfSdOpentx.numOfBytesRead == 0)){
 						CrsfSdOpentx.chunk = 0;
 					}
-					//				CrsfSdOpentx.dst = targetDst;
-					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-					CrsfSdOpentx.org = LIBCRSF_RC_TX;
+//					for(int r = 0; r < CrsfSdOpentx.numOfBytesRead; r++){
+//						TRACE("opentx:%d:%x", r, CrsfSdOpentx.payload[r]);
+//					}
+					CrsfSdOpentx.dst = targetDst;
+//					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
+//					CrsfSdOpentx.org = LIBCRSF_RC_TX;
 //					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
+					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 					CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_OK;
 					crsfSdPackFrame(&CrsfSdOpentx);
@@ -604,11 +771,11 @@ void crsfSdWriteHandler(){
 				}
 			}
 			else if(CrsfSdOpentx.flag == CRSF_SD_FLAG_RETRY && crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-//				CrsfSdOpentx.dst = targetDst;
-				CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-				CrsfSdOpentx.org = LIBCRSF_RC_TX;
+				CrsfSdOpentx.dst = targetDst;
+//				CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
+//				CrsfSdOpentx.org = LIBCRSF_RC_TX;
 //					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
+				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 				CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
 				crsfSdPackFrame(&CrsfSdOpentx);
@@ -666,6 +833,7 @@ void crsfSdWriteHandler(){
 			TRACE("crsfSdWriteHandler:CRSF_SD_FINISH");
 			#endif
 			state = CRSF_SD_START;
+			enableOpentxSdWriteHandler = 0;
 			break;
 		}
 
@@ -679,6 +847,13 @@ void crsfSdWriteHandler(){
 
 			break;
 		}
+
+		case CRSF_SD_IDLE:
+		{
+			enableOpentxSdWriteHandler = 0;
+			break;
+		}
+
 		default:
 		{
 			break;
@@ -1122,7 +1297,7 @@ void crsfSdXfWriteHandler( char* filename, BYTE* pData, uint16_t Length, uint8_t
 			TRACE("crsfSdXfWriteHandler:CRSF_SD_FINISH");
 			#endif
 			state = CRSF_SD_IDLE;
-			enableOpentxSdWriteHandler = 0;
+//			enableOpentxSdWriteHandler = 0;
 			break;
 		}
 

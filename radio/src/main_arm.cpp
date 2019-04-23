@@ -428,7 +428,7 @@ void perMain()
 		  espInit(500000, false);
 #endif
 //		  startCrsfSdReadTest = true;
-		  startCrsfSdWriteTest = true;
+//		  startCrsfSdWriteTest = true;
 	}
 
   DEBUG_TIMER_START(debugTimerPerMain1);

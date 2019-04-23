@@ -422,44 +422,44 @@ TASK_FUNCTION(systemTask)
   while(1) {
       crsfSharedFifoHandler();
       crsfEspHandler();
-	  if(startCrsfSdReadTest){
-		static uint16_t count = 0;
-		static uint8_t buf[1024];
-		uint8_t state = crsfSdRead("/FIRMWARE/0x000110xx_0x0251.bin", buf, 1024);
-		if(state == 1){
-		  TRACE("crsfSdRead:FINISHED");
-		  startCrsfSdReadTest = false;
-		}
-		else if(state == 9){
-		  TRACE("crsfSdRead:DATA_READY:%d KB", ++count);
-		}
-	  }
-	  if(startCrsfSdWriteTest){
-		  static uint8_t h = 0;
-		  static FIL f;
-		  static uint16_t count = 0;
-		  static uint8_t buf[1024];
-		  static uint16_t b = 0;
-		  if(!h){
-			  FILINFO l;
-			  f_stat("/FIRMWARE/0x000110xx_0x0251.bin", &l);
-//			  f_stat("/hello.wav", &l);
-			  crsfSdWriteHeader(0x01, 0x02, l.fsize);
-			  h = 1;
-			  f_open(&f, "/FIRMWARE/0x000110xx_0x0251.bin", FA_READ);
-//			  f_open(&f, "/hello.wav", FA_READ);
-			  f_read(&f, buf, 1024, (UINT*)&b);
-		  }
-	  		uint8_t state = crsfSdWrite(fwFilename, buf, b);
-	  		if(state == 1){
-	  		  TRACE("crsfSdWrite:FINISHED");
-	  		  startCrsfSdReadTest = false;
-	  		}
-	  		else if(state == 10){
-			  f_read(&f, buf, 1024, (UINT*)&b);
-	  		  TRACE("crsfSdWrite:DATA_COMPLETED:%d KB", ++count);
-	  		}
-	  	  }
+//	  if(startCrsfSdReadTest){
+//		static uint16_t count = 0;
+//		static uint8_t buf[1024];
+//		uint8_t state = crsfSdRead("/FIRMWARE/0x000110xx_0x0251.bin", buf, 1024);
+//		if(state == 1){
+//		  TRACE("crsfSdRead:FINISHED");
+//		  startCrsfSdReadTest = false;
+//		}
+//		else if(state == 9){
+//		  TRACE("crsfSdRead:DATA_READY:%d KB", ++count);
+//		}
+//	  }
+//	  if(startCrsfSdWriteTest){
+//		  static uint8_t h = 0;
+//		  static FIL f;
+//		  static uint16_t count = 0;
+//		  static uint8_t buf[1024];
+//		  static uint16_t b = 0;
+//		  if(!h){
+//			  FILINFO l;
+//			  f_stat("/FIRMWARE/0x000110xx_0x0251.bin", &l);
+////			  f_stat("/hello.wav", &l);
+//			  crsfSdWriteHeader(0x01, 0x02, l.fsize);
+//			  h = 1;
+//			  f_open(&f, "/FIRMWARE/0x000110xx_0x0251.bin", FA_READ);
+////			  f_open(&f, "/hello.wav", FA_READ);
+//			  f_read(&f, buf, 1024, (UINT*)&b);
+//		  }
+//	  		uint8_t state = crsfSdWrite(fwFilename, buf, b);
+//	  		if(state == 1){
+//	  		  TRACE("crsfSdWrite:FINISHED");
+//	  		  startCrsfSdReadTest = false;
+//	  		}
+//	  		else if(state == 10){
+//			  f_read(&f, buf, 1024, (UINT*)&b);
+//	  		  TRACE("crsfSdWrite:DATA_COMPLETED:%d KB", ++count);
+//	  		}
+//	  	  }
 
 	  extern uint8_t enableOpentxSdWriteHandler;
 	  if(enableOpentxSdWriteHandler){
@@ -469,6 +469,11 @@ TASK_FUNCTION(systemTask)
 	  extern uint8_t enableOpentxSdReadHandler;
 	  if(enableOpentxSdReadHandler){
 		  crsfSdReadHandler();
+	  }
+
+	  extern uint8_t enableOpentxSdEraseHandler;
+	  if(enableOpentxSdEraseHandler){
+		  crsfSdEraseHandler();
 	  }
   }
   TASK_RETURN();
