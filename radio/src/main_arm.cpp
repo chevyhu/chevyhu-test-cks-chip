@@ -427,6 +427,7 @@ void perMain()
 		  espInit(ESP_UART_BAUDRATE, false);
 #endif
 	}
+#endif
 
   DEBUG_TIMER_START(debugTimerPerMain1);
 #if defined(PCBSKY9X) && !defined(REVA)

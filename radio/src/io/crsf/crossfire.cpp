@@ -97,7 +97,7 @@ void CRSF_This_Device( uint8_t *p_arr )
         libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
         libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
       }
-//      break;
+      break;
 
 #if defined(CRSF_OPENTX)
     case LIBCRSF_OPENTX_RELATED:

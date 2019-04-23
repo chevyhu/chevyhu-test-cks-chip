@@ -555,11 +555,11 @@ if(NOT MSVC)
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
-#    add_custom_command(
-#            TARGET firmware POST_BUILD
-#            COMMAND srec_cat ${CMAKE_BINARY_DIR}/firmware.bin -Binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/crossfire.bin -Binary -offset 0x00060000 -o ${CMAKE_BINARY_DIR}/combine.bin -Binary
-#            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#    )
+    add_custom_command(
+            TARGET firmware POST_BUILD
+            COMMAND srec_cat ${CMAKE_BINARY_DIR}/firmware.bin -Binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/crossfire.bin -Binary -offset 0x00060000 -o ${CMAKE_BINARY_DIR}/combine.bin -Binary
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
 	
     find_program(GAWK gawk HINTS "c:/cygwin/bin/" "c:/msys/bin/" DOC "gawk for firmware size report.")  # OS X might only have "awk"
     if (BASH AND GAWK)
