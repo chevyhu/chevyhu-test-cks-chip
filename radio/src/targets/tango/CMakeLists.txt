@@ -48,7 +48,6 @@ elseif(PCB STREQUAL TANGO)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   add_definitions(-DSOFTWARE_VOLUME)
   add_definitions(-DAGENT )
-  add_definitions(-DCRSF_SD )
 
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}

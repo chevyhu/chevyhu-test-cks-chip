@@ -418,17 +418,13 @@ void guiMain(event_t evt)
 void perMain()
 {
 	// these setting are overrided by some where, reinit it for temp run
-	extern bool startCrsfSdReadTest;
-	extern bool startCrsfSdWriteTest;
 	static bool started = false;
 	if(!started){
 		  keysInit();
 		  started = true;
 #if defined(ESP_SERIAL)
-		  espInit(500000, false);
+		  espInit(ESP_UART_BAUDRATE, false);
 #endif
-//		  startCrsfSdReadTest = true;
-//		  startCrsfSdWriteTest = true;
 	}
 
   DEBUG_TIMER_START(debugTimerPerMain1);

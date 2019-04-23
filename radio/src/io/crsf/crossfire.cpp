@@ -52,8 +52,7 @@ Fifo<uint8_t, TELEMETRY_BUFFER_SIZE> crsf_telemetry_buffer;
 extern Fifo<uint8_t, ESP_TX_BUFFER_SIZE> espTxFifo;
 extern Fifo<uint8_t, ESP_RX_BUFFER_SIZE> espRxFifo;
 
-static uint8_t XfBuf[LIBCRSF_MAX_BUFFER_SIZE];
-static uint8_t isXfBufSet = 0;
+#if defined(CRSF_OPENTX) && defined(CRSF_SD)
 
 static uint8_t OpentxBuf[LIBCRSF_MAX_BUFFER_SIZE];
 static uint8_t isOpentxBufSet = 0;
@@ -62,15 +61,12 @@ uint8_t enableOpentxSdWriteHandler = 0;
 uint8_t enableOpentxSdReadHandler = 0;
 uint8_t enableOpentxSdEraseHandler = 0;
 
-static void SetXfBuf(uint8_t* p_arr){
-	memcpy(XfBuf, p_arr, LIBCRSF_MAX_BUFFER_SIZE);
-	isXfBufSet = 1;
-}
-
 static void SetOpentxBuf(uint8_t* p_arr){
 	memcpy(OpentxBuf, p_arr, LIBCRSF_MAX_BUFFER_SIZE);
 	isOpentxBufSet = 1;
 }
+
+#endif
 
 void CRSF_Init( void )
 {
@@ -94,17 +90,18 @@ void CRSF_This_Device( uint8_t *p_arr )
   switch ( *(p_arr + LIBCRSF_TYPE_ADD) )
   {
 //    TODO: perna handle CRSF parameter frames once agent is ready
-//    case LIBCRSF_EX_PARAM_PING_DEVICE:
-//      if ( libCrsf_checkif_devicecalled( p_arr, true )) {
-////        TRACE("LIBCRSF_EX_PARAM_PING_DEVICE");
-//        // Parameter_Pack_Device_Information( &arr[LIBCRSF_LENGTH_ADD] );
-//        libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
-//        libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
-//      }
+    case LIBCRSF_EX_PARAM_PING_DEVICE:
+      if ( libCrsf_checkif_devicecalled( p_arr, true )) {
+//        TRACE("LIBCRSF_EX_PARAM_PING_DEVICE");
+        // Parameter_Pack_Device_Information( &arr[LIBCRSF_LENGTH_ADD] );
+        libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
+        libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
+      }
 //      break;
 
 #if defined(CRSF_OPENTX)
     case LIBCRSF_OPENTX_RELATED:
+#if defined(CRSF_SD)
       if( *(p_arr + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_READ ){
     	  SetOpentxBuf(p_arr);
 		  enableOpentxSdWriteHandler = 1;
@@ -117,6 +114,7 @@ void CRSF_This_Device( uint8_t *p_arr )
     	  SetOpentxBuf(p_arr);
 		  enableOpentxSdEraseHandler = 1;
       }
+#endif
       break;
 #endif
 
@@ -171,22 +169,10 @@ void crsfSharedFifoHandler( void )
   uint8_t byte;
   static _libCrsf_CRSF_PARSE_DATA CRSF_Data;
   if ( crossfireSharedData.crsf_tx.pop(byte) ) {
-//  	TRACE("xf2opentx_rx:%x", byte);
     if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
       libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
     }
   }
-
-//  static _libCrsf_CRSF_PARSE_DATA CRSF_DataRx;
-//  if ( crossfireSharedData.crsf_rx.pop(byte) ) {
-////  	TRACE("opentx2xf_rx:%x", byte);
-//    if ( libCrsf_CRSF_Parse( &CRSF_DataRx, byte )) {
-////      libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
-//    	if(*(CRSF_DataRx.Payload + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_READ || *(CRSF_DataRx.Payload + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_WRITE ){
-//    		SetXfBuf(CRSF_DataRx.Payload);
-//    	}
-//    }
-//  }
 }
 
 void crsfEspHandler( void )
@@ -307,245 +293,42 @@ static void crsfSdUnpackFrame(CrsfSd_t* crsfSd){
 	crsfSd->calCrc = libCRC8_Get_CRC_Arr(&crsfSd->rxBuf[2], crsfSd->length-1, POLYNOM_1);
 }
 
-static void crsfSdXfReadHandler( char* filename, BYTE* pData, uint16_t Length, uint8_t& state){
-	static CrsfSd_t CrsfSdXf;
-	switch(state){
-		case CRSF_SD_START:
-		{
-			if(Length > 0 && crossfireSharedData.crsf_tx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdXf.dst = LIBCRSF_REMOTE_ADD;
-				CrsfSdXf.org = LIBCRSF_RC_TX;
-				CrsfSdXf.subcmd = CRSF_SD_SUBCMD_READ;
-				CrsfSdXf.flag = CRSF_SD_FLAG_START;
-				CrsfSdXf.requestDataLength = Length;
-				uint8_t filenameLength = 0;
-				for(int i = 0; i < 128; i++){
-					filenameLength++;
-					if(filename[i] == 0){
-						break;
-					}
-					if(i == 127){
-						state = CRSF_SD_INVALID_FILENAME;
-						return;
-					}
-				}
-				memcpy(CrsfSdXf.payload, filename, filenameLength);
-				CrsfSdXf.numOfBytesRead = filenameLength;
-				crsfSdPackFrame(&CrsfSdXf);
-				for(uint8_t i = 0; i < CrsfSdXf.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-					crossfireSharedData.crsf_tx.push(CrsfSdXf.txBuf[i]);
-					#ifdef DEBUG_CRSF_SD_XF_READ
-					TRACE("crsfSdXfReadHandler:CRSF_SD_START:txBuf[%d]:%x", i, CrsfSdXf.txBuf[i]);
-					#endif
-				}
-				#ifdef DEBUG_CRSF_SD_XF_READ
-				TRACE("crsfSdXfReadHandler:CRSF_SD_START:start sent");
-				#endif
-				state = CRSF_SD_READ;
-				#if defined(DEBUG_CRSF_SD_XF_READ) || defined(DEBUG_CRSF_SD_XF_READ_COMPARE)
-				CrsfSdXf.result = f_open(&CrsfSdXf.file, "/comparison.bin", FA_CREATE_ALWAYS | FA_WRITE);
-				TRACE("crsfSdXfReadHandler:CRSF_SD_START:open /comparison.bin:result:%d", CrsfSdXf.result);
-				#endif
-			}
-			break;
-		}
-		case CRSF_SD_READ:
-		{
-//			if(crossfireSharedData.crsf_rx.size() > 0){
-			if(isXfBufSet){
-				isXfBufSet = 0;
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_rx.pop(CrsfSdXf.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_XF_READ
-//					TRACE("crsfSdXfReadHandler:CRSF_SD_READ:rxbuf[%d]:%x", i, CrsfSdXf.rxBuf[i]);
-//					#endif
-//				}
-				uint16_t prevChunk = CrsfSdXf.chunk;
-				uint8_t prevLength = CrsfSdXf.length;
-				memcpy(CrsfSdXf.rxBuf, XfBuf, LIBCRSF_MAX_BUFFER_SIZE);
-				crsfSdUnpackFrame(&CrsfSdXf);
-				#ifdef DEBUG_CRSF_SD_XF_READ
-				TRACE("crsfSdXfReadHandler:CRSF_SD_READ:sync:%x:length:%d:cmd:%x:subcmd:%d:flag:%d:chunk:%d:crc:%d:calCrc:%d", CrsfSdXf.sync, CrsfSdXf.length, CrsfSdXf.cmd, CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.chunk, CrsfSdXf.crc, CrsfSdXf.calCrc);
-				TraceFlag("crsfSdXfReadHandler:CRSF_SD_READ:flag:", CrsfSdXf.flag);
-				#endif
-				if(CrsfSdXf.sync == LIBCRSF_UART_SYNC && CrsfSdXf.crc == CrsfSdXf.calCrc && CrsfSdXf.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdXf.flag == CRSF_SD_FLAG_OK || CrsfSdXf.flag == CRSF_SD_FLAG_RETRY)){// && CrsfSdXf.dst == LIBCRSF_RC_TX){
-					if(prevChunk != CrsfSdXf.chunk || (prevChunk == CrsfSdXf.chunk && prevLength != CrsfSdXf.length)){
-						uint16_t actualReceviedLength = CrsfSdXf.length - CRSF_SD_DATA_START_ADD + 1;
-						memcpy(pData, CrsfSdXf.payload, actualReceviedLength);
-						CrsfSdXf.bytesReceived += actualReceviedLength;
-						#if defined(DEBUG_CRSF_SD_XF_READ) || defined(DEBUG_CRSF_SD_XF_READ_COMPARE)
-						CrsfSdXf.result = f_write(&CrsfSdXf.file, CrsfSdXf.payload, actualReceviedLength, (UINT*)&CrsfSdXf.numOfBytesWritten);
-						#endif
-						#ifdef DEBUG_CRSF_SD_XF_READ
-						TRACE("crsfSdXfReadHandler:CRSF_SD_READ:result:%d:numOfBytesWritten:%d", CrsfSdXf.result, CrsfSdXf.numOfBytesWritten);
-						TRACE("crsfSdXfReadHandler:CRSF_SD_READ:written in buffer");
-						#endif
-					}
-					#if defined(DEBUG_CRSF_SD_XF_READ) // || defined(DEBUG_CRSF_SD_XF_READ_COMPARE)
-					TRACE("crsfSdXfReadHandler:CRSF_SD_READ:subcmd:%d:flag:%d:bytesReceived:%d:chunk:%d:numOfBytesWritten:%d", CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.bytesReceived, CrsfSdXf.chunk, CrsfSdXf.numOfBytesWritten);
-					TraceFlag("crsfSdXfReadHandler:CRSF_SD_READ:flag:", CrsfSdXf.flag);
-					#endif
-					state = CRSF_SD_DATA_READY;
-
-				}
-				else if(CrsfSdXf.sync == LIBCRSF_UART_SYNC && CrsfSdXf.crc == CrsfSdXf.calCrc && CrsfSdXf.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdXf.flag == CRSF_SD_FLAG_RETRY_START){// && CrsfSdXf.dst == LIBCRSF_RC_TX){
-					state = CRSF_SD_START;
-				}
-				else{
-					state = CRSF_SD_ERROR;
-				}
-			}
-			break;
-		}
-
-		case CRSF_SD_ACK:
-		{
-			if(crossfireSharedData.crsf_tx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdXf.dst = LIBCRSF_REMOTE_ADD;
-				CrsfSdXf.org = LIBCRSF_RC_TX;
-				CrsfSdXf.subcmd = CRSF_SD_SUBCMD_READ;
-				if(CrsfSdXf.chunk > 0){
-					CrsfSdXf.flag = CRSF_SD_FLAG_ACK;
-					state = CRSF_SD_READ;
-				}
-				else if(CrsfSdXf.chunk == 0){
-					state = CRSF_SD_FINISH;
-					CrsfSdXf.flag = CRSF_SD_FLAG_FINISH;
-				}
-				CrsfSdXf.requestDataLength = Length;
-				CrsfSdXf.numOfBytesRead = 0;
-				crsfSdPackFrame(&CrsfSdXf);
-				for(uint8_t i = 0; i < CrsfSdXf.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-					crossfireSharedData.crsf_tx.push(CrsfSdXf.txBuf[i]);
-					#ifdef DEBUG_CRSF_SD_XF_READ
-					TRACE("crsfSdXfReadHandler:CRSF_SD_ACK:txBuf[%d]:%x", i, CrsfSdXf.txBuf[i]);
-					#endif
-				}
-				#if defined(DEBUG_CRSF_SD_XF_READ) // || defined(DEBUG_CRSF_SD_XF_READ_COMPARE)
-				TRACE("crsfSdXfReadHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesReceived:%d:chunk:%d", CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.bytesReceived, CrsfSdXf.chunk);
-				TraceFlag("crsfSdXfReadHandler:CRSF_SD_ACK:flag:", CrsfSdXf.flag);
-				TRACE("crsfSdXfReadHandler:CRSF_SD_ACK:ack sent");
-				#endif
-			}
-			break;
-		}
-
-		case CRSF_SD_FINISH:
-		{
-			#if defined(DEBUG_CRSF_SD_XF_READ) || defined(DEBUG_CRSF_SD_XF_READ_COMPARE)
-			CrsfSdXf.result = f_sync(&CrsfSdXf.file);
-			TRACE("crsfSdXfReadHandler:CRSF_SD_FINISH:result:%d", CrsfSdXf.result);
-			CrsfSdXf.result = f_close(&CrsfSdXf.file);
-			TRACE("crsfSdXfReadHandler:CRSF_SD_FINISH:result:%d", CrsfSdXf.result);
-			TRACE("crsfSdXfReadHandler:CRSF_SD_FINISH");
-			#endif
-			state = CRSF_SD_IDLE;
-			break;
-		}
-
-		case CRSF_SD_DATA_READY:
-		{
-			#ifdef DEBUG_CRSF_SD_XF_READ
-			TRACE("crsfSdXfReadHandler:CRSF_SD_DATA_READY");
-			#endif
-			state = CRSF_SD_ACK;
-			break;
-		}
-
-		case CRSF_SD_ERROR:
-		{
-			#ifdef DEBUG_CRSF_SD_XF_READ
-			TRACE("crsfSdXfReadHandler:CRSF_SD_ERROR");
-			#endif
-			if(crossfireSharedData.crsf_tx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdXf.dst = LIBCRSF_REMOTE_ADD;
-				CrsfSdXf.org = LIBCRSF_RC_TX;
-				CrsfSdXf.subcmd = CRSF_SD_SUBCMD_READ;
-				CrsfSdXf.flag = CRSF_SD_FLAG_RETRY;
-				CrsfSdXf.numOfBytesRead = 0;
-				crsfSdPackFrame(&CrsfSdXf);
-				for(uint8_t i = 0; i < CrsfSdXf.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-					crossfireSharedData.crsf_tx.push(CrsfSdXf.txBuf[i]);
-					#ifdef DEBUG_CRSF_SD_READ
-					TRACE("crsfSdXfReadHandler:CRSF_SD_ACK:txBuf[%d]:%x", i, CrsfSdXf.txBuf[i]);
-					#endif
-				}
-				state = CRSF_SD_ACK;
-			}
-			break;
-		}
-
-		case CRSF_SD_INVALID_FILENAME:
-		{
-			state = CRSF_SD_IDLE;
-			break;
-		}
-
-		default:
-		{
-			break;
-		}
-	}
-//	TraceState("crsfSdXfReadHandler:", state);
-//	TraceFlag("crsfSdXfReadHandler:", CrsfSdXf.flag);
-}
-
 void crsfSdEraseHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
 	static uint8_t targetDst = 0;
-//	TraceState("crsfSdWriteHandler:", state);
+
 	switch(state){
 		case CRSF_SD_START:
 		{
-//			if(crossfireSharedData.crsf_tx.size() > 0){
 			if(isOpentxBufSet){
 				isOpentxBufSet = 0;
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_WRITE
-//					TRACE("crsfSdWriteHandler:CRSF_SD_START:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
-//					#endif
-//				}
 				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
 				crsfSdUnpackFrame(&CrsfSdOpentx);
-				#ifdef DEBUG_CRSF_SD_WRITE
-				TRACE("crsfSdWriteHandler:CRSF_SD_START:sync:%x:length:%d:cmd:%x:subcmd:%d:flag:%d:chunk:%d:crc:%d:calCrc:%d", CrsfSdOpentx.sync, CrsfSdOpentx.length, CrsfSdOpentx.cmd, CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.chunk, CrsfSdOpentx.crc, CrsfSdOpentx.calCrc);
+				#ifdef DEBUG_CRSF_SD_ERASE
+				TRACE("crsfSdEraseHandler:CRSF_SD_START:sync:%x:length:%d:cmd:%x:subcmd:%d:flag:%d:chunk:%d:crc:%d:calCrc:%d", CrsfSdOpentx.sync, CrsfSdOpentx.length, CrsfSdOpentx.cmd, CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.chunk, CrsfSdOpentx.crc, CrsfSdOpentx.calCrc);
 				#endif
 
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_START){
 					state = CRSF_SD_WRITE;
-//					targetDst = LIBCRSF_REMOTE_ADD;
 					targetDst = CrsfSdOpentx.org;
-					#ifdef DEBUG_CRSF_SD_WRITE
-					TRACE("crsfSdWriteHandler:CRSF_SD_START:start to write");
-					TRACE("crsfSdWriteHandler:CRSF_SD_START:file:%s", CrsfSdOpentx.payload);
-					#endif
-
 					CrsfSdOpentx.result = f_unlink((char*)CrsfSdOpentx.payload);
 					if( CrsfSdOpentx.result == FR_OK ){
-						#if defined(DEBUG_CRSF_SD_WRITE) || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
-						TRACE("crsfSdWriteHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
-						TRACE("crsfSdWriteHandler:CRSF_SD_START:open %s successful", CrsfSdOpentx.payload);
+						#if defined(DEBUG_CRSF_SD_ERASE)
+						TRACE("crsfSdEraseHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
+						TRACE("crsfSdEraseHandler:CRSF_SD_START:del %s successful", CrsfSdOpentx.payload);
 						#endif
 					}
 					else{
-						#ifdef DEBUG_CRSF_SD_WRITE
-						TRACE("crsfSdWriteHandler:CRSF_SD_START:result:%x", CrsfSdOpentx.result);
-						TRACE("crsfSdWriteHandler:CRSF_SD_START:open failed");
+						#ifdef DEBUG_CRSF_SD_ERASE
+						TRACE("crsfSdEraseHandler:CRSF_SD_START:result:%x", CrsfSdOpentx.result);
+						TRACE("crsfSdEraseHandler:CRSF_SD_START:del failed");
 						#endif
 						state = CRSF_SD_IDLE;
 					}
 				}
 				else{
-					CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_REMOTE_ADD;
-//					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-//					CrsfSdOpentx.org = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
+					CrsfSdOpentx.dst = CrsfSdOpentx.org;
 					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 					CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_ERASE;
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY_START;
@@ -554,8 +337,8 @@ void crsfSdEraseHandler(){
 					crsfSdPackFrame(&CrsfSdOpentx);
 					CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
 					state = CRSF_SD_START;
-					#ifdef DEBUG_CRSF_SD_WRITE
-					TRACE("crsfSdWriteHandler:CRSF_SD_START:retry to write start");
+					#ifdef DEBUG_CRSF_SD_ERASE
+					TRACE("crsfSdEraseHandler:CRSF_SD_START:retry to write start");
 					#endif
 				}
 			}
@@ -566,17 +349,14 @@ void crsfSdEraseHandler(){
 		{
 			if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
 				CrsfSdOpentx.dst = targetDst;
-//				CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-//				CrsfSdOpentx.org = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_ERASE;
 				CrsfSdOpentx.flag = CRSF_SD_FLAG_OK;
 				crsfSdPackFrame(&CrsfSdOpentx);
 				CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
 				state = CRSF_SD_ACK;
-				#ifdef DEBUG_CRSF_SD_WRITE
-				TRACE("crsfSdWriteHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
+				#ifdef DEBUG_CRSF_SD_ERASE
+				TRACE("crsfSdEraseHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
 				#endif
 			}
 			break;
@@ -584,36 +364,24 @@ void crsfSdEraseHandler(){
 
 		case CRSF_SD_ACK:
 		{
-//			if(crossfireSharedData.crsf_tx.size() > 0){
 			if(isOpentxBufSet){
 				isOpentxBufSet = 0;
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_WRITE
-//					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
-//					#endif
-//				}
 				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
 				crsfSdUnpackFrame(&CrsfSdOpentx);
-				#ifdef DEBUG_CRSF_SD_WRITE
-				TRACE("crsfSdWriteHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d:numOfBytesRead:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk, CrsfSdOpentx.numOfBytesRead);
+				#ifdef DEBUG_CRSF_SD_ERASE
+				TRACE("crsfSdEraseHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d:numOfBytesRead:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk, CrsfSdOpentx.numOfBytesRead);
 				#endif
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH){
 					state = CRSF_SD_FLAG_FINISH;
-					#if defined(DEBUG_CRSF_SD_WRITE) // || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
-					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
-					#endif
-					#ifdef DEBUG_CRSF_SD_WRITE
-					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:success to write");
+					#if defined(DEBUG_CRSF_SD_ERASE)
+					TRACE("crsfSdEraseHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
 					#endif
 				}
 				else{
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
 					state = CRSF_SD_WRITE;
-					#ifdef DEBUG_CRSF_SD_WRITE
-					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:retry to write");
+					#ifdef DEBUG_CRSF_SD_ERASE
+					TRACE("crsfSdEraseHandler:CRSF_SD_ACK:retry to write");
 					#endif
 				}
 			}
@@ -622,8 +390,8 @@ void crsfSdEraseHandler(){
 
 		case CRSF_SD_FINISH:
 		{
-			#if defined(DEBUG_CRSF_SD_WRITE) || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
-			TRACE("crsfSdWriteHandler:CRSF_SD_FINISH");
+			#if defined(DEBUG_CRSF_SD_ERASE)
+			TRACE("crsfSdEraseHandler:CRSF_SD_FINISH");
 			#endif
 			state = CRSF_SD_START;
 			enableOpentxSdEraseHandler = 0;
@@ -632,8 +400,8 @@ void crsfSdEraseHandler(){
 
 		case CRSF_SD_ERROR:
 		{
-			#ifdef DEBUG_CRSF_SD_WRITE
-			TRACE("crsfSdWriteHandler:CRSF_SD_ERROR:%d", CrsfSdOpentx.result);
+			#ifdef DEBUG_CRSF_SD_ERASE
+			TRACE("crsfSdEraseHandler:CRSF_SD_ERROR:%d", CrsfSdOpentx.result);
 			#endif
 			f_close(&CrsfSdOpentx.file);
 			state = CRSF_SD_IDLE;
@@ -658,21 +426,11 @@ void crsfSdWriteHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
 	static uint8_t targetDst = 0;
-//	TraceState("crsfSdWriteHandler:", state);
 	switch(state){
 		case CRSF_SD_START:
 		{
-//			if(crossfireSharedData.crsf_tx.size() > 0){
 			if(isOpentxBufSet){
 				isOpentxBufSet = 0;
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_WRITE
-//					TRACE("crsfSdWriteHandler:CRSF_SD_START:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
-//					#endif
-//				}
 				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
 				crsfSdUnpackFrame(&CrsfSdOpentx);
 				#ifdef DEBUG_CRSF_SD_WRITE
@@ -681,7 +439,6 @@ void crsfSdWriteHandler(){
 
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_START){
 					state = CRSF_SD_WRITE;
-//					targetDst = LIBCRSF_REMOTE_ADD;
 					targetDst = CrsfSdOpentx.org;
 					#ifdef DEBUG_CRSF_SD_WRITE
 					TRACE("crsfSdWriteHandler:CRSF_SD_START:start to write");
@@ -718,10 +475,7 @@ void crsfSdWriteHandler(){
 					}
 				}
 				else{
-					CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_REMOTE_ADD;
-//					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-//					CrsfSdOpentx.org = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
+					CrsfSdOpentx.dst = CrsfSdOpentx.org;
 					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 					CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY_START;
@@ -752,13 +506,7 @@ void crsfSdWriteHandler(){
 					if(CrsfSdOpentx.chunk == 1 && (CrsfSdOpentx.bytesPendingToSend - CrsfSdOpentx.numOfBytesRead == 0)){
 						CrsfSdOpentx.chunk = 0;
 					}
-//					for(int r = 0; r < CrsfSdOpentx.numOfBytesRead; r++){
-//						TRACE("opentx:%d:%x", r, CrsfSdOpentx.payload[r]);
-//					}
 					CrsfSdOpentx.dst = targetDst;
-//					CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-//					CrsfSdOpentx.org = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
 					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 					CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_OK;
@@ -772,9 +520,6 @@ void crsfSdWriteHandler(){
 			}
 			else if(CrsfSdOpentx.flag == CRSF_SD_FLAG_RETRY && crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
 				CrsfSdOpentx.dst = targetDst;
-//				CrsfSdOpentx.dst = LIBCRSF_REMOTE_ADD;
-//				CrsfSdOpentx.org = LIBCRSF_RC_TX;
-//					CrsfSdOpentx.dst = LIBCRSF_RC_TX;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 				CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
@@ -790,17 +535,8 @@ void crsfSdWriteHandler(){
 
 		case CRSF_SD_ACK:
 		{
-//			if(crossfireSharedData.crsf_tx.size() > 0){
 			if(isOpentxBufSet){
 				isOpentxBufSet = 0;
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_WRITE
-//					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
-//					#endif
-//				}
 				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
 				crsfSdUnpackFrame(&CrsfSdOpentx);
 				#ifdef DEBUG_CRSF_SD_WRITE
@@ -809,7 +545,7 @@ void crsfSdWriteHandler(){
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdOpentx.flag == CRSF_SD_FLAG_ACK || CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH)){
 					CrsfSdOpentx.bytesPendingToSend -= CrsfSdOpentx.numOfBytesRead;
 					state = CRSF_SD_WRITE;
-					#if defined(DEBUG_CRSF_SD_WRITE) // || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
+					#if defined(DEBUG_CRSF_SD_WRITE)
 					TRACE("crsfSdWriteHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
 					#endif
 					#ifdef DEBUG_CRSF_SD_WRITE
@@ -864,70 +600,40 @@ void crsfSdWriteHandler(){
 void crsfSdReadHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
-	static uint8_t prevState = CRSF_SD_START;
 	static uint8_t targetDst = 0;
 	switch(state){
 		case CRSF_SD_START:
 		{
-//			uint8_t size = crossfireSharedData.crsf_tx.size();
-//			TRACE("crsfSdReadHandler:crossfireSharedData.crsf_tx.size:%d", size);
-
 			if(isOpentxBufSet){
 				isOpentxBufSet = 0;
-//			if(crossfireSharedData.crsf_tx.size() > 0){
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_READ
-//					TRACE("crsfSdReadHandler:CRSF_SD_START:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
-//					#endif
-//				}
-				uint8_t prev_subcmd = CrsfSdOpentx.subcmd;
 				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
 				crsfSdUnpackFrame(&CrsfSdOpentx);
 				#ifdef DEBUG_CRSF_SD_READ
 				TRACE("crsfSdReadHandler:CRSF_SD_START:sync:%x:length:%d:cmd:%x:subcmd:%d:flag:%d:chunk:%d:crc:%d:calCrc:%d", CrsfSdOpentx.sync, CrsfSdOpentx.length, CrsfSdOpentx.cmd, CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.chunk, CrsfSdOpentx.crc, CrsfSdOpentx.calCrc);
 				#endif
-				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdOpentx.flag == CRSF_SD_FLAG_START || CrsfSdOpentx.flag == CRSF_SD_FLAG_RETRY_START)){// && CrsfSdOpentx.dst == LIBCRSF_REMOTE_ADD){
+				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdOpentx.flag == CRSF_SD_FLAG_START || CrsfSdOpentx.flag == CRSF_SD_FLAG_RETRY_START)){
 					CrsfSdOpentx.result = f_open(&CrsfSdOpentx.file, (const char*)CrsfSdOpentx.payload, FA_CREATE_ALWAYS | FA_WRITE);
 					#if defined(DEBUG_CRSF_SD_READ) || defined(DEBUG_CRSF_SD_READ_COMPARE)
 					TRACE("crsfSdReadHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
 					#endif
-					targetDst = CrsfSdOpentx.dst;
-					prevState == state;
+					targetDst = CrsfSdOpentx.org;
 					state = CRSF_SD_ACK;
 				}
 				else {
-//					if(prev_subcmd == CRSF_SD_FLAG_START || prev_subcmd == CRSF_SD_FLAG_RETRY_START ){
-//						CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY_START;
-//					}
-//					prevState = state;
-//					state = CRSF_SD_ERROR;
-
-
 					if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-//						CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_RC_TX;
-						CrsfSdOpentx.dst = LIBCRSF_RC_TX;
+						CrsfSdOpentx.dst = CrsfSdOpentx.org;
 						CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 						CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_WRITE;
 						CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY_START;
 						CrsfSdOpentx.numOfBytesRead = 0;
 						crsfSdPackFrame(&CrsfSdOpentx);
 						CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
-//						for(uint8_t i = 0; i < CrsfSdOpentx.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-//							crossfireSharedData.crsf_rx.push(CrsfSdOpentx.txBuf[i]);
-//							#ifdef DEBUG_CRSF_SD_READ
-//							TRACE("crsfSdReadHandler:CRSF_SD_START:txBuf[%d]:%x", i, CrsfSdOpentx.txBuf[i]);
-//							#endif
-//						}
 						#ifdef DEBUG_CRSF_SD_READ
 						TRACE("crsfSdReadHandler:CRSF_SD_START:crossfireSharedData.crsf_rx:%d", crossfireSharedData.crsf_rx.size());
 						TraceState("crsfSdReadHandler:CRSF_SD_START:state:", state);
 						#endif
 					}
 				}
-//				TraceState("crsfSdReadHandler:CRSF_SD_START:state:", state);
 			}
 			break;
 		}
@@ -936,15 +642,6 @@ void crsfSdReadHandler(){
 
 			if(isOpentxBufSet){
 				isOpentxBufSet = 0;
-//			if(crossfireSharedData.crsf_tx.size() > 0){
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_tx.pop(CrsfSdOpentx.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_READ
-//					TRACE("crsfSdReadHandler:CRSF_SD_READ:rxbuf[%d]:%x", i, CrsfSdOpentx.rxBuf[i]);
-//					#endif
-//				}
 				uint16_t prevChunk = CrsfSdOpentx.chunk;
 				uint8_t prevLength = CrsfSdOpentx.length;
 				memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
@@ -955,7 +652,6 @@ void crsfSdReadHandler(){
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdOpentx.flag == CRSF_SD_FLAG_OK || CrsfSdOpentx.flag == CRSF_SD_FLAG_RETRY)){// && CrsfSdOpentx.dst == LIBCRSF_RC_TX){
 					if(prevChunk != CrsfSdOpentx.chunk || (prevChunk == CrsfSdOpentx.chunk && prevLength != CrsfSdOpentx.length)){
 						uint16_t actualReceviedLength = CrsfSdOpentx.length - CRSF_SD_DATA_START_ADD + 1;
-//						memcpy(pData, CrsfSdOpentx.payload, actualReceviedLength);
 						CrsfSdOpentx.bytesReceived += actualReceviedLength;
 						CrsfSdOpentx.result = f_write(&CrsfSdOpentx.file, CrsfSdOpentx.payload, actualReceviedLength, (UINT*)&CrsfSdOpentx.numOfBytesWritten);
 						#ifdef DEBUG_CRSF_SD_READ
@@ -963,7 +659,7 @@ void crsfSdReadHandler(){
 						TRACE("crsfSdReadHandler:CRSF_SD_READ:written in buffer");
 						#endif
 					}
-					#if defined(DEBUG_CRSF_SD_READ) // || defined(DEBUG_CRSF_SD_READ_COMPARE)
+					#if defined(DEBUG_CRSF_SD_READ)
 					TRACE("crsfSdReadHandler:CRSF_SD_READ:subcmd:%d:flag:%d:bytesReceived:%d:chunk:%d:numOfBytesWritten:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesReceived, CrsfSdOpentx.chunk, CrsfSdOpentx.numOfBytesWritten);
 					#endif
 					state = CRSF_SD_DATA_READY;
@@ -980,14 +676,10 @@ void crsfSdReadHandler(){
 
 		case CRSF_SD_ACK:
 		{
-//			uint8_t size = crossfireSharedData.crsf_rx.size();
-//			TRACE("crsfSdReadHandler:crossfireSharedData.crsf_rx.size:%d", size);
 			if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				//						CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_RC_TX;
-				CrsfSdOpentx.dst = LIBCRSF_RC_TX;
+				CrsfSdOpentx.dst = targetDst;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_WRITE;
-//				if(CrsfSdOpentx.chunk > 0){
 				if(CrsfSdOpentx.chunk > 0){
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_ACK;
 					state = CRSF_SD_READ;
@@ -996,22 +688,11 @@ void crsfSdReadHandler(){
 					CrsfSdOpentx.subcmd = CRSF_SD_FLAG_FINISH;
 					state = CRSF_SD_FINISH;
 				}
-//				}
-//				else if(CrsfSdOpentx.chunk == 0){
-//					state = CRSF_SD_FINISH;
-//					CrsfSdOpentx.flag = CRSF_SD_FLAG_FINISH;
-//				}
 				CrsfSdOpentx.requestDataLength = 0;
 				CrsfSdOpentx.numOfBytesRead = 0;
 				crsfSdPackFrame(&CrsfSdOpentx);
 				CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
-//				for(uint8_t i = 0; i < CrsfSdOpentx.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-//					crossfireSharedData.crsf_rx.push(CrsfSdOpentx.txBuf[i]);
-//					#ifdef DEBUG_CRSF_SD_READ
-//					TRACE("crsfSdReadHandler:CRSF_SD_ACK:txBuf[%d]:%x", i, CrsfSdOpentx.txBuf[i]);
-//					#endif
-//				}
-				#if defined(DEBUG_CRSF_SD_READ) // || defined(DEBUG_CRSF_SD_READ_COMPARE)
+				#if defined(DEBUG_CRSF_SD_READ)
 				TRACE("crsfSdReadHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesReceived:%d:chunk:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesReceived, CrsfSdOpentx.chunk);
 				TRACE("crsfSdReadHandler:CRSF_SD_ACK:ack sent");
 				#endif
@@ -1023,8 +704,6 @@ void crsfSdReadHandler(){
 		{
 			CrsfSdOpentx.result = f_sync(&CrsfSdOpentx.file);
 			CrsfSdOpentx.result = f_close(&CrsfSdOpentx.file);
-			TRACE("crsfSdReadHandler:CRSF_SD_FINISH:result:%d", CrsfSdOpentx.result);
-			TRACE("crsfSdReadHandler:CRSF_SD_FINISH");
 			#if defined(DEBUG_CRSF_SD_READ) || defined(DEBUG_CRSF_SD_READ_COMPARE)
 			TRACE("crsfSdReadHandler:CRSF_SD_FINISH:result:%d", CrsfSdOpentx.result);
 			TRACE("crsfSdReadHandler:CRSF_SD_FINISH");
@@ -1049,8 +728,7 @@ void crsfSdReadHandler(){
 			TRACE("crsfSdReadHandler:CRSF_SD_ERROR");
 			#endif
 			if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				//						CrsfSdOpentx.dst = CrsfSdOpentx.org;//LIBCRSF_RC_TX;
-				CrsfSdOpentx.dst = LIBCRSF_RC_TX;
+				CrsfSdOpentx.dst = targetDst;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_WRITE;
 				CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
@@ -1058,12 +736,6 @@ void crsfSdReadHandler(){
 				CrsfSdOpentx.numOfBytesRead = 0;
 				crsfSdPackFrame(&CrsfSdOpentx);
 				CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
-//				for(uint8_t i = 0; i < CrsfSdOpentx.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-//					crossfireSharedData.crsf_rx.push(CrsfSdOpentx.txBuf[i]);
-//					#ifdef DEBUG_CRSF_SD_READ
-//					TRACE("crsfSdReadHandler:CRSF_SD_ERROR:txBuf[%d]:%x", i, CrsfSdOpentx.txBuf[i]);
-//					#endif
-//				}
 				#ifdef DEBUG_CRSF_SD_READ
 				TraceState("crsfSdReadHandler:CRSF_SD_ERROR:state:", state);
 				#endif
@@ -1088,351 +760,6 @@ void crsfSdReadHandler(){
 		{
 			break;
 		}
-	}
-//	TraceState("crsfSdReadHandler:state:", state);
-//	TraceFlag("crsfSdReadHandler:flag:", CrsfSdOpentx.flag);
-}
-
-void crsfSdXfWriteHandler( char* filename, BYTE* pData, uint16_t Length, uint8_t& state ){
-	static CrsfSd_t CrsfSdXf;
-	static uint8_t prevState = state;
-	switch(state){
-		case CRSF_SD_START:
-		{
-//			uint8_t size = crossfireSharedData.crsf_tx.size();
-//			TRACE("crsfSdXfWriteHandler:CRSF_SD_START:crossfireSharedData.crsf_tx.size:%d", size);
-			if(Length > 0 && crossfireSharedData.crsf_tx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdXf.dst = LIBCRSF_REMOTE_ADD;
-				CrsfSdXf.org = LIBCRSF_RC_TX;
-				CrsfSdXf.subcmd = CRSF_SD_SUBCMD_WRITE;
-				CrsfSdXf.flag = CRSF_SD_FLAG_START;
-				CrsfSdXf.requestDataLength = Length;
-				uint8_t filenameLength = 0;
-				for(int i = 0; i < 128; i++){
-					filenameLength++;
-					if(filename[i] == 0){
-						break;
-					}
-					if(i == 127){
-						state = CRSF_SD_INVALID_FILENAME;
-						return;
-					}
-				}
-				CrsfSdXf.bytesPendingToSend = CrsfSdXf.fileInfo.fsize = fwLength;
-				memcpy(CrsfSdXf.payload, filename, filenameLength);
-				CrsfSdXf.numOfBytesRead = filenameLength;
-				CrsfSdXf.chunk = 65535;
-				crsfSdPackFrame(&CrsfSdXf);
-				for(uint8_t i = 0; i < CrsfSdXf.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-					crossfireSharedData.crsf_tx.push(CrsfSdXf.txBuf[i]);
-					#ifdef DEBUG_CRSF_SD_XF_WRITE
-					TRACE("crsfSdXfWriteHandler:CRSF_SD_START:txBuf[%d]:%x", i, CrsfSdXf.txBuf[i]);
-					#endif
-				}
-				#ifdef DEBUG_CRSF_SD_XF_WRITE
-				TRACE("crsfSdXfWriteHandler:CRSF_SD_START:start sent");
-				#endif
-				prevState = state;
-				state = CRSF_SD_ACK;
-			}
-			break;
-		}
-
-		case CRSF_SD_WRITE:
-		{
-
-			#ifdef DEBUG_CRSF_SD_XF_WRITE
-			TRACE("crsfSdXfWriteHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d:numOfBytesRead:%d", CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.bytesPendingToSend, CrsfSdXf.chunk, CrsfSdXf.numOfBytesRead);
-			TraceFlag("crsfSdXfWriteHandler:CRSF_SD_WRITE:flag:", CrsfSdXf.flag);
-			#endif
-
-//			if(CrsfSdXf.chunk == 0 && CrsfSdXf.bytesPendingToSend == 0){
-//				state = CRSF_SD_FINISH;
-//				for(int j = 0; j < 53; j++){
-//					TRACE("CRSF_SD_WRITE:%d:%lx", j, pData[j]);
-//				}
-////				CrsfSdXf.result = f_close(&CrsfSdXf.file);
-//			}
-			if((CrsfSdXf.bytesPendingToSend > 0  && CrsfSdXf.flag == CRSF_SD_FLAG_ACK && crossfireSharedData.crsf_tx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)) ||
-					CrsfSdXf.bytesPendingToSend == CrsfSdXf.fileInfo.fsize){
-//				TRACE("crsfSdXfWriteHandler:CRSF_SD_WRITE:subcmd:%d:bytesPendingToSend:%d:chunk:%d:numOfBytesRead:%d", CrsfSdXf.subcmd, CrsfSdXf.bytesPendingToSend, CrsfSdXf.chunk, CrsfSdXf.numOfBytesRead);
-//				TRACE("GOOD GOOD");
-//				if(CrsfSdXf.bytesPendingToSend > CRSF_SD_DATA_MAX_BUFFER_SIZE){
-//					CrsfSdXf.numOfBytesRead = CrsfSdXf.requestDataLength = Length;
-//				}
-//				else{
-//					CrsfSdXf.numOfBytesRead = CrsfSdXf.requestDataLength = CrsfSdXf.bytesPendingToSend;
-//				}
-				CrsfSdXf.numOfBytesRead = CrsfSdXf.requestDataLength = Length;
-				CrsfSdXf.chunk = CrsfSdXf.bytesPendingToSend / CrsfSdXf.numOfBytesRead;
-				if(CrsfSdXf.chunk == 1 && (CrsfSdXf.bytesPendingToSend - CrsfSdXf.numOfBytesRead == 0)){
-					CrsfSdXf.chunk = 0;
-				}
-//				TRACE("CrsfSdXf.chunk:%d", CrsfSdXf.chunk);
-
-//				for(int j = 0; j < 53; j++){
-//					TRACE("CRSF_SD_WRITE:%d:%lx", j, pData[j]);
-//				}
-				memcpy(CrsfSdXf.payload, pData, CrsfSdXf.numOfBytesRead);
-				CrsfSdXf.dst = LIBCRSF_RC_TX;
-				CrsfSdXf.org = LIBCRSF_REMOTE_ADD;
-				CrsfSdXf.subcmd = CRSF_SD_SUBCMD_WRITE;
-				CrsfSdXf.flag = CRSF_SD_FLAG_OK;
-				crsfSdPackFrame(&CrsfSdXf);
-				for(uint8_t i = 0; i < CrsfSdXf.txBuf[LIBCRSF_LENGTH_ADD] + 2; i++){
-					crossfireSharedData.crsf_tx.push(CrsfSdXf.txBuf[i]);
-					#ifdef DEBUG_CRSF_SD_XF_WRITE
-					TRACE("crsfSdXfWriteHandler:CRSF_SD_WRITE:txBuf[%d]:%x", i, CrsfSdXf.txBuf[i]);
-					#endif
-				}
-				state = CRSF_SD_ACK;
-//				TRACE("crsfSdXfWriteHandler:CRSF_SD_WRITE:subcmd:%d:bytesPendingToSend:%d:chunk:%d:numOfBytesRead:%d", CrsfSdXf.subcmd, CrsfSdXf.bytesPendingToSend, CrsfSdXf.chunk, CrsfSdXf.numOfBytesRead);
-
-				#ifdef DEBUG_CRSF_SD_XF_WRITE
-				TRACE("crsfSdXfWriteHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d:numOfBytesRead:%d", CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.bytesPendingToSend, CrsfSdXf.chunk, CrsfSdXf.numOfBytesRead);
-				TraceFlag("crsfSdXfWriteHandler:CRSF_SD_WRITE:flag:", CrsfSdXf.flag);
-				#endif
-			}
-			else if(CrsfSdXf.flag == CRSF_SD_FLAG_RETRY && crossfireSharedData.crsf_tx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdXf.dst = LIBCRSF_RC_TX;
-				CrsfSdXf.org = LIBCRSF_REMOTE_ADD;
-				CrsfSdXf.subcmd = CRSF_SD_SUBCMD_WRITE;
-				CrsfSdXf.flag = CRSF_SD_FLAG_RETRY;
-				crsfSdPackFrame(&CrsfSdXf);
-				CRSF_to_Shared_FIFO(CrsfSdXf.txBuf);
-				state = CRSF_SD_ACK;
-				#ifdef DEBUG_CRSF_SD_XF_WRITE
-				TRACE("crsfSdXfWriteHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.bytesPendingToSend, CrsfSdXf.chunk);
-				TraceFlag("crsfSdXfWriteHandler:CRSF_SD_WRITE:flag:", CrsfSdXf.flag);
-				#endif
-			}
-			break;
-		}
-
-		case CRSF_SD_ACK:
-		{
-//			uint8_t size = crossfireSharedData.crsf_rx.size();
-//			TRACE("crsfSdXfWriteHandler:crossfireSharedData.crsf_rx.size:%d", size);
-			if(isXfBufSet){
-				isXfBufSet = 0;
-//			if(crossfireSharedData.crsf_rx.size() > 0){
-//				for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
-//					if(!crossfireSharedData.crsf_rx.pop(CrsfSdXf.rxBuf[i])){
-//						break;
-//					}
-//					#ifdef DEBUG_CRSF_SD_XF_WRITE
-//					TRACE("crsfSdXfWriteHandler:CRSF_SD_ACK:rxbuf[%d]:%x", i, CrsfSdXf.rxBuf[i]);
-//					#endif
-//				}
-				uint8_t prev_flag = CrsfSdXf.flag;
-//				TraceFlag("crsfSdXfWriteHandler:CRSF_SD_ACK:prev_subcmd:", prev_subcmd);
-				uint16_t prevChunk = CrsfSdXf.chunk;
-				uint8_t prevLength = CrsfSdXf.length;
-				memcpy(CrsfSdXf.rxBuf, XfBuf, LIBCRSF_MAX_BUFFER_SIZE);
-				crsfSdUnpackFrame(&CrsfSdXf);
-				#if defined(DEBUG_CRSF_SD_XF_WRITE) // || defined(DEBUG_CRSF_SD_XF_WRITE_COMPARE)
-				TRACE("crsfSdXfWriteHandler:CRSF_SD_ACK:sync:%x:length:%d:cmd:%x:subcmd:%d:flag:%d:chunk:%d:crc:%d:calCrc:%d", CrsfSdXf.sync, CrsfSdXf.length, CrsfSdXf.cmd, CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.chunk, CrsfSdXf.crc, CrsfSdXf.calCrc);
-				TraceFlag("crsfSdXfWriteHandler:CRSF_SD_ACK:flag:", CrsfSdXf.flag);
-				#endif
-				if(CrsfSdXf.sync == LIBCRSF_UART_SYNC && CrsfSdXf.crc == CrsfSdXf.calCrc && CrsfSdXf.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdXf.flag == CRSF_SD_FLAG_OK || CrsfSdXf.flag == CRSF_SD_FLAG_ACK || CrsfSdXf.flag == CRSF_SD_FLAG_FINISH)){
-					if(!(prev_flag == CRSF_SD_FLAG_START && prev_flag == CRSF_SD_FLAG_RETRY_START) && prevChunk != 65535){
-						CrsfSdXf.bytesPendingToSend -= CrsfSdXf.numOfBytesRead;
-						if(CrsfSdXf.chunk == 0 && CrsfSdXf.bytesPendingToSend == 0){
-							state = CRSF_SD_FINISH;
-			//				CrsfSdXf.result = f_close(&CrsfSdXf.file);
-						}
-						else{
-							state = CRSF_SD_DATA_TX_COMPLETED;
-						}
-					}
-					else{
-						state = CRSF_SD_WRITE;
-					}
-					#if defined(DEBUG_CRSF_SD_XF_WRITE) // || defined(DEBUG_CRSF_SD_XF_WRITE_COMPARE)
-					TRACE("crsfSdXfWriteHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%d", CrsfSdXf.subcmd, CrsfSdXf.flag, CrsfSdXf.bytesPendingToSend, CrsfSdXf.chunk);
-					TraceFlag("crsfSdXfWriteHandler:CRSF_SD_ACK:flag:", CrsfSdXf.flag);
-					#endif
-					#ifdef DEBUG_CRSF_SD_XF_WRITE
-					TRACE("crsfSdXfWriteHandler:CRSF_SD_ACK:success to write");
-					#endif
-				}
-				else if(CrsfSdXf.sync == LIBCRSF_UART_SYNC && CrsfSdXf.crc == CrsfSdXf.calCrc && CrsfSdXf.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdXf.flag == CRSF_SD_FLAG_RETRY_START){
-					if(prev_flag == CRSF_SD_FLAG_START || prev_flag == CRSF_SD_FLAG_RETRY_START){
-						CrsfSdXf.flag = CRSF_SD_FLAG_RETRY_START;
-						state = CRSF_SD_START;
-						#ifdef DEBUG_CRSF_SD_XF_WRITE
-						TRACE("crsfSdXfWriteHandler:CRSF_SD_ACK:retry to start");
-						#endif
-					}
-				}
-				else{
-					if(prevState != CRSF_SD_START){
-						CrsfSdXf.flag = CRSF_SD_FLAG_RETRY;
-						state = CRSF_SD_WRITE;
-					}
-					else{
-						CrsfSdXf.flag = CRSF_SD_FLAG_RETRY_START;
-						state = CRSF_SD_START;
-					}
-					#ifdef DEBUG_CRSF_SD_XF_WRITE
-					TRACE("crsfSdXfWriteHandler:CRSF_SD_ACK:retry to write");
-					#endif
-				}
-			}
-			break;
-		}
-
-		case CRSF_SD_DATA_TX_COMPLETED:
-		{
-			#if defined(DEBUG_CRSF_SD_XF_WRITE)// || defined(DEBUG_CRSF_SD_XF_WRITE_COMPARE)
-			TRACE("crsfSdXfWriteHandler:CRSF_SD_DATA_TX_COMPLETED");
-			#endif
-			state = CRSF_SD_WRITE;
-			break;
-		}
-
-		case CRSF_SD_FINISH:
-		{
-			#if defined(DEBUG_CRSF_SD_XF_WRITE) || defined(DEBUG_CRSF_SD_XF_WRITE_COMPARE)
-			TRACE("crsfSdXfWriteHandler:CRSF_SD_FINISH");
-			#endif
-			state = CRSF_SD_IDLE;
-//			enableOpentxSdWriteHandler = 0;
-			break;
-		}
-
-		case CRSF_SD_ERROR:
-		{
-			#ifdef DEBUG_CRSF_SD_XF_WRITE
-			TRACE("crsfSdXfWriteHandler:CRSF_SD_ERROR:%d", CrsfSdXf.result);
-			#endif
-			f_close(&CrsfSdXf.file);
-			state = CRSF_SD_IDLE;
-
-			break;
-		}
-		default:
-		{
-			break;
-		}
-	}
-//	TraceState("crsfSdXfWriteHandler:state:", state);
-//	TraceFlag("crsfSdXfWriteHandler:flag:", CrsfSdXf.flag);
-}
-
-char fwFilename[CRSF_SD_FW_NAME_LENGTH];
-uint32_t fwLength = 0;
-
-void crsfSdWriteHeader( uint32_t HW_ID, uint16_t FW_ID, uint32_t FW_Length ){
-	fwFilename[0] = '0';
-	fwFilename[1] = 'x';
-	sprintf(&fwFilename[2], "%06lx", HW_ID);
-	fwFilename[8] = 'x';
-	fwFilename[9] = 'x';
-	fwFilename[10] = '_';
-	fwFilename[11] = '0';
-	fwFilename[12] = 'x';
-	sprintf(&fwFilename[13], "%04lx", FW_ID);
-	fwFilename[17] = '.';
-	fwFilename[18] = 'b';
-	fwFilename[19] = 'i';
-	fwFilename[20] = 'n';
-	fwFilename[21] = 0;
-	fwLength = FW_Length;
-}
-
-uint8_t crsfSdWrite( char* filename, BYTE *pData, uint16_t Length ){
-	static uint32_t totalSent = 0;
-	static BYTE *addr = pData;
-	static uint8_t txState = CRSF_SD_IDLE;
-	static uint32_t bytesSent = 0;
-	static uint16_t i = 0;
-	static uint16_t count = 0;
-	static uint16_t len = 0;
-	if(txState == CRSF_SD_IDLE){
-		txState = CRSF_SD_START;
-	}
-	if(bytesSent == 0 || bytesSent == Length || i == count){
-		bytesSent = 0;
-		i = 0;
-		count = Length / CRSF_SD_DATA_MAX_BUFFER_SIZE;
-		if(Length - count * CRSF_SD_DATA_MAX_BUFFER_SIZE > 0){
-			count++;
-		}
-		len = Length / CRSF_SD_DATA_MAX_BUFFER_SIZE > 0 ? CRSF_SD_DATA_MAX_BUFFER_SIZE : Length;
-		addr = pData;
-	}
-	if(i < count){
-		if(txState == CRSF_SD_FINISH || txState == CRSF_SD_DATA_TX_COMPLETED){
-			if(Length - (count - 1) * CRSF_SD_DATA_MAX_BUFFER_SIZE > 0 && (i == count - 1)){
-				len = Length - (count - 1) * CRSF_SD_DATA_MAX_BUFFER_SIZE;
-			}
-		}
-		crsfSdXfWriteHandler( filename, addr, len, txState);
-//		crsfSdReadHandler();
-		if(txState == CRSF_SD_FINISH || txState == CRSF_SD_DATA_TX_COMPLETED){
-			totalSent += len;
-			addr += len;
-			bytesSent += len;
-			i++;
-//			TRACE("totalSent:%ld:bytesSent:%d:pData:%lx:addr:%lx", totalSent, bytesSent, (uint32_t)pData, (uint32_t)addr - bytesSent);
-		}
-	}
-
-	if(i == count){
-//		TraceState("crsfSdWrite:", txState);
-//		TRACE("CRSF_SD_DATA_TX_COMPLETED_HIHIHI");
-		return txState;
-	}
-	else if(txState == CRSF_SD_IDLE){
-//		TRACE("CRSF_SD_FINISH_LALALA");
-		return CRSF_SD_FINISH;
-	}
-	else{
-		return CRSF_SD_BUSY;
-	}
-}
-
-uint8_t crsfSdRead( char* filename, BYTE *pData, uint16_t Length ){
-	static uint8_t rxState = CRSF_SD_IDLE;
-	static uint32_t bytesSent = 0;
-	static uint16_t i = 0;
-	static uint16_t count = 0;
-	static uint16_t len = 0;
-	if(rxState == CRSF_SD_IDLE){
-		rxState = CRSF_SD_START;
-	}
-	if(bytesSent == 0 || bytesSent == Length){
-		bytesSent = 0;
-		i = 0;
-		count = Length / CRSF_SD_DATA_MAX_BUFFER_SIZE;
-		if(Length - count * CRSF_SD_DATA_MAX_BUFFER_SIZE > 0){
-			count++;
-		}
-		len = Length / CRSF_SD_DATA_MAX_BUFFER_SIZE > 0 ? CRSF_SD_DATA_MAX_BUFFER_SIZE : Length;
-	}
-	if(i < count){
-		if(rxState == CRSF_SD_FINISH || rxState == CRSF_SD_DATA_READY){
-			if(Length - (count - 1) * CRSF_SD_DATA_MAX_BUFFER_SIZE > 0 && (i == count - 1)){
-				len = Length - (count - 1) * CRSF_SD_DATA_MAX_BUFFER_SIZE;
-			}
-		}
-		crsfSdXfReadHandler( filename, pData, len, rxState);
-		if(rxState == CRSF_SD_FINISH || rxState == CRSF_SD_DATA_READY){
-			pData += len;
-			bytesSent += len;
-			i++;
-		}
-	}
-
-	if(i == count){
-		return rxState;
-	}
-	else if(rxState == CRSF_SD_IDLE){
-		return CRSF_SD_FINISH;
-	}
-	else{
-		return CRSF_SD_BUSY;
 	}
 }
 

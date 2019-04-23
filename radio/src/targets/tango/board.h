@@ -799,6 +799,7 @@ void tangoUpdateChannel( void );
 #if defined(ESP_SERIAL)
 #define ESP_TX_BUFFER_SIZE            256
 #define ESP_RX_BUFFER_SIZE            256
+#define ESP_UART_BAUDRATE             500000
 void espInit(uint32_t baudrate, bool use_dma);
 void espWriteBuffer(uint8_t* buf, uint8_t len);
 void ESP_WriteHandler(void);
