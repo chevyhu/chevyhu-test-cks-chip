@@ -183,7 +183,7 @@ void simuInit()
 
 void simuSetKey(uint8_t key, bool state)
 {
-  if (state) TRACE_SIMPGMSPACE("simuSetKey(%d, %d)", key, state);
+  //if (state) TRACE_SIMPGMSPACE("simuSetKey(%d, %d)", key, state);
 
   switch (key) {
 #if defined(PCBX12S)

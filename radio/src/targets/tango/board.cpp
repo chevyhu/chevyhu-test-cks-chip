@@ -274,6 +274,9 @@ void boardInit()
           pwrInit();
           backlightInit();
           haptic.play(15, 3, PLAY_NOW);
+#if defined(PCBTANGO)
+          break;
+#endif
         }
       }
       lcdRefresh();

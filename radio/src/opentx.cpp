@@ -788,8 +788,8 @@ void doSplash()
       getADC();
 
       if (keyDown() || inputsMoved()) return;
-
-#if defined(PWR_BUTTON_PRESS) && !defined(PCBTANGO)
+#if !defined(PCBTANGO)
+#if defined(PWR_BUTTON_PRESS)
       uint32_t pwr_check = pwrCheck();
       if (pwr_check == e_power_off) {
         break;
@@ -805,6 +805,7 @@ void doSplash()
       if (pwrCheck() == e_power_off) {
         return;
       }
+#endif
 #endif
 
 #if defined(PCBTANGO)
