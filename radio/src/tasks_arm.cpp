@@ -135,7 +135,9 @@ TASK_FUNCTION(mixerTask)
       if (getSelectedUsbMode() == USB_JOYSTICK_MODE) {
         usbJoystickUpdate();
       }
+  #if defined(PCBTANGO)
       tangoUpdateChannel();
+  #endif
 #endif
 
 #if defined(TELEMETRY_FRSKY) || defined(PCBTANGO)

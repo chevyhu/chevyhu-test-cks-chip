@@ -40,7 +40,11 @@ static bool usbDriverStarted = false;
 #if defined(BOOT)
 static usbMode selectedUsbMode = USB_MASS_STORAGE_MODE;
 #else
-static usbMode selectedUsbMode = USB_AGENT_MODE;//USB_UNSELECTED_MODE;
+  #if defined(PCBTANGO)
+static usbMode selectedUsbMode = USB_AGENT_MODE;
+  #else
+static usbMode selectedUsbMode = USB_UNSELECTED_MODE;
+  #endif
 #endif
 
 int getSelectedUsbMode()

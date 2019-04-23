@@ -146,7 +146,7 @@ void checkBattery()
   static uint8_t sampleCount;
   // filter battery voltage by averaging it
   if (g_vbat100mV == 0) {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) && !defined(SIMU)
 	// wait for power stable
 	delay_ms(200);
 #endif
@@ -417,6 +417,7 @@ void guiMain(event_t evt)
 
 void perMain()
 {
+#if defined(PCBTANGO)
 	// these setting are overrided by some where, reinit it for temp run
 	static bool started = false;
 	if(!started){

@@ -304,7 +304,10 @@ bool luaFindFieldByName(const char * name, LuaField & field, unsigned int flags)
         continue;
       }
       if (index < luaMultipleFields[n].count) {
-        field.id = luaMultipleFields[n].id + index;
+        if(luaMultipleFields[n].id == MIXSRC_FIRST_TELEM)
+          field.id = luaMultipleFields[n].id + index*3;
+        else
+          field.id = luaMultipleFields[n].id + index;
         if (flags & FIND_FIELD_DESC) {
           snprintf(field.desc, sizeof(field.desc)-1, luaMultipleFields[n].desc, index+1);
           field.desc[sizeof(field.desc)-1] = '\0';
@@ -511,7 +514,7 @@ static int luaCrossfireTelemetryPush(lua_State * L)
     }
     telemetryOutputPushByte(crc8(outputTelemetryBuffer+2, 1 + length));
     telemetryOutputSetTrigger(command);
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) && !defined(SIMU)
     libCrsf_CRSF_Routing( DEVICE_INTERNAL, outputTelemetryBuffer);
     outputTelemetryBufferTrigger = 0x00;
     outputTelemetryBufferSize = 0;

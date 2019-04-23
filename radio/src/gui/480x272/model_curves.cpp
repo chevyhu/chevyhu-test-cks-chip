@@ -171,9 +171,9 @@ bool menuModelCurveOne(event_t event)
       }
       break;
     // TODO?
-    case EVT_KEY_LONG(KEY_MENU):
-      pushMenu(menuChannelsView);
-      killEvents(event);
+    //case EVT_KEY_LONG(KEY_MENU):
+    //  pushMenu(menuChannelsView);
+    //  killEvents(event);
   }
 
   drawCurve(CURVE_CENTER_X, CURVE_CENTER_Y, CURVE_SIDE_WIDTH);

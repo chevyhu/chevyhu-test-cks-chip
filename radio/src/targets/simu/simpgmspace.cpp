@@ -72,7 +72,9 @@ void lcdInit()
 {
 }
 
-
+void toplcdOff()
+{
+}
 
 uint64_t simuTimerMicros(void)
 {
@@ -181,7 +183,7 @@ void simuInit()
 
 void simuSetKey(uint8_t key, bool state)
 {
-  // if (state) TRACE_SIMPGMSPACE("simuSetKey(%d, %d)", key, state);
+  //if (state) TRACE_SIMPGMSPACE("simuSetKey(%d, %d)", key, state);
 
   switch (key) {
 #if defined(PCBX12S)
@@ -237,6 +239,17 @@ void simuSetKey(uint8_t key, bool state)
     KEY_CASE(BTN_REa, PIOB->PIO_PDSR, 0x40)
 #endif
   }
+#if defined(PCBTANGO)
+  if (g_trimEditMode != EDIT_TRIM_DISABLED) {
+    uint8_t rotary_key = (g_trimEditMode - 1) * 2;
+    if ((key == KEY_MINUS) && state > 0) {
+      g_trimState = 0x01 << rotary_key;
+    }
+    else if ((key == KEY_PLUS) && state > 0) {
+      g_trimState = 0x01 << (rotary_key + 1);
+    }
+  }
+#endif
 }
 
 void simuSetTrim(uint8_t trim, bool state)

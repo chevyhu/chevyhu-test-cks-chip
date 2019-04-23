@@ -65,7 +65,9 @@ void Key::input(bool val)
 {
   // store new value in the bits that hold the key state history (used for debounce)
   uint8_t t_vals = m_vals ;
+#if defined(PCBTANGO)
   uint8_t filterBits = 0;
+#endif
   t_vals <<= 1 ;
   if (val) t_vals |= 1;
   m_vals = t_vals ;

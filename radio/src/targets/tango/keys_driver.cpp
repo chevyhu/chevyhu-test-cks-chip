@@ -86,7 +86,7 @@ uint32_t readTrims()
   uint32_t result = 0;
 
 #if defined(PCBTANGO)
-  // the trim state from the events of main view
+  // the trim state from the events of per10ms()
   result = g_trimState;
   g_trimState = 0;
  #else
