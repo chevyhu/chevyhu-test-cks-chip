@@ -304,7 +304,7 @@ void boardInit()
       lcdRefreshWait();
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
-      boardOff();
+//      boardOff();
     }
   }
   else {
@@ -403,8 +403,9 @@ void checkTrainerSettings()
 uint16_t getBatteryVoltage()
 {
   int32_t instant_vbat = anaIn(TX_VOLTAGE); // using filtered ADC value on purpose
+//  TRACE("raw bat adc: %ld", instant_vbat);
   instant_vbat = (instant_vbat * BATT_SCALE * (128 + g_eeGeneral.txVoltageCalibration) ) / 26214;
-  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
+//  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
   return (uint16_t)instant_vbat;
 }
 
@@ -413,12 +414,62 @@ RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
   return crossfireTaskId;
 };
 
+bool startCrsfSdReadTest = false;
+bool startCrsfSdWriteTest = false;
 #if !defined(SIMU)
 TASK_FUNCTION(systemTask)
 {
   while(1) {
       crsfSharedFifoHandler();
       crsfEspHandler();
+	  if(startCrsfSdReadTest){
+		static uint16_t count = 0;
+		static uint8_t buf[1024];
+		uint8_t state = crsfSdRead("/FIRMWARE/0x000110xx_0x0251.bin", buf, 1024);
+		if(state == 1){
+		  TRACE("crsfSdRead:FINISHED");
+		  startCrsfSdReadTest = false;
+		}
+		else if(state == 9){
+		  TRACE("crsfSdRead:DATA_READY:%d KB", ++count);
+		}
+	  }
+	  if(startCrsfSdWriteTest){
+		  static uint8_t h = 0;
+		  static FIL f;
+		  static uint16_t count = 0;
+		  static uint8_t buf[1024];
+		  static uint16_t b = 0;
+		  if(!h){
+			  FILINFO l;
+			  f_stat("/FIRMWARE/0x000110xx_0x0251.bin", &l);
+//			  f_stat("/hello.wav", &l);
+			  crsfSdWriteHeader(0x01, 0x02, l.fsize);
+			  h = 1;
+			  f_open(&f, "/FIRMWARE/0x000110xx_0x0251.bin", FA_READ);
+//			  f_open(&f, "/hello.wav", FA_READ);
+			  f_read(&f, buf, 1024, (UINT*)&b);
+		  }
+	  		uint8_t state = crsfSdWrite(fwFilename, buf, b);
+	  		if(state == 1){
+	  		  TRACE("crsfSdWrite:FINISHED");
+	  		  startCrsfSdReadTest = false;
+	  		}
+	  		else if(state == 10){
+			  f_read(&f, buf, 1024, (UINT*)&b);
+	  		  TRACE("crsfSdWrite:DATA_COMPLETED:%d KB", ++count);
+	  		}
+	  	  }
+
+	  extern uint8_t enableOpentxSdWriteHandler;
+	  if(enableOpentxSdWriteHandler){
+		  crsfSdWriteHandler();
+	  }
+
+	  extern uint8_t enableOpentxSdReadHandler;
+	  if(enableOpentxSdReadHandler){
+		  crsfSdReadHandler();
+	  }
   }
   TASK_RETURN();
 }

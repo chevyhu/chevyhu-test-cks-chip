@@ -418,6 +418,8 @@ void guiMain(event_t evt)
 void perMain()
 {
 	// these setting are overrided by some where, reinit it for temp run
+	extern bool startCrsfSdReadTest;
+	extern bool startCrsfSdWriteTest;
 	static bool started = false;
 	if(!started){
 		  keysInit();
@@ -425,16 +427,9 @@ void perMain()
 #if defined(ESP_SERIAL)
 		  espInit(500000, false);
 #endif
+//		  startCrsfSdReadTest = true;
+		  startCrsfSdWriteTest = true;
 	}
-
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-  static bool startOnce = false;
-  if(!startOnce){
-	  extern bool startCrsfSdReadTest;
-	  startCrsfSdReadTest = true;
-	  startOnce = true;
-  }
-#endif
 
   DEBUG_TIMER_START(debugTimerPerMain1);
 #if defined(PCBSKY9X) && !defined(REVA)

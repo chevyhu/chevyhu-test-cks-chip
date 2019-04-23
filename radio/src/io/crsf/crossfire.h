@@ -71,11 +71,16 @@ struct CrossfireSharedData {
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_rx;   //from OpenTX to XF
 };
 
-//#define DEBUG_CRSF_SD_READ_COMPARE
-//#define DEBUG_CRSF_SD_WRITE_COMPARE
+#define DEBUG_CRSF_SD_XF_READ_COMPARE
+#define DEBUG_CRSF_SD_XF_WRITE_COMPARE
+#define DEBUG_CRSF_SD_READ_COMPARE
+#define DEBUG_CRSF_SD_WRITE_COMPARE
+//#define DEBUG_CRSF_SD_XF_READ
+//#define DEBUG_CRSF_SD_XF_WRITE
 //#define DEBUG_CRSF_SD_READ
 //#define DEBUG_CRSF_SD_WRITE
-#define CRSF_SD_DATA_START_ADD			10
+#define CRSF_SD_SUBCMD_ADD				5
+#define CRSF_SD_DATA_START_ADD			11
 #define CRSF_SD_DATA_MAX_BUFFER_SIZE	(LIBCRSF_MAX_BUFFER_SIZE - CRSF_SD_DATA_START_ADD - LIBCRSF_CRC_SIZE)
 
 typedef enum {
@@ -94,14 +99,20 @@ typedef enum {
 } CRSF_SD_STATE;
 
 typedef enum {
-	CRSF_SD_SUBCMD_OK = 0,
-	CRSF_SD_SUBCMD_START,
-	CRSF_SD_SUBCMD_FINISH,
-	CRSF_SD_SUBCMD_ACK,
-	CRSF_SD_SUBCMD_ERROR,
-	CRSF_SD_SUBCMD_RETRY,
-	CRSF_SD_SUBCMD_RETRY_START
+	CRSF_SD_SUBCMD_READ = 0x01,
+	CRSF_SD_SUBCMD_WRITE = 0x02,
+	CRSF_SD_SUBCMD_ERASE = 0x03
 } CRSF_SD_SUBCMD;
+
+typedef enum {
+	CRSF_SD_FLAG_OK = 0,
+	CRSF_SD_FLAG_START,
+	CRSF_SD_FLAG_FINISH,
+	CRSF_SD_FLAG_ACK,
+	CRSF_SD_FLAG_ERROR,
+	CRSF_SD_FLAG_RETRY,
+	CRSF_SD_FLAG_RETRY_START
+} CRSF_SD_FLAG;
 
 typedef struct CRSF_SD_STRUCT{
 	FIL file;
@@ -115,6 +126,7 @@ typedef struct CRSF_SD_STRUCT{
 	uint8_t dst;
 	uint8_t org;
 	uint8_t subcmd;
+	uint8_t flag;
 	uint16_t chunk;
 	uint16_t requestDataLength;
 	uint8_t crc;
@@ -140,7 +152,10 @@ void CRSF_to_Shared_FIFO( uint8_t *p_arr );
 void CRSF_to_ESP( uint8_t *p_arr );
 void CRSF_This_Device( uint8_t *p_arr );
 void AgentLegacyCalls( uint8_t *arr );
+void crsfSdReadHandler();
 void crsfSdWriteHandler();
 uint8_t crsfSdRead( char* filename, BYTE *pData, uint16_t Length );
+uint8_t crsfSdWrite( char* filename, BYTE *pData, uint16_t Length );
+void crsfSdWriteHeader( uint32_t HW_ID, uint16_t FW_ID, uint32_t FW_Length );
 
 #endif // _CROSSFIRE_H_
