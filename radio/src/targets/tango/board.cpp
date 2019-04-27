@@ -174,7 +174,7 @@ void getDefaultSwConfig(){
 	    mask = (swconfig_t)0x03 << (2*4);
 	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(2) & 0x03) << (2*4));
 	    mask = (swconfig_t)0x03 << (2*5);
-	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(2) & 0x03) << (2*05));
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(2) & 0x03) << (2*5));
 	}
 }
 
@@ -422,6 +422,10 @@ TASK_FUNCTION(systemTask)
   while(1) {
       crsfSharedFifoHandler();
       crsfEspHandler();
+#if defined(AGENT) && !defined(SIMU)
+      AgentHandler();
+#endif
+
 #if defined(CRSF_OPENTX) && defined(CRSF_SD)
 
 	  if(enableOpentxSdWriteHandler){

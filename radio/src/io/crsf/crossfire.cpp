@@ -80,6 +80,20 @@ void CRSF_Init( void )
 
 }
 
+bool crsfForwardDeviceInfoToUsb( uint8_t Input_Port, uint8_t *pArr ){
+	extern bool (*libCrsf_filter_function)( uint8_t Input_Port, uint8_t *pArr );
+	libCrsf_filter_function= NULL;
+	uint8_t dst = *(pArr + LIBCRSF_EXT_HEAD_DST_ADD);
+	uint8_t crc = *(pArr + pArr[LIBCRSF_LENGTH_ADD]+1);
+	*(pArr) = LIBCRSF_UART_SYNC;
+	*(pArr + LIBCRSF_EXT_HEAD_DST_ADD) = LIBCRSF_USB_HOST_ADD;
+	*(pArr + pArr[LIBCRSF_LENGTH_ADD]+1) = libCRC8_Get_CRC_Arr(&pArr[LIBCRSF_TYPE_ADD], pArr[LIBCRSF_LENGTH_ADD]-1, POLYNOM_1);
+	CRSF_To_USB_HID(pArr);
+	*(pArr + LIBCRSF_EXT_HEAD_DST_ADD) = dst;
+	*(pArr + pArr[LIBCRSF_LENGTH_ADD]+1) = crc;
+	return false;
+}
+
 void CRSF_This_Device( uint8_t *p_arr )
 {
 
@@ -95,6 +109,7 @@ void CRSF_This_Device( uint8_t *p_arr )
 //        TRACE("LIBCRSF_EX_PARAM_PING_DEVICE");
         // Parameter_Pack_Device_Information( &arr[LIBCRSF_LENGTH_ADD] );
         libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
+        arr[0] = LIBCRSF_UART_SYNC;
         libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
       }
       break;
@@ -168,8 +183,11 @@ void crsfSharedFifoHandler( void )
 {
   uint8_t byte;
   static _libCrsf_CRSF_PARSE_DATA CRSF_Data;
-  if ( crossfireSharedData.crsf_tx.pop(byte) ) {
+  if ( crossfireSharedData.crsf_tx.pop(byte) ){
     if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
+      if(*(CRSF_Data.Payload + LIBCRSF_TYPE_ADD) == LIBCRSF_EX_PARAM_DEVICE_INFO){
+    	  libCrsf_add_router_filter(crsfForwardDeviceInfoToUsb);
+      }
       libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
     }
   }
@@ -181,6 +199,9 @@ void crsfEspHandler( void )
   static _libCrsf_CRSF_PARSE_DATA CRSF_Data;
   if ( espRxFifo.pop(byte) ) {
     if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
+	  if(*(CRSF_Data.Payload + LIBCRSF_TYPE_ADD) == LIBCRSF_EX_PARAM_DEVICE_INFO){
+	    libCrsf_add_router_filter(crsfForwardDeviceInfoToUsb);
+	  }
 	  libCrsf_CRSF_Routing( CRSF_ESP, CRSF_Data.Payload );
     }
   }

@@ -188,6 +188,8 @@ void usbJoystickUpdate()
 }
 
 #if defined(AGENT)
+#include "../../io/crsf/crsf.h"
+
 void usbAgentWrite( uint8_t *pData )
 {
   static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
@@ -198,8 +200,10 @@ void usbAgentWrite( uint8_t *pData )
 void CRSF_To_USB_HID( uint8_t *p_arr )
 {
   static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
-  memcpy(HID_Buffer, p_arr, HID_AGENT_IN_PACKET);
-  USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
+  if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14){
+	  memcpy(HID_Buffer, p_arr, HID_AGENT_IN_PACKET);
+	  USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
+  }
 }
 
 void AgentHandler(){
