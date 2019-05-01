@@ -130,6 +130,7 @@ TASK_FUNCTION(mixerTask)
       DEBUG_TIMER_SAMPLE(debugTimerMixerIterval);
       RTOS_UNLOCK_MUTEX(mixerMutex);
       DEBUG_TIMER_STOP(debugTimerMixer);
+      //TRACE("mixer, min:%d, max:%d\n", debugTimers[debugTimerMixer].getMin(), debugTimers[debugTimerMixer].getMax());
 
 #if defined(STM32) && !defined(SIMU)
       if (getSelectedUsbMode() == USB_JOYSTICK_MODE) {
@@ -181,6 +182,11 @@ TASK_FUNCTION(menusTask)
 
 #if defined(PCBTANGO)
   getDefaultSwConfig();
+#endif
+
+#if defined(PCBTANGO) && defined(LUA)
+    // Start crossfire for TANGO
+    //luaExec("/CROSSFIRE/crossfire.lua");
 #endif
 
 #if defined(PWR_BUTTON_PRESS)

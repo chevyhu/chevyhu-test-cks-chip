@@ -46,9 +46,11 @@ if(SDL_FOUND)
 endif()
 if (PCB STREQUAL TANGO)
   option(LUA "Enable LUA support" OFF)
+  option(CROSSFIRE_COMBINED "Combined with the crossfire hex file" ON)
 else()
   option(LUA "Enable LUA support" ON)
 endif()
+
 
 option(SIMU_DISKIO "Enable disk IO simulation in simulator. Simulator will use FatFs module and simulated IO layer that  uses \"./sdcard.image\" file as image of SD card. This file must contain whole SD card from first to last sector" OFF)
 option(SIMU_LUA_COMPILER "Pre-compile and save Lua scripts in simulator." ON)
@@ -555,11 +557,13 @@ if(NOT MSVC)
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
+  if (CROSSFIRE_COMBINED STREQUAL ON)
     add_custom_command(
             TARGET firmware POST_BUILD
             COMMAND srec_cat ${CMAKE_BINARY_DIR}/firmware.bin -Binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/crossfire.bin -Binary -offset 0x00060000 -o ${CMAKE_BINARY_DIR}/combine.bin -Binary
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
+  endif()
 	
     find_program(GAWK gawk HINTS "c:/cygwin/bin/" "c:/msys/bin/" DOC "gawk for firmware size report.")  # OS X might only have "awk"
     if (BASH AND GAWK)

@@ -17,7 +17,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 #include "opentx.h"
 #include "storage/modelslist.h"
 
@@ -66,12 +65,6 @@ void setCurrentModel(unsigned int index)
   std::list<ModelCell *>::iterator it = currentCategory->begin();
   std::advance(it, index);
   currentModel = *it;
-  if (index++ >= currentCategory->size()) {
-    menuVerticalPosition = 0;
-  }
-  //menuVerticalPosition = index;
-  // menuHorizontalPosition = index & 1;
-  //menuVerticalOffset = limit<int>(menuVerticalPosition-2, menuVerticalOffset, min<int>(menuVerticalPosition, max<int>(0, (currentCategory->size()-7))));
 }
 
 void setCurrentCategory(unsigned int index)
@@ -83,10 +76,6 @@ void setCurrentCategory(unsigned int index)
   currentCategory = *it;
   categoriesVerticalPosition = index;
   categoriesVerticalOffset = limit<int>(categoriesVerticalPosition-4, categoriesVerticalOffset, min<int>(categoriesVerticalPosition, max<int>(0, cats.size()-5)));
-  if (currentCategory->size() > 0)
-    setCurrentModel(0);
-  else
-    currentModel = NULL;
 }
 
 void initModelsList()
@@ -114,6 +103,7 @@ void initModelsList()
   for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
     if (*it == modelslist.getCurrentModel()) {
       setCurrentModel(index);
+      menuVerticalPosition = index;
       found = true;
       break;
     }
@@ -127,11 +117,14 @@ void initModelsList()
 void onModelSelectMenu(const char * result)
 {
   if (result == STR_SELECT_MODEL) {
+    setCurrentModel(menuVerticalPosition);
     storageFlushCurrentModel();
     storageCheck(true);
     memcpy(g_eeGeneral.currModelFilename, currentModel->modelFilename, LEN_MODEL_FILENAME);
     modelslist.setCurrentModel(currentModel);
     loadModel(g_eeGeneral.currModelFilename, true);
+    modelslist.setCurrentCategorie(currentCategory);
+    modelslist.save();
     storageDirty(EE_GENERAL);
     storageCheck(true);
     chainMenu(menuMainView);
@@ -148,6 +141,7 @@ void onModelSelectMenu(const char * result)
     setCurrentModel(currentCategory->size() - 1);
     modelslist.setCurrentModel(currentModel);
     modelslist.onNewModelCreated(currentModel, &g_model);
+    menuVerticalPosition++;
 #if defined(LUA)
     //chainMenu(menuModelWizard);
 #endif
@@ -166,11 +160,16 @@ void onModelSelectMenu(const char * result)
     }
   }
   else if (result == STR_MOVE_MODEL) {
+    setCurrentModel(menuVerticalPosition);
     selectMode = MODE_MOVE_MODEL;
   }
   else if (result == STR_CREATE_CATEGORY) {
     currentCategory = modelslist.createCategory();
     setCurrentCategory(modelslist.getCategories().size() - 1);
+    modelslist.setCurrentCategorie(currentCategory);
+    modelslist.save();
+    storageDirty(EE_GENERAL);
+    storageCheck(true);
   }
   else if (result == STR_RENAME_CATEGORY) {
     selectMode = MODE_RENAME_CATEGORY;
@@ -194,6 +193,7 @@ void onModelSelectMenu(const char * result)
 
 void menuModelSelect(event_t event) {
   static uint8_t subModelIndex = 0;
+  static bool model_selected = false;
 
   if (warningResult) {
     warningResult = 0;
@@ -216,7 +216,9 @@ void menuModelSelect(event_t event) {
 
   const std::list<ModelsCategory*>& cats = modelslist.getCategories();
 
-  check_submenu_simple(STR_MENUMODELSEL, event, MAX_MODELS);
+  event_t _event_ = ((event==EVT_KEY_BREAK(KEY_ENTER) || event==EVT_KEY_LONG(KEY_ENTER)) ? 0 : event);
+
+  check_submenu_simple(STR_MENUMODELSEL, _event_, MAX_MODELS);
 
   switch (event) {
     case EVT_ENTRY:
@@ -226,8 +228,8 @@ void menuModelSelect(event_t event) {
     case EVT_KEY_BREAK(KEY_ENTER):
       if (selectMode == MODE_MOVE_MODEL)
         selectMode = MODE_SELECT_MODEL;
+      killEvents(event);
       break;
-
     case EVT_KEY_FIRST(KEY_EXIT):
       switch (selectMode) {
         case MODE_MOVE_MODEL:
@@ -238,53 +240,75 @@ void menuModelSelect(event_t event) {
           return;
       }
       break;
-
     case EVT_KEY_BREAK(KEY_PAGE):
     {
-      if (selectMode == MODE_SELECT_MODEL) {
+      if (categoriesVerticalPosition >= cats.size()-1)
+        categoriesVerticalPosition = 0;
+      else
         categoriesVerticalPosition += 1;
-        if (categoriesVerticalPosition >= cats.size())
-          categoriesVerticalPosition = 0;
+
+      if (selectMode == MODE_SELECT_MODEL) {
         setCurrentCategory(categoriesVerticalPosition);
+        menuVerticalPosition = 0;
       }
-      else if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition < cats.size()-1) {
+      if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition < cats.size()) {
         ModelsCategory * previous_category = currentCategory;
         ModelCell * model = currentModel;
-        categoriesVerticalPosition += 1;
         setCurrentCategory(categoriesVerticalPosition);
         modelslist.moveModel(model, previous_category, currentCategory);
-        setCurrentModel(currentCategory->size()-1);
+        menuVerticalPosition = currentCategory->size()-1;
       }
+
       subModelIndex = 0;
-      menuVerticalPosition = 0;
+      model_selected = false;
+      killEvents(event);
       break;
     }
     case EVT_KEY_LONG(KEY_PAGE):
     {
+      if (categoriesVerticalPosition == 0)
+        categoriesVerticalPosition = cats.size() - 1;
+      else
+        categoriesVerticalPosition -= 1;
+
       if (selectMode == MODE_SELECT_MODEL) {
-        if (categoriesVerticalPosition == 0)
-          categoriesVerticalPosition = cats.size() - 1;
-        else
-          categoriesVerticalPosition -= 1;
         setCurrentCategory(categoriesVerticalPosition);
+        menuVerticalPosition = 0;
       }
-      else if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition > 0) {
+      if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition > 0) {
         ModelsCategory * previous_category = currentCategory;
         ModelCell * model = currentModel;
-        categoriesVerticalPosition -= 1;
         setCurrentCategory(categoriesVerticalPosition);
         modelslist.moveModel(model, previous_category, currentCategory);
-        setCurrentModel(currentCategory->size()-1);
       }
+
       subModelIndex = 0;
-      menuVerticalPosition = 0;
+      model_selected = false;
       killEvents(event);
       break;
     }
+    case EVT_KEY_FIRST(KEY_RIGHT):
+#if defined(ROTARY_ENCODER_NAVIGATION)
+    case EVT_ROTARY_RIGHT:
+#endif
+      //if (menuVerticalPosition >= currentCategory->size())
+        //menuVerticalPosition = 0;
+      killEvents(event);
+      break;
+    case EVT_KEY_FIRST(KEY_LEFT):
+#if defined(ROTARY_ENCODER_NAVIGATION)
+    case EVT_ROTARY_LEFT:
+#endif
+      //if (menuVerticalPosition >= currentCategory->size()) {
+       // menuVerticalPosition = currentCategory->size()-1;
+       // menuVerticalOffset = 0;
+      //}
+      killEvents(event);
+      break;
     case EVT_KEY_LONG(KEY_ENTER):
       if (selectMode == MODE_SELECT_MODEL) {
         killEvents(event);
-        if (currentModel && currentModel != modelslist.getCurrentModel()) {
+        if (subModelIndex != menuVerticalPosition) {
           POPUP_MENU_ADD_ITEM(STR_SELECT_MODEL);
         }
         POPUP_MENU_ADD_ITEM(STR_CREATE_MODEL);
@@ -293,7 +317,7 @@ void menuModelSelect(event_t event) {
           POPUP_MENU_ADD_ITEM(STR_MOVE_MODEL);
         }
         // POPUP_MENU_ADD_SD_ITEM(STR_BACKUP_MODEL);
-        if (currentModel && currentModel != modelslist.getCurrentModel()) {
+        if (!model_selected) {
           POPUP_MENU_ADD_ITEM(STR_DELETE_MODEL);
         }
         // POPUP_MENU_ADD_ITEM(STR_RESTORE_MODEL);
@@ -304,6 +328,7 @@ void menuModelSelect(event_t event) {
         }
         POPUP_MENU_START(onModelSelectMenu);
       }
+      killEvents(event);
       break;
     default:
       break;
@@ -342,18 +367,22 @@ void menuModelSelect(event_t event) {
   }
 
   index = 0;
+  bool selected = false;
+  bool current = false;
   // Models
   for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
+    //coord_t y = MENU_HEADER_HEIGHT + 1 + (index > menuVerticalOffset?(index - menuVerticalOffset):0)*FH*5/4;
     coord_t y = MENU_HEADER_HEIGHT + 1 + (index - menuVerticalOffset)*FH*5/4;
     uint8_t k = index;
-    bool selected = ((selectMode == MODE_SELECT_MODEL || selectMode == MODE_MOVE_MODEL) && k == menuVerticalPosition);
-    bool current = !strncmp((*it)->modelFilename, g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME);
+    selected = ((selectMode == MODE_SELECT_MODEL || selectMode == MODE_MOVE_MODEL) && k == menuVerticalPosition);
+    current = !strncmp((*it)->modelFilename, g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME);
 
     if (current) {
       lcdDrawChar(9 * FW + 11, y, '*');
       lcdDrawText(9 * FW + 18, y, (*it)->modelName, LEADING0 | ((selected) ? INVERS : 0));
       subModelIndex = k;
-    } else {
+    }
+    else {
       lcdDrawText(9 * FW + 18, y, (*it)->modelName, LEADING0 | ((selected) ? INVERS : 0));
     }
 
@@ -364,11 +393,21 @@ void menuModelSelect(event_t event) {
     }
   }
 
+  if (subModelIndex == menuVerticalPosition) {
+    model_selected = true;
+  }
+  else {
+    model_selected = false;
+  }
+#if 0
   if (currentModel) {
     if (menuVerticalPosition != subModelIndex) {
       if (selectMode == MODE_SELECT_MODEL) {
         setCurrentModel(menuVerticalPosition);
+        subModelIndex = menuVerticalPosition;
       }
     }
   }
+#endif
 }
+
