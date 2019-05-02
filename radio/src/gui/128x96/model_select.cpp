@@ -42,9 +42,9 @@ enum ModelDeleteMode {
 
 uint8_t selectMode, deleteMode;
 
-ModelsCategory * currentCategory;
+ModelsCategory * currentCategory = NULL;
 int currentCategoryIndex;
-ModelCell * currentModel;
+ModelCell * currentModel = NULL;
 
 
 bool eeModelExists(uint8_t id)
@@ -138,22 +138,27 @@ void onModelSelectMenu(const char * result)
     storageCheck(true);
     modelslist.addModel(currentCategory, createModel());
     selectMode = MODE_SELECT_MODEL;
-    setCurrentModel(currentCategory->size() - 1);
+    setCurrentModel(currentCategory->size()-1);
     modelslist.setCurrentModel(currentModel);
     modelslist.onNewModelCreated(currentModel, &g_model);
-    menuVerticalPosition++;
+    modelslist.setCurrentCategorie(currentCategory);
+    modelslist.save();
+    storageDirty(EE_GENERAL);
+    storageCheck(true);
+    menuVerticalPosition = currentCategory->size()-1;
 #if defined(LUA)
     //chainMenu(menuModelWizard);
 #endif
   }
   else if (result == STR_DUPLICATE_MODEL) {
     char duplicatedFilename[LEN_MODEL_FILENAME+1];
+    setCurrentModel(menuVerticalPosition);
     memcpy(duplicatedFilename, currentModel->modelFilename, sizeof(duplicatedFilename));
     if (findNextFileIndex(duplicatedFilename, LEN_MODEL_FILENAME, MODELS_PATH)) {
       sdCopyFile(currentModel->modelFilename, MODELS_PATH, duplicatedFilename, MODELS_PATH);
       ModelCell* dup_model = modelslist.addModel(currentCategory, duplicatedFilename);
       dup_model->fetchRfData();
-      setCurrentModel(currentCategory->size() - 1);
+      menuVerticalPosition = currentCategory->size()-1;
     }
     else {
       POPUP_WARNING("Invalid File");
@@ -166,7 +171,6 @@ void onModelSelectMenu(const char * result)
   else if (result == STR_CREATE_CATEGORY) {
     currentCategory = modelslist.createCategory();
     setCurrentCategory(modelslist.getCategories().size() - 1);
-    modelslist.setCurrentCategorie(currentCategory);
     modelslist.save();
     storageDirty(EE_GENERAL);
     storageCheck(true);
@@ -204,13 +208,11 @@ void menuModelSelect(event_t event) {
       setCurrentCategory(currentCategoryIndex > 0 ? currentCategoryIndex-1 : currentCategoryIndex);
     }
     else if (deleteMode == MODE_DELETE_MODEL){
-      int modelIndex = MODEL_INDEX();
+      int modelIndex = menuVerticalPosition;
+      setCurrentModel(modelIndex);
       modelslist.removeModel(currentCategory, currentModel);
       selectMode = 0;
-      if (modelIndex > 0) {
-        modelIndex--;
-      }
-      setCurrentModel(modelIndex);
+      menuVerticalPosition = currentCategory->size()-1;
     }
   }
 
@@ -218,7 +220,7 @@ void menuModelSelect(event_t event) {
 
   event_t _event_ = ((event==EVT_KEY_BREAK(KEY_ENTER) || event==EVT_KEY_LONG(KEY_ENTER)) ? 0 : event);
 
-  check_submenu_simple(STR_MENUMODELSEL, _event_, MAX_MODELS);
+  check_submenu_simple(STR_MENUMODELSEL, _event_, currentCategory?currentCategory->size():30);
 
   switch (event) {
     case EVT_ENTRY:
@@ -275,7 +277,7 @@ void menuModelSelect(event_t event) {
         setCurrentCategory(categoriesVerticalPosition);
         menuVerticalPosition = 0;
       }
-      if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition > 0) {
+      if (selectMode == MODE_MOVE_MODEL && categoriesVerticalPosition >= 0) {
         ModelsCategory * previous_category = currentCategory;
         ModelCell * model = currentModel;
         setCurrentCategory(categoriesVerticalPosition);
@@ -287,28 +289,10 @@ void menuModelSelect(event_t event) {
       killEvents(event);
       break;
     }
-    case EVT_KEY_FIRST(KEY_RIGHT):
-#if defined(ROTARY_ENCODER_NAVIGATION)
-    case EVT_ROTARY_RIGHT:
-#endif
-      //if (menuVerticalPosition >= currentCategory->size())
-        //menuVerticalPosition = 0;
-      killEvents(event);
-      break;
-    case EVT_KEY_FIRST(KEY_LEFT):
-#if defined(ROTARY_ENCODER_NAVIGATION)
-    case EVT_ROTARY_LEFT:
-#endif
-      //if (menuVerticalPosition >= currentCategory->size()) {
-       // menuVerticalPosition = currentCategory->size()-1;
-       // menuVerticalOffset = 0;
-      //}
-      killEvents(event);
-      break;
     case EVT_KEY_LONG(KEY_ENTER):
       if (selectMode == MODE_SELECT_MODEL) {
         killEvents(event);
-        if (subModelIndex != menuVerticalPosition) {
+        if (!model_selected) {
           POPUP_MENU_ADD_ITEM(STR_SELECT_MODEL);
         }
         POPUP_MENU_ADD_ITEM(STR_CREATE_MODEL);
@@ -366,14 +350,21 @@ void menuModelSelect(event_t event) {
     }
   }
 
+  // Models
   index = 0;
   bool selected = false;
   bool current = false;
-  // Models
-  for (ModelsCategory::iterator it = currentCategory->begin(); it != currentCategory->end(); ++it, ++index) {
-    //coord_t y = MENU_HEADER_HEIGHT + 1 + (index > menuVerticalOffset?(index - menuVerticalOffset):0)*FH*5/4;
-    coord_t y = MENU_HEADER_HEIGHT + 1 + (index - menuVerticalOffset)*FH*5/4;
-    uint8_t k = index;
+
+  for (int i = 0; i < currentCategory->size(); i++) {
+    coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
+    uint8_t k = i+menuVerticalOffset;
+
+    if (k >= currentCategory->size())
+      break;
+
+    std::list<ModelCell *>::iterator it = currentCategory->begin();
+    std::advance(it, k);
+
     selected = ((selectMode == MODE_SELECT_MODEL || selectMode == MODE_MOVE_MODEL) && k == menuVerticalPosition);
     current = !strncmp((*it)->modelFilename, g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME);
 
@@ -399,15 +390,5 @@ void menuModelSelect(event_t event) {
   else {
     model_selected = false;
   }
-#if 0
-  if (currentModel) {
-    if (menuVerticalPosition != subModelIndex) {
-      if (selectMode == MODE_SELECT_MODEL) {
-        setCurrentModel(menuVerticalPosition);
-        subModelIndex = menuVerticalPosition;
-      }
-    }
-  }
-#endif
 }
 
