@@ -327,7 +327,6 @@ void menuMainView(event_t event)
   static tmr10ms_t enterTime;
   static bool last_enter = false;
 
-
     switch (event) {
 
     case EVT_ENTRY:
