@@ -250,7 +250,7 @@ void tasksStart()
   extern TASK_FUNCTION(systemTask);
   // Test if crossfire task is available and start it
   if (*(uint32_t *)CROSSFIRE_TASK_ADDRESS != 0xFFFFFFFF ) {
-    RTOS_CREATE_TASK(crossfireTaskId, (FUNCPtr)CROSSFIRE_TASK_ADDRESS, "crossfire", crossfireStack, CROSSFIRE_STACK_SIZE, 10);
+    RTOS_CREATE_TASK(crossfireTaskId, (FUNCPtr)CROSSFIRE_TASK_ADDRESS, "crossfire", crossfireStack, CROSSFIRE_STACK_SIZE, 5);
   }
 
   //henry need fix (fixed by tommy)

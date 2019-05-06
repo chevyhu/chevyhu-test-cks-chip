@@ -69,6 +69,9 @@ struct CrossfireSharedData {
   int32_t channels[CROSSFIRE_CHANNELS_COUNT];
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_tx;   //from XF to OpenTX
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_rx;   //from OpenTX to XF
+#if defined(CRSF_OPENTX) && defined(CRSF_SD)
+  uint32_t crsfHandlerAddress;
+#endif
 };
 
 #if defined(CRSF_OPENTX) && defined(CRSF_SD)
@@ -77,8 +80,10 @@ struct CrossfireSharedData {
 //#define DEBUG_CRSF_SD_READ
 //#define DEBUG_CRSF_SD_WRITE
 //#define DEBUG_CRSF_SD_ERASE
+#define CRSF_SD_DELAY					50
+#define CRSF_SD_WRITE_DELAY				50
 #define CRSF_SD_SUBCMD_ADD				5
-#define CRSF_SD_DATA_START_ADD			11
+#define CRSF_SD_DATA_START_ADD			15
 #define CRSF_SD_DATA_MAX_BUFFER_SIZE	(LIBCRSF_MAX_BUFFER_SIZE - CRSF_SD_DATA_START_ADD - LIBCRSF_CRC_SIZE)
 
 typedef enum {
@@ -125,8 +130,8 @@ typedef struct CRSF_SD_STRUCT{
 	uint8_t org;
 	uint8_t subcmd;
 	uint8_t flag;
-	uint16_t chunk;
-	uint16_t requestDataLength;
+	uint32_t chunk;
+	uint32_t requestDataLength;
 	uint8_t crc;
 	uint8_t calCrc;
 	uint32_t numOfBytesRead;
@@ -140,9 +145,7 @@ extern uint8_t enableOpentxSdWriteHandler;
 extern uint8_t enableOpentxSdReadHandler;
 extern uint8_t enableOpentxSdEraseHandler;
 
-void crsfSdReadHandler();
-void crsfSdWriteHandler();
-void crsfSdEraseHandler();
+void crsfSdHandler();
 
 #endif
 

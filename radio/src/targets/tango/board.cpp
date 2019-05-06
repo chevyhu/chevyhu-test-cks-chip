@@ -101,10 +101,16 @@ void interrupt5ms()
     DEBUG_TIMER_SAMPLE(debugTimerPer10msPeriod);
     per10ms();
     DEBUG_TIMER_STOP(debugTimerPer10ms);
+#if !defined(PCBTANGO)
   }
+#endif
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
   checkRotaryEncoder();
+#endif
+
+#if defined(PCBTANGO)
+  }
 #endif
 }
 
@@ -307,7 +313,7 @@ void boardInit()
       lcdRefreshWait();
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
-      boardOff();
+//      boardOff();
     }
   }
   else {
@@ -327,6 +333,10 @@ void boardInit()
 #endif // !defined(SIMU)
 
   //TRACE("PWR_BUTTON = %s\n", PWR_BUTTON_PRESS);
+
+#if defined(CRSF_OPENTX) && defined(CRSF_SD)
+  sdInit();
+#endif
 }
 
 void boardOff()
@@ -424,21 +434,6 @@ TASK_FUNCTION(systemTask)
       crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)
       AgentHandler();
-#endif
-
-#if defined(CRSF_OPENTX) && defined(CRSF_SD)
-
-	  if(enableOpentxSdWriteHandler){
-		  crsfSdWriteHandler();
-	  }
-
-	  if(enableOpentxSdReadHandler){
-		  crsfSdReadHandler();
-	  }
-
-	  if(enableOpentxSdEraseHandler){
-		  crsfSdEraseHandler();
-	  }
 #endif
   }
   TASK_RETURN();

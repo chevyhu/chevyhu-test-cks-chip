@@ -199,6 +199,8 @@ void usbAgentWrite( uint8_t *pData )
 
 void CRSF_To_USB_HID( uint8_t *p_arr )
 {
+  // hardcoded for temp test
+ *p_arr = LIBCRSF_UART_SYNC;
   static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
   if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14){
 	  memcpy(HID_Buffer, p_arr, HID_AGENT_IN_PACKET);
