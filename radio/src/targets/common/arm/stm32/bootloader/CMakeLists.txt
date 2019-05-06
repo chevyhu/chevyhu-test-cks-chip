@@ -6,7 +6,7 @@ if(PCB STREQUAL X12S OR PCB STREQUAL X10)
   set(BOOTLOADER_SRC
     ${BOOTLOADER_SRC}
     ../f4/system_stm32f4xx.c
-    ../../../../../targets/${TARGET_DIR}/startup_stm32f407xx.s
+    ../../../../../targets/${TARGET_DIR}/startup_stm32f42_43xxx.s
     ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c
     ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c
     ../../../../../${STM32LIB_DIR}/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c

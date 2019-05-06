@@ -79,6 +79,7 @@ void pwrOff()
   // disable interrupts
   __disable_irq();
 
+// To do: Make Improvement
 #if defined(PCBTANGO)
   while (1) {
     wdt_reset();

@@ -155,7 +155,9 @@ typedef enum {
 #if defined(LIBCRSF_ENABLE_FW_UPDATE_RESPONES) || defined(LIBCRSF_ENABLE_FW_UPDATE_REQUEST)
     LIBCRSF_FW_UPDATE                           = 0x38,
 #endif
-
+#if defined(CRSF_OPENTX)
+	LIBCRSF_OPENTX_RELATED						= 0x3a,
+#endif
     LIBCRSF_KISS_FC_1                           = 0x78,
     LIBCRSF_KISS_FC_2                           = 0x79,
 

@@ -54,10 +54,84 @@ void ModelCell::setModelId(uint8_t moduleIdx, uint8_t id)
   modelId[moduleIdx] = id;
 }
 
+#if !defined(PCBTANGO)
 void ModelCell::resetBuffer()
 {
-
+  if (buffer) {
+    delete buffer;
+    buffer = NULL;
+  }
 }
+
+const BitmapBuffer * ModelCell::getBuffer()
+{
+  if (!buffer) {
+    loadBitmap();
+  }
+  return buffer;
+}
+
+void ModelCell::loadBitmap()
+{
+  PACK(struct {
+           ModelHeader header;
+           TimerData timers[MAX_TIMERS];
+       }) partialmodel;
+  const char * error = NULL;
+
+  buffer = new BitmapBuffer(BMP_RGB565, MODELCELL_WIDTH, MODELCELL_HEIGHT);
+  if (buffer == NULL) {
+    return;
+  }
+
+  if (strncmp(modelFilename, g_eeGeneral.currModelFilename, LEN_MODEL_FILENAME) == 0) {
+    memcpy(&partialmodel.header, &g_model.header, sizeof(partialmodel));
+  }
+  else {
+    error = readModel(modelFilename, (uint8_t *)&partialmodel.header, sizeof(partialmodel));
+  }
+
+  buffer->clear(TEXT_BGCOLOR);
+
+  if (error) {
+    buffer->drawText(5, 2, "(Invalid Model)", TEXT_COLOR);
+    buffer->drawBitmapPattern(5, 23, LBM_LIBRARY_SLOT, TEXT_COLOR);
+  }
+  else {
+    if (modelName[0] == 0)
+      setModelName(partialmodel.header.name);
+
+    char timer[LEN_TIMER_STRING];
+    buffer->drawSizedText(5, 2, modelName, LEN_MODEL_NAME, SMLSIZE|TEXT_COLOR);
+    getTimerString(timer, 0);
+    for (uint8_t i = 0; i < MAX_TIMERS; i++) {
+      if (partialmodel.timers[i].mode > 0 && partialmodel.timers[i].persistent) {
+        getTimerString(timer, partialmodel.timers[i].value);
+        break;
+      }
+    }
+    buffer->drawText(101, 40, timer, TEXT_COLOR);
+    for (int i=0; i<4; i++) {
+      buffer->drawBitmapPattern(104+i*11, 25, LBM_SCORE0, TITLE_BGCOLOR);
+    }
+    GET_FILENAME(filename, BITMAPS_PATH, partialmodel.header.bitmap, "");
+    const BitmapBuffer * bitmap = BitmapBuffer::load(filename);
+    if (bitmap) {
+      buffer->drawScaledBitmap(bitmap, 5, 24, 56, 32);
+      delete bitmap;
+    }
+    else {
+      buffer->drawBitmapPattern(5, 23, LBM_LIBRARY_SLOT, TEXT_COLOR);
+    }
+  }
+  buffer->drawSolidHorizontalLine(5, 19, 143, LINE_COLOR);
+}
+#else
+void ModelCell::resetBuffer()
+{
+  return;
+}
+#endif
 
 void ModelCell::save(FIL* file)
 {

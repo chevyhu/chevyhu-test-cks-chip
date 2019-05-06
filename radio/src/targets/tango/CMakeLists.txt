@@ -48,7 +48,6 @@ elseif(PCB STREQUAL TANGO)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   add_definitions(-DSOFTWARE_VOLUME)
   add_definitions(-DAGENT )
-  add_definitions(-DCRSF_SD )
 
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
@@ -67,6 +66,7 @@ elseif(PCB STREQUAL TANGO)
   endif()
 
   add_definitions(-DCROSSFIRE)
+  add_definitions(-DCRSF_OPENTX -DCRSF_SD)
 
   set(GUI_DIR 128x96)
   set(NAVIGATION_TYPE tango)

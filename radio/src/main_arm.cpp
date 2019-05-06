@@ -146,7 +146,7 @@ void checkBattery()
   static uint8_t sampleCount;
   // filter battery voltage by averaging it
   if (g_vbat100mV == 0) {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) && !defined(SIMU)
 	// wait for power stable
 	delay_ms(200);
 #endif
@@ -417,19 +417,16 @@ void guiMain(event_t evt)
 
 void perMain()
 {
+#if defined(PCBTANGO)
+	// these setting are overrided by some where, reinit it for temp run
 	static bool started = false;
 	if(!started){
 		  keysInit();
 		  started = true;
+#if defined(ESP_SERIAL)
+		  espInit(ESP_UART_BAUDRATE, false);
+#endif
 	}
-
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-  static bool startOnce = false;
-  if(!startOnce){
-	  extern bool startCrsfSdReadTest;
-	  startCrsfSdReadTest = true;
-	  startOnce = true;
-  }
 #endif
 
   DEBUG_TIMER_START(debugTimerPerMain1);

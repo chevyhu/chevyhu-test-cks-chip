@@ -815,14 +815,34 @@ void luaExec(const char * filename)
   }
 }
 
+#if defined(PCBTANGO)
+static uint8_t devId = 0;
+
+int luaSetDevId(lua_State* L){
+	devId = lua_tointeger(L, -1);
+#if defined(DEBUG)
+	TRACE("devId:%x", devId);
+#endif
+	lua_pop(L, 1);
+}
+
+int luaGetDevId(lua_State* L){
+	lua_pushnumber(L, devId);
+	return 1;
+}
+#endif
+
 void luaDoOneRunStandalone(event_t evt)
 {
   static uint8_t luaDisplayStatistics = false;
-
   if (standaloneScript.state == SCRIPT_OK && standaloneScript.run) {
     luaSetInstructionsLimit(lsScripts, MANUAL_SCRIPTS_MAX_INSTRUCTIONS);
     lua_rawgeti(lsScripts, LUA_REGISTRYINDEX, standaloneScript.run);
     lua_pushunsigned(lsScripts, evt);
+#if defined(PCBTANGO)
+    lua_register(lsScripts, "SetDevId", luaSetDevId);
+    lua_register(lsScripts, "GetDevId", luaGetDevId);
+#endif
     if (lua_pcall(lsScripts, 1, 1, 0) == 0) {
       if (!lua_isnumber(lsScripts, -1)) {
         if (instructionsPercent > 100) {

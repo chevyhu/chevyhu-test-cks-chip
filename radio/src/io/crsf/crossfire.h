@@ -35,6 +35,7 @@ typedef enum
   DEVICE_INTERNAL = 0,
   USB_HID,
   CRSF_SHARED_FIFO,
+  CRSF_ESP,
   LAST_CRSF_PORT
 } _CRSF_PORT_NAME;
 
@@ -70,11 +71,14 @@ struct CrossfireSharedData {
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_rx;   //from OpenTX to XF
 };
 
+#if defined(CRSF_OPENTX) && defined(CRSF_SD)
 //#define DEBUG_CRSF_SD_READ_COMPARE
 //#define DEBUG_CRSF_SD_WRITE_COMPARE
 //#define DEBUG_CRSF_SD_READ
 //#define DEBUG_CRSF_SD_WRITE
-#define CRSF_SD_DATA_START_ADD			10
+//#define DEBUG_CRSF_SD_ERASE
+#define CRSF_SD_SUBCMD_ADD				5
+#define CRSF_SD_DATA_START_ADD			11
 #define CRSF_SD_DATA_MAX_BUFFER_SIZE	(LIBCRSF_MAX_BUFFER_SIZE - CRSF_SD_DATA_START_ADD - LIBCRSF_CRC_SIZE)
 
 typedef enum {
@@ -88,18 +92,25 @@ typedef enum {
 	CRSF_SD_ERROR,
 	CRSF_SD_IDLE,
 	CRSF_SD_DATA_READY,
+	CRSF_SD_DATA_TX_COMPLETED,
 	CRSF_SD_INVALID_FILENAME
 } CRSF_SD_STATE;
 
 typedef enum {
-	CRSF_SD_SUBCMD_OK = 0,
-	CRSF_SD_SUBCMD_START,
-	CRSF_SD_SUBCMD_FINISH,
-	CRSF_SD_SUBCMD_ACK,
-	CRSF_SD_SUBCMD_ERROR,
-	CRSF_SD_SUBCMD_RETRY,
-	CRSF_SD_SUBCMD_RETRY_START
+	CRSF_SD_SUBCMD_READ = 0x01,
+	CRSF_SD_SUBCMD_WRITE = 0x02,
+	CRSF_SD_SUBCMD_ERASE = 0x03
 } CRSF_SD_SUBCMD;
+
+typedef enum {
+	CRSF_SD_FLAG_OK = 0,
+	CRSF_SD_FLAG_START,
+	CRSF_SD_FLAG_FINISH,
+	CRSF_SD_FLAG_ACK,
+	CRSF_SD_FLAG_ERROR,
+	CRSF_SD_FLAG_RETRY,
+	CRSF_SD_FLAG_RETRY_START
+} CRSF_SD_FLAG;
 
 typedef struct CRSF_SD_STRUCT{
 	FIL file;
@@ -113,6 +124,7 @@ typedef struct CRSF_SD_STRUCT{
 	uint8_t dst;
 	uint8_t org;
 	uint8_t subcmd;
+	uint8_t flag;
 	uint16_t chunk;
 	uint16_t requestDataLength;
 	uint8_t crc;
@@ -124,17 +136,25 @@ typedef struct CRSF_SD_STRUCT{
 	BYTE payload[CRSF_SD_DATA_MAX_BUFFER_SIZE];
 } CrsfSd_t;
 
+extern uint8_t enableOpentxSdWriteHandler;
+extern uint8_t enableOpentxSdReadHandler;
+extern uint8_t enableOpentxSdEraseHandler;
 
+void crsfSdReadHandler();
+void crsfSdWriteHandler();
+void crsfSdEraseHandler();
+
+#endif
 
 typedef struct CrossfireSharedData CrossfireSharedData_t;
 #define crossfireSharedData (*((CrossfireSharedData_t*)SHARED_MEMORY_ADDRESS))
 
 void CRSF_Init( void );
 void crsfSharedFifoHandler( void );
+void crsfEspHandler( void );
 void CRSF_to_Shared_FIFO( uint8_t *p_arr );
+void CRSF_to_ESP( uint8_t *p_arr );
 void CRSF_This_Device( uint8_t *p_arr );
 void AgentLegacyCalls( uint8_t *arr );
-void crsfSdWriteHandler();
-uint8_t crsfSdRead( char* filename, BYTE *pData, uint16_t Length );
 
 #endif // _CROSSFIRE_H_

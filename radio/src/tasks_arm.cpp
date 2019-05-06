@@ -19,7 +19,6 @@
  */
 
 #include "opentx.h"
-#include "io/crsf/crossfire.h"
 
 RTOS_TASK_HANDLE menusTaskId;
 RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
@@ -33,27 +32,10 @@ RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
 RTOS_MUTEX_HANDLE audioMutex;
 RTOS_MUTEX_HANDLE mixerMutex;
 
-
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-RTOS_TASK_HANDLE otaXfTaskId;
-RTOS_DEFINE_STACK(otaXfStack, OTA_XF_STACK_SIZE);
-#endif
-
-#if defined(CRSF_SD)
-RTOS_TASK_HANDLE otaTaskId;
-RTOS_DEFINE_STACK(otaStack, OTA_STACK_SIZE);
-#endif
-
 enum TaskIndex {
   MENU_TASK_INDEX,
   MIXER_TASK_INDEX,
   AUDIO_TASK_INDEX,
-#ifdef DEBUG_CRSF_SD_READ_TEST
-  OTA_CROSSFIRE_TASK_INDEX,
-#endif
-#if defined(CRSF_SD)
-  OTA_TASK_INDEX,
-#endif
   CLI_TASK_INDEX,
   BLUETOOTH_TASK_INDEX,
   TASK_INDEX_COUNT,
@@ -65,12 +47,6 @@ void stackPaint()
   menusStack.paint();
   mixerStack.paint();
   audioStack.paint();
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-  otaXfStack.paint();
-#endif
-#if defined(CRSF_SD)
-  otaStack.paint();
-#endif
 #if defined(CLI)
   cliStack.paint();
 #endif
@@ -159,7 +135,9 @@ TASK_FUNCTION(mixerTask)
       if (getSelectedUsbMode() == USB_JOYSTICK_MODE) {
         usbJoystickUpdate();
       }
+  #if defined(PCBTANGO)
       tangoUpdateChannel();
+  #endif
 #endif
 
 #if defined(TELEMETRY_FRSKY) || defined(PCBTANGO)
@@ -200,6 +178,10 @@ bool perMainEnabled = true;
 TASK_FUNCTION(menusTask)
 {
   opentxInit();
+
+#if defined(PCBTANGO)
+  getDefaultSwConfig();
+#endif
 
 #if defined(PWR_BUTTON_PRESS)
   while (1) {
@@ -250,46 +232,6 @@ TASK_FUNCTION(menusTask)
   TASK_RETURN();
 }
 
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-bool startCrsfSdReadTest = false;
-TASK_FUNCTION(otaXfTask)
-{
-	while(1){
-		static uint8_t delayCount = 0;
-		if(startCrsfSdReadTest){
-		  static uint16_t count = 0;
-		  static uint8_t buf[1024];
-		  uint8_t state = crsfSdRead("/FIRMWARE/0x000110xx_0x0251.bin", buf, 1024);
-		  if(state == 1){
-			  TRACE("crsfSdWrite:FINISHED");
-			  startCrsfSdReadTest = false;
-		  }
-		  else if(state == 9){
-			  TRACE("crsfSdWrite:DATA_READY:%d KB", ++count);
-		  }
-		}
-		if(delayCount++ > 100){
-			delayCount = 0;
-			RTOS_WAIT_TICKS(1);
-		}
-	}
-}
-#endif
-
-#if defined(CRSF_SD) && !defined(SIMU)
-TASK_FUNCTION(otaTask)
-{
-	while(1){
-		static uint8_t delayCount = 0;
-		crsfSdWriteHandler();
-		if(delayCount++ > 100){
-			delayCount = 0;
-			RTOS_WAIT_TICKS(1);
-		}
-	}
-}
-#endif
-
 void tasksStart()
 {
   RTOS_INIT();
@@ -317,19 +259,6 @@ void tasksStart()
 
 #if !defined(SIMU)
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
-#endif
-
-#if 0
-//henry: will cause hardfault and need fix @tommy
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-  TRACE("otaXfTask");
-  RTOS_CREATE_TASK(otaXfTaskId, otaXfTask, "otaXf", otaXfStack, OTA_XF_STACK_SIZE, OTA_XF_TASK_PRIO);
-#endif
-
-#if defined(CRSF_SD) && !defined(SIMU)
-  TRACE("otaTask");
-  RTOS_CREATE_TASK(otaTaskId, otaTask, "ota", otaStack, OTA_STACK_SIZE, OTA_TASK_PRIO);
-#endif
 #endif
 
   RTOS_CREATE_MUTEX(audioMutex);

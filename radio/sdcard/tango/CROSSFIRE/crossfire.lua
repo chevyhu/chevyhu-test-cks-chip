@@ -102,6 +102,7 @@ local function run(event)
       local attr = (lineIndex == i and INVERS or 0)
       if (event == EVT_ROT_BREAK or event == EVT_RIGHT_BREAK) and attr == INVERS then
           crossfireTelemetryPush(0x28, { devices[i].id, 0xEA })
+		  SetDevId(devices[i].id)
           return "device.lua"
       end
       lcd.drawText(0, i*8+9, devices[i].name, attr)

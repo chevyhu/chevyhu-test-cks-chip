@@ -154,6 +154,30 @@ void sportUpdatePowerOff()
 }
 #endif
 
+void getDefaultSwConfig(){
+	uint8_t hasMem = 0;
+	for(uint8_t i = 0; i < 6; i++){
+		if(SWITCH_CONFIG(i) != 0){
+			hasMem = 1;
+		}
+	}
+	swconfig_t mask;
+	if(!hasMem){
+	    mask = (swconfig_t)0x03 << (2*0);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(1) & 0x03) << (2*0));
+	    mask = (swconfig_t)0x03 << (2*1);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(3) & 0x03) << (2*1));
+	    mask = (swconfig_t)0x03 << (2*2);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(3) & 0x03) << (2*2));
+	    mask = (swconfig_t)0x03 << (2*3);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(1) & 0x03) << (2*3));
+	    mask = (swconfig_t)0x03 << (2*4);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(2) & 0x03) << (2*4));
+	    mask = (swconfig_t)0x03 << (2*5);
+	    g_eeGeneral.switchConfig = (g_eeGeneral.switchConfig & ~mask) | ((swconfig_t(2) & 0x03) << (2*05));
+	}
+}
+
 void boardInit()
 {
 #if !defined(SIMU)
@@ -216,7 +240,7 @@ void boardInit()
 #endif
 
 #if defined(ESP_SERIAL)
-  espInit(115200, false);
+  espInit(ESP_UART_BAUDRATE, false);
 #endif
 
 #if defined(HAPTIC)
@@ -274,6 +298,9 @@ void boardInit()
           pwrInit();
           backlightInit();
           haptic.play(15, 3, PLAY_NOW);
+#if defined(PCBTANGO)
+          break;
+#endif
         }
       }
       lcdRefresh();
@@ -380,7 +407,7 @@ uint16_t getBatteryVoltage()
 {
   int32_t instant_vbat = anaIn(TX_VOLTAGE); // using filtered ADC value on purpose
   instant_vbat = (instant_vbat * BATT_SCALE * (128 + g_eeGeneral.txVoltageCalibration) ) / 26214;
-  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
+//  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
   return (uint16_t)instant_vbat;
 }
 
@@ -394,6 +421,21 @@ TASK_FUNCTION(systemTask)
 {
   while(1) {
       crsfSharedFifoHandler();
+      crsfEspHandler();
+#if defined(CRSF_OPENTX) && defined(CRSF_SD)
+
+	  if(enableOpentxSdWriteHandler){
+		  crsfSdWriteHandler();
+	  }
+
+	  if(enableOpentxSdReadHandler){
+		  crsfSdReadHandler();
+	  }
+
+	  if(enableOpentxSdEraseHandler){
+		  crsfSdEraseHandler();
+	  }
+#endif
   }
   TASK_RETURN();
 }

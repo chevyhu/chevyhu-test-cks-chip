@@ -101,7 +101,7 @@ void editName(coord_t x, coord_t y, char * name, uint8_t size, event_t event, ui
             s_editMode = 0;
           break;
 
-#if defined(PCBXLITE) || !defined(PCBTARANIS)
+#if defined(PCBXLITE) || (!defined(PCBTARANIS) && !defined(PCBTANGO))
         case EVT_KEY_BREAK(KEY_LEFT):
           if (cur>0) cur--;
           break;

@@ -1428,8 +1428,6 @@
   #define ESP_RX_DMA_STREAM_IRQHandler  DMA1_Stream2_IRQHandler
   #define ESP_RX_DMA_IRQn               DMA1_Stream2_IRQn
   #define ESP_RX_DMA_IT_TC              DMA_IT_TCIF2
-  #define ESP_TX_BUFFER_SIZE            64
-  #define ESP_RX_BUFFER_SIZE            64
 #endif
 
 // Xms Interrupt

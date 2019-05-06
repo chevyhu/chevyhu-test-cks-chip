@@ -26,6 +26,7 @@ local fieldId = 1
 local fieldChunk = 0
 local fieldData = {}
 local fields = {}
+local targetId = 0;
 
 local function getField(line)
   local counter = 1
@@ -130,11 +131,14 @@ end
 
 local function parseDeviceInfoMessage(data)
   local offset
-  deviceId = data[2]
-  deviceName, offset = fieldGetString(data, 3)
-  local fields_count = data[offset+12]
-  for i=1, fields_count do
-    fields[i] = { name=nil }
+  targetId = GetDevId()
+  if targetId == data[2] then
+	  deviceId = data[2]
+	  deviceName, offset = fieldGetString(data, 3)
+	  local fields_count = data[offset+12]
+	  for i=1, fields_count do
+		fields[i] = { name=nil }
+	  end
   end
 end
 

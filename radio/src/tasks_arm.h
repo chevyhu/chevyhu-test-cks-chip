@@ -27,18 +27,10 @@
 #define MENUS_STACK_SIZE       2000
 #define MIXER_STACK_SIZE       512
 #define AUDIO_STACK_SIZE       512
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-#define OTA_XF_STACK_SIZE      512
-#endif
-#if defined(CRSF_SD)
-#define OTA_STACK_SIZE         512
-#endif
 #define CLI_STACK_SIZE         1000  // only consumed with CLI build option
 
 #define MIXER_TASK_PRIO        5
 #define AUDIO_TASK_PRIO        7
-#define OTA_XF_TASK_PRIO       0
-#define OTA_TASK_PRIO          0
 #define MENUS_TASK_PRIO        10
 #define CLI_TASK_PRIO          10
 
@@ -50,15 +42,6 @@ extern RTOS_DEFINE_STACK(mixerStack, MIXER_STACK_SIZE);
 
 extern RTOS_TASK_HANDLE audioTaskId;
 extern RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
-
-#if defined(CRSF_SD) && defined(CRSF_SD_READ_TEST)
-extern RTOS_TASK_HANDLE otaXfTaskId;
-extern RTOS_DEFINE_STACK(otaXfStack, OTA_XF_STACK_SIZE);
-#endif
-#if defined(CRSF_SD)
-extern RTOS_TASK_HANDLE otaTaskId;
-extern RTOS_DEFINE_STACK(otaStack, OTA_STACK_SIZE);
-#endif
 
 extern RTOS_MUTEX_HANDLE mixerMutex;
 extern RTOS_FLAG_HANDLE openTxInitCompleteFlag;

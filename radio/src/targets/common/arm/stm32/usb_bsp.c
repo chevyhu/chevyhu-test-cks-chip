@@ -23,8 +23,6 @@
 #include "usb_bsp.h"
 #include "board.h"
 #include "usbd_conf.h"
-#include "stm32f4xx_gpio.h"
-#include "debug.h"
 
 extern uint32_t SystemCoreClock;
 
@@ -87,7 +85,6 @@ void USB_OTG_BSP_Deinit(USB_OTG_CORE_HANDLE *pdev)
     pdev->regs.GREGS->GAHBCFG = 0;
     pdev->regs.GREGS->GUSBCFG = 0;
     USB_OTG_Disconnect();
-    TRACE("USB Disconnected");
   }
 }
 
