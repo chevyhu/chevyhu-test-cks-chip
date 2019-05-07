@@ -38,19 +38,22 @@ void menuRadioDiagKeys(event_t event)
 {
   SIMPLE_MENU(STR_MENU_RADIO_SWITCHES, menuTabGeneral, MENU_RADIO_SWITCHES_TEST, 1);
 
+  #if !defined(PCBTANGO)
   lcdDrawText(14*FW, MENU_HEADER_HEIGHT+2*FH, STR_VTRIM);
-
+#endif
+  
   for (uint8_t i=0; i<9; i++) {
     coord_t y;
-
+#if !defined(PCBTANGO)
     if (i < NUM_TRIMS_KEYS) {
       y = MENU_HEADER_HEIGHT + FH*3 + FH*(i/2);
       if (i&1) lcdDraw1bitBitmap(14*FW, y, sticks, i/2, 0);
       displayKeyState(i&1? 20*FW : 18*FW, y, TRM_BASE+i);
     }
+#endif
 
     if (i < TRM_BASE) {
-#if defined(PCBX7)
+#if defined(PCBX7)  || defined(PCBTANGO)
       y = MENU_HEADER_HEIGHT + FH + FH*i;
       if (i >= 2) {
         // hide PLUS and MINUS virtual buttons
@@ -68,12 +71,20 @@ void menuRadioDiagKeys(event_t event)
 #endif
     }
 
-#if defined(PCBTARANIS) || defined(PCBTANGO)
+#if defined(PCBTARANIS)
     if (i < NUM_SWITCHES) {
       if (SWITCH_EXISTS(i)) {
         getvalue_t val = getValue(MIXSRC_FIRST_SWITCH+i);
         getvalue_t sw = ((val < 0) ? 3*i+1 : ((val == 0) ? 3*i+2 : 3*i+3));
         drawSwitch(8*FW+4, y, sw, 0);
+      }
+    }
+#elif defined(PCBTANGO)
+    if (i < NUM_SWITCHES) {
+      if (SWITCH_EXISTS(i)) {
+        getvalue_t val = getValue(MIXSRC_FIRST_SWITCH+i);
+        getvalue_t sw = ((val < 0) ? 3*i+1 : ((val == 0) ? 3*i+2 : 3*i+3));
+        drawSwitch(8*FW+30, y+10, sw, 0);
       }
     }
 #else

@@ -504,7 +504,7 @@ enum Analogs {
   extern volatile uint32_t pwm_interrupt_count;
   #define NUM_TRIMS_KEYS                4
 #else
-  #define NUM_TRIMS_KEYS                8
+  #define NUM_TRIMS_KEYS                4
 #endif
 
 enum CalibratedAnalogs {

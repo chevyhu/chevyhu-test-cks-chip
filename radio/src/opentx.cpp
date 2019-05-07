@@ -137,8 +137,9 @@ void per10ms()
       bool new_cw = (scrollRE < 0) ? false : true;
       if ((g_tmr10ms - lastEvent >= 10) || (cw == new_cw)) { // 100ms
 
-        putEvent(new_cw ? EVT_ROTARY_RIGHT : EVT_ROTARY_LEFT);
 #if defined(PCBTANGO)
+        putEvent(new_cw ? EVT_ROTARY_LEFT : EVT_ROTARY_RIGHT);
+
         if (g_trimEditMode != EDIT_TRIM_DISABLED) {
           uint8_t key = (g_trimEditMode - 1) * 2;
           if (new_cw) {
@@ -148,6 +149,8 @@ void per10ms()
             g_trimState = 0x01 << (key + 1);
           }
         }
+#else
+        putEvent(new_cw ? EVT_ROTARY_RIGHT : EVT_ROTARY_LEFT);
 #endif
         // rotary encoder navigation speed (acceleration) detection/calculation
         static uint32_t delay = 2*ROTENC_DELAY_MIDSPEED;
