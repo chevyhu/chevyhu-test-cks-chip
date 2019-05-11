@@ -19,6 +19,9 @@
  */
 
 #include "opentx.h"
+#if defined(PCBTANGO) && defined(CRSF_OPENTX) && defined(CRSF_SD)
+#include "io/crsf/crossfire.h"
+#endif
 
 RTOS_TASK_HANDLE menusTaskId;
 RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
@@ -222,6 +225,13 @@ TASK_FUNCTION(menusTask)
 
     resetForcePowerOffRequest();
   }
+
+#if defined(PCBTANGO) && defined(CRSF_OPENTX) && defined(CRSF_SD)
+    crossfireSharedData.crsfEEPROMSaveFlag = 1;
+    while(crossfireSharedData.crsfEEPROMSaveFlag){
+    	delay_ms(1);
+    }
+#endif
 
 #if defined(PCBX9E)
   toplcdOff();
