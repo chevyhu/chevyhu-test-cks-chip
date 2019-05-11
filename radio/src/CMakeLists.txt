@@ -3,10 +3,11 @@ include(Bitmaps)
 set(PROJECT_TYPE TBS_TANGO)
 
 if (PROJECT_TYPE STREQUAL TBS_TANGO)
-  set(PCB_TYPES X7 XLITE X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X TANGO)
+  set(PCB_TYPES X3 X7 XLITE XLITES X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X TANGO)
 else()
-  set(PCB_TYPES X7 XLITE X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X)
+  set(PCB_TYPES X3 X7 XLITE XLITES X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X)
 endif()
+
 set(GUI_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL)
 set(TTS_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL RU)
 
@@ -46,11 +47,9 @@ if(SDL_FOUND)
 endif()
 if (PCB STREQUAL TANGO)
   option(LUA "Enable LUA support" OFF)
-  option(CROSSFIRE_COMBINED "Combined with the crossfire hex file" ON)
 else()
   option(LUA "Enable LUA support" ON)
 endif()
-
 
 option(SIMU_DISKIO "Enable disk IO simulation in simulator. Simulator will use FatFs module and simulated IO layer that  uses \"./sdcard.image\" file as image of SD card. This file must contain whole SD card from first to last sector" OFF)
 option(SIMU_LUA_COMPILER "Pre-compile and save Lua scripts in simulator." ON)
@@ -68,7 +67,7 @@ option(FRSKY_STICKS "Reverse sticks for FrSky sticks" OFF)
 option(NANO "Use nano newlib and binalloc")
 option(NIGHTLY_BUILD_WARNING "Warn this is a nightly build" OFF)
 option(MODULE_R9M_FLEX_FW "Add R9M options for non certified firmwwares" OFF)
-option(PXX2 "Enable PXX v2 support" OFF)
+option(FRSKY_RELEASE "Used to build FrSky released firmware" OFF)
 
 # since we reset all default CMAKE compiler flags for firmware builds, provide an alternate way for user to specify additional flags.
 set(FIRMWARE_C_FLAGS "" CACHE STRING "Additional flags for firmware target c compiler (note: all CMAKE_C_FLAGS[_*] are ignored for firmware/bootloader).")
@@ -79,6 +78,10 @@ set(FIRMWARE_CXX_FLAGS_DEBUG "-g" CACHE STRING "Additional flags for firmware ta
 set(THIRDPARTY_DIR thirdparty)
 set(LUA_DIR ${THIRDPARTY_DIR}/Lua/src)
 set(COOS_DIR ${THIRDPARTY_DIR}/CoOS)
+if (PCB STREQUAL TANGO)
+  set(FREERTOS_DIR ${THIRDPARTY_DIR}/FreeRTOS)
+  set(HARMONY_DIR ${THIRDPARTY_DIR}/harmony/v2_05_01)
+endif()
 set(FATFS_DIR ${THIRDPARTY_DIR}/FatFs)
 set(RADIO_BIN_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -108,12 +111,12 @@ set(FATFS_SRC
 
 if(PCB STREQUAL X12S OR PCB STREQUAL X10)
   include(targets/horus/CMakeLists.txt)
-elseif(PCB STREQUAL TANGO)
-  include(targets/tango/CMakeLists.txt)
-elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X9D OR PCB STREQUAL X7 OR PCB STREQUAL XLITE)
+elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X9D OR PCB STREQUAL X7 OR PCB STREQUAL X3 OR PCB STREQUAL XLITE OR PCB STREQUAL XLITES)
   include(targets/taranis/CMakeLists.txt)
 elseif(PCB STREQUAL SKY9X OR PCB STREQUAL 9XRPRO OR PCB STREQUAL AR9X)
   include(targets/sky9x/CMakeLists.txt)
+elseif(PCB STREQUAL TANGO)
+  include(targets/tango/CMakeLists.txt)
 else()
   message(FATAL_ERROR "Unknown PCB '${PCB}'")
 endif()
@@ -161,7 +164,11 @@ endforeach()
 set(SRC ${SRC} debug.cpp)
 
 if(${EEPROM} STREQUAL SDCARD)
-  set(SRC ${SRC} storage/storage_common.cpp storage/sdcard_raw.cpp storage/modelslist.cpp)
+  if(PCB STREQUAL TANGO)
+    set(SRC ${SRC} storage/storage_common.cpp storage/sdcard_raw.cpp)
+  else()
+    set(SRC ${SRC} storage/storage_common.cpp storage/sdcard_raw.cpp storage/modelslist.cpp)
+  endif()
 elseif(${EEPROM} STREQUAL EEPROM_RLC)
   set(SRC ${SRC} storage/storage_common.cpp storage/eeprom_common.cpp storage/eeprom_rlc.cpp)
   add_definitions(-DEEPROM -DEEPROM_RLC)
@@ -170,19 +177,17 @@ else()
   add_definitions(-DEEPROM -DEEPROM_RAW)
 endif()
 
-if(ARCH STREQUAL ARM AND NOT PCB STREQUAL X12S AND NOT PCB STREQUAL X10 AND NOT PCB STREQUAL XLITE AND NOT PCB STREQUAL TANGO)
-  add_definitions(-DEEPROM_CONVERSIONS)
-  set(SRC ${SRC} storage/eeprom_conversions.cpp)
-endif()
+include(storage/conversions/CMakeLists.txt)
 
 add_definitions(-DFLAVOUR="${FLAVOUR}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${GUI_DIR})
+if(PCB STREQUAL TANGO)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${BITMAPS_TARGET_DIR})
+else()
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${GUI_DIR})
+endif()
 
 add_subdirectory(lua)
 include(gui/CMakeLists.txt)
@@ -196,8 +201,8 @@ endif()
 if(PCB STREQUAL TANGO)
   if(TEMPLATES)
     add_definitions(-DTEMPLATES)
-    #set(SRC ${SRC} templates.cpp)
-    #set(GUI_SRC ${GUI_SRC} model_templates.cpp)
+    set(SRC ${SRC} templates.cpp)
+    set(GUI_SRC ${GUI_SRC} model_templates.cpp)
   endif()
 endif()
 
@@ -328,9 +333,7 @@ if(DANGEROUS_MODULE_FUNCTIONS)
   add_definitions(-DDANGEROUS_MODULE_FUNCTIONS)
 endif()
 
-if(SPLASH STREQUAL FRSKY)
-  add_definitions(-DSPLASH -DSPLASH_FRSKY)
-elseif(NOT SPLASH STREQUAL OFF)
+if(NOT SPLASH STREQUAL OFF)
   add_definitions(-DSPLASH)
 endif()
 
@@ -360,7 +363,7 @@ endif()
 
 if(NIGHTLY_BUILD_WARNING)
   add_definitions(-DNIGHTLY_BUILD_WARNING)
-endif(NIGHTLY_BUILD_WARNING)
+endif()
 
 if(PCB STREQUAL TANGO)
   #TODO need be deleted, because 2.3 have no this
@@ -371,10 +374,10 @@ else()
   if(MODULE_R9M_FLEX_FW)
     add_definitions(-DMODULE_R9M_FLEX_FW)
   endif()
+endif()
 
-  if(PXX2)
-    add_definitions(-DPXX2)
-  endif()
+if(FRSKY_RELEASE)
+  add_definitions(-DFRSKY_RELEASE)
 endif()
 
 if(PCB STREQUAL TANGO)
@@ -386,8 +389,7 @@ if(PCB STREQUAL TANGO)
           switches.cpp
           mixer.cpp
           stamp.cpp
-          #opentx_timers.cpp
-          timers.cpp
+          opentx_timers.cpp
           trainer_input.cpp
           )
 else()
@@ -416,8 +418,6 @@ if(GUI)
   foreach(FILE ${GUI_SRC})
     set(SRC ${SRC} gui/${GUI_DIR}/${FILE})
   endforeach()
-  set(SRC ${SRC} gui/gui_common_arm.cpp
-          )
 endif()
 
 foreach(FILE ${TARGET_SRC})
@@ -490,7 +490,6 @@ use_cxx11()  # ensure gnu++11 in CXX_FLAGS with CMake < 3.1
 find_program(BASH bash HINTS "c:/cygwin/bin/" "c:/msys/bin/" DOC "bash shell for firmware size report (eg. c:/cygwin/bin/bash.exe on Windows).")
 
 if(NOT MSVC)
-  #set(OPT s)
   set(OPT s)
 
   if(ARCH STREQUAL ARM)
@@ -530,7 +529,7 @@ if(NOT MSVC)
       set(SRC ${SRC} bin_allocator.cpp)
     endif()
 
-    if(PCB STREQUAL XLITE OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X10 OR PCB STREQUAL X12S OR PCB STREQUAL TANGO)
+    if(PCB STREQUAL XLITE OR PCB STREQUAL XLITES OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X3 OR PCB STREQUAL X10 OR PCB STREQUAL X12S)
       add_subdirectory(targets/common/arm/stm32/bootloader)
       include_directories(${CMAKE_CURRENT_BINARY_DIR}/targets/common/arm/stm32/bootloader)
       set(FIRMWARE_DEPENDENCIES ${FIRMWARE_DEPENDENCIES} bootloader)
@@ -557,14 +556,6 @@ if(NOT MSVC)
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
-  if (CROSSFIRE_COMBINED STREQUAL ON)
-    add_custom_command(
-            TARGET firmware POST_BUILD
-            COMMAND srec_cat ${CMAKE_BINARY_DIR}/firmware.bin -Binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/crossfire.bin -Binary -offset 0x00060000 -o ${CMAKE_BINARY_DIR}/combine.bin -Binary
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
-  endif()
-	
     find_program(GAWK gawk HINTS "c:/cygwin/bin/" "c:/msys/bin/" DOC "gawk for firmware size report.")  # OS X might only have "awk"
     if (BASH AND GAWK)
       add_custom_target(firmware-size
@@ -652,6 +643,7 @@ if(NOT MSVC)
             DEPENDS firmware
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             )
+
     add_custom_target(flash-stlink
             COMMAND ST-LINK_CLI -c SWD -P firmware.bin 0x8000000 -Rst -Q
             DEPENDS firmware-size

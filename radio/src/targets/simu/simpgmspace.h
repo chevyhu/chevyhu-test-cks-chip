@@ -232,7 +232,7 @@ extern char * main_thread_error;
 
 #define OPENTX_START_DEFAULT_ARGS  simu_start_mode
 
-static inline void getADC() { }
+inline void getADC() { }
 
 #define SIMU_SLEEP(x) do { sleep(x/*ms*/); } while (0)
 #define SIMU_SLEEP_NORET(x) do { sleep(x/*ms*/); } while (0)

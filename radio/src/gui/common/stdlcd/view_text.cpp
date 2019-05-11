@@ -114,6 +114,9 @@ void readModelNotes()
   strcat_currentmodelname(&s_text_file[sizeof(MODELS_PATH)]);
 #endif
   clearKeyEvents();
+  strcpy(buf, TEXT_EXT);
+
+  waitKeysReleased();
   event_t event = EVT_ENTRY;
   while (event != EVT_KEY_BREAK(KEY_EXIT)) {
     lcdRefreshWait();

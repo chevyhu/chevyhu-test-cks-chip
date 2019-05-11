@@ -26,12 +26,12 @@
 #include <string>
 
 #if !defined (_MSC_VER) || defined (__GNUC__)
-#include <chrono>
-#include <sys/time.h>
+  #include <chrono>
+  #include <sys/time.h>
 #endif
 
 #if defined(SIMU_AUDIO)
-#include <SDL.h>
+  #include <SDL.h>
 #endif
 
 uint8_t MCUCSR, MCUSR, MCUCR;
@@ -67,6 +67,8 @@ Dacc dacc;
 Adc Adc0;
 #endif
 
+
+FATFS g_FATFS_Obj;
 
 void lcdInit()
 {
@@ -150,9 +152,8 @@ void simuInit()
   for (int i = 0; i < 2*NUM_TRIMS; i++)
     simuSetTrim(i, false);
 
-#if defined(ROTARY_ENCODERS) || defined(ROTARY_ENCODER_NAVIGATION)
-  for (uint8_t i=0; i < DIM(rotencValue); i++)
-    rotencValue[i] = 0;
+#if defined(ROTARY_ENCODER_NAVIGATION)
+  rotencValue = 0;
 #endif
 }
 
@@ -223,10 +224,10 @@ void simuSetKey(uint8_t key, bool state)
     KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_EXIT, KEYS_GPIO_PIN_EXIT)
     KEY_CASE(KEY_ENTER, KEYS_GPIO_REG_ENTER, KEYS_GPIO_PIN_ENTER)
     KEY_CASE(KEY_PAGE, KEYS_GPIO_REG_PAGE, KEYS_GPIO_PIN_PAGE)
-#if defined(KEYS_GPIO_REG_MINUS)
+  #if defined(KEYS_GPIO_REG_MINUS)
     KEY_CASE(KEY_MINUS, KEYS_GPIO_REG_MINUS, KEYS_GPIO_PIN_MINUS)
     KEY_CASE(KEY_PLUS, KEYS_GPIO_REG_PLUS, KEYS_GPIO_PIN_PLUS)
-#endif
+  #endif
 #else
     KEY_CASE(KEY_MENU, KEYS_GPIO_REG_MENU, KEYS_GPIO_PIN_MENU)
     KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_EXIT, KEYS_GPIO_PIN_EXIT)
@@ -234,9 +235,6 @@ void simuSetKey(uint8_t key, bool state)
     KEY_CASE(KEY_LEFT, KEYS_GPIO_REG_LEFT, KEYS_GPIO_PIN_LEFT)
     KEY_CASE(KEY_UP, KEYS_GPIO_REG_UP, KEYS_GPIO_PIN_UP)
     KEY_CASE(KEY_DOWN, KEYS_GPIO_REG_DOWN, KEYS_GPIO_PIN_DOWN)
-#endif
-#if defined(PCBSKY9X) && !defined(REVX) && !defined(AR9X) && defined(ROTARY_ENCODERS)
-    KEY_CASE(BTN_REa, PIOB->PIO_PDSR, 0x40)
 #endif
   }
 #if defined(PCBTANGO)
@@ -288,7 +286,11 @@ void simuSetSwitch(uint8_t swtch, int8_t state)
   #endif
   #if defined(SWITCHES_GPIO_REG_C_L)
     SWITCH_3_CASE(2,  SWITCHES_GPIO_REG_C_L, SWITCHES_GPIO_REG_C_H, SWITCHES_GPIO_PIN_C_L, SWITCHES_GPIO_PIN_C_H)
+  #endif
+  #if defined(SWITCHES_GPIO_REG_D_L)
     SWITCH_3_CASE(3,  SWITCHES_GPIO_REG_D_L, SWITCHES_GPIO_REG_D_H, SWITCHES_GPIO_PIN_D_L, SWITCHES_GPIO_PIN_D_H)
+  #elif defined(SWITCHES_GPIO_REG_D)
+    SWITCH_CASE  (3,  SWITCHES_GPIO_REG_D, SWITCHES_GPIO_PIN_D)
   #endif
   #if defined(PCBX7)
     SWITCH_CASE  (4,  SWITCHES_GPIO_REG_F, SWITCHES_GPIO_PIN_F)
@@ -355,7 +357,7 @@ void StartSimu(bool tests, const char * sdPath, const char * settingsPath)
   if (simu_running)
     return;
 
-  s_current_protocol[0] = 255;
+  moduleState[0].protocol = PROTOCOL_CHANNELS_UNINITIALIZED;
   menuLevel = 0;
 
   simu_start_mode = (tests ? 0 : 0x02 /* OPENTX_START_NO_CHECKS */);
@@ -413,12 +415,12 @@ void StopSimu()
 }
 
 struct SimulatorAudio {
-    int volumeGain;
-    int currentVolume;
-    uint16_t leftoverData[AUDIO_BUFFER_SIZE];
-    int leftoverLen;
-    bool threadRunning;
-    pthread_t threadPid;
+  int volumeGain;
+  int currentVolume;
+  uint16_t leftoverData[AUDIO_BUFFER_SIZE];
+  int leftoverLen;
+  bool threadRunning;
+  pthread_t threadPid;
 } simuAudio;
 
 bool simuIsRunning()
@@ -630,6 +632,12 @@ int lcdRestoreBackupBuffer()
   return 1;
 }
 
+uint32_t pwrCheck()
+{
+  // TODO: ability to simulate shutdown warning for a "soft" simulator restart
+  return simu_shutdown ? e_power_off : e_power_on;
+}
+
 void pwrOff()
 {
 }
@@ -646,18 +654,79 @@ uint32_t pwrPressed()
 #endif
 }
 
-
-uint32_t pwrCheck()
-{
-  return 0;
-}
-
 #if defined(STM32)
 void pwrInit() { }
 int usbPlugged() { return false; }
 int getSelectedUsbMode() { return USB_JOYSTICK_MODE; }
 void setSelectedUsbMode(int mode) {}
+void delay_ms(uint32_t ms) { }
+
+// GPIO fake functions
+void GPIO_PinAFConfig(GPIO_TypeDef* GPIOx, uint16_t GPIO_PinSource, uint8_t GPIO_AF) { }
+
+// PWR fake functions
+void PWR_BackupAccessCmd(FunctionalState NewState) { }
+void PWR_BackupRegulatorCmd(FunctionalState NewState) { }
+
+// USART fake functions
 void USART_DeInit(USART_TypeDef* ) { }
+void USART_Init(USART_TypeDef* USARTx, USART_InitTypeDef* USART_InitStruct) { }
+void USART_Cmd(USART_TypeDef* USARTx, FunctionalState NewState) { }
+void USART_ClearITPendingBit(USART_TypeDef*, unsigned short) { }
+void USART_SendData(USART_TypeDef* USARTx, uint16_t Data) { }
+uint16_t USART_ReceiveData(USART_TypeDef*) { return 0; }
+void USART_DMACmd(USART_TypeDef* USARTx, uint16_t USART_DMAReq, FunctionalState NewState) { }
+void USART_ITConfig(USART_TypeDef* USARTx, uint16_t USART_IT, FunctionalState NewState) { }
+FlagStatus USART_GetFlagStatus(USART_TypeDef* USARTx, uint16_t USART_FLAG) { return SET; }
+
+// TIM fake functions
+void TIM_DMAConfig(TIM_TypeDef* TIMx, uint16_t TIM_DMABase, uint16_t TIM_DMABurstLength) { }
+void TIM_DMACmd(TIM_TypeDef* TIMx, uint16_t TIM_DMASource, FunctionalState NewState) { }
+void TIM_CtrlPWMOutputs(TIM_TypeDef* TIMx, FunctionalState NewState) { }
+
+// I2C fake functions
+void I2C_DeInit(I2C_TypeDef*) { }
+void I2C_Init(I2C_TypeDef*, I2C_InitTypeDef*) { }
+void I2C_Cmd(I2C_TypeDef*, FunctionalState) { }
+void I2C_Send7bitAddress(I2C_TypeDef*, unsigned char, unsigned char) { }
+void I2C_SendData(I2C_TypeDef*, unsigned char) { }
+void I2C_GenerateSTART(I2C_TypeDef*, FunctionalState) { }
+void I2C_GenerateSTOP(I2C_TypeDef*, FunctionalState) { }
+void I2C_AcknowledgeConfig(I2C_TypeDef*, FunctionalState) { }
+uint8_t I2C_ReceiveData(I2C_TypeDef*) { return 0; }
+ErrorStatus I2C_CheckEvent(I2C_TypeDef*, unsigned int) { return (ErrorStatus) ERROR; }
+
+// I2S fake functions
+void I2S_Init(SPI_TypeDef* SPIx, I2S_InitTypeDef* I2S_InitStruct) { }
+void I2S_Cmd(SPI_TypeDef* SPIx, FunctionalState NewState) { }
+
+// SPI fake functions
+void SPI_I2S_DeInit(SPI_TypeDef* SPIx) { }
+void SPI_I2S_ITConfig(SPI_TypeDef* SPIx, uint8_t SPI_I2S_IT, FunctionalState NewState) { }
+
+// RCC fake functions
+void RCC_RTCCLKConfig(uint32_t RCC_RTCCLKSource) { }
+void RCC_APB1PeriphClockCmd(uint32_t RCC_APB1Periph, FunctionalState NewState) { }
+void RCC_RTCCLKCmd(FunctionalState NewState) { }
+void RCC_PLLI2SConfig(uint32_t PLLI2SN, uint32_t PLLI2SR) { }
+void RCC_PLLI2SCmd(FunctionalState NewState) { }
+void RCC_I2SCLKConfig(uint32_t RCC_I2SCLKSource) { }
+void RCC_LSEConfig(uint8_t RCC_LSE) { }
+void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks) { };
+FlagStatus RCC_GetFlagStatus(uint8_t RCC_FLAG) { return SET; }
+
+// EXTI fake functions
+void SYSCFG_EXTILineConfig(uint8_t EXTI_PortSourceGPIOx, uint8_t EXTI_PinSourcex) { }
+void EXTI_StructInit(EXTI_InitTypeDef* EXTI_InitStruct) { }
+ITStatus EXTI_GetITStatus(uint32_t EXTI_Line) { return RESET; }
+void EXTI_Init(EXTI_InitTypeDef* EXTI_InitStruct) { }
+void EXTI_ClearITPendingBit(uint32_t EXTI_Line) { }
+
+// RTC fake functions
+ErrorStatus RTC_Init(RTC_InitTypeDef* RTC_InitStruct) { return SUCCESS; }
+void RTC_TimeStructInit(RTC_TimeTypeDef* RTC_TimeStruct) { }
+void RTC_DateStructInit(RTC_DateTypeDef* RTC_DateStruct) { }
+ErrorStatus RTC_WaitForSynchro(void) { return SUCCESS; }
 ErrorStatus RTC_SetTime(uint32_t RTC_Format, RTC_TimeTypeDef* RTC_TimeStruct) { return SUCCESS; }
 ErrorStatus RTC_SetDate(uint32_t RTC_Format, RTC_DateTypeDef* RTC_DateStruct) { return SUCCESS; }
 void RTC_GetTime(uint32_t RTC_Format, RTC_TimeTypeDef * RTC_TimeStruct)
@@ -680,39 +749,7 @@ void RTC_GetDate(uint32_t RTC_Format, RTC_DateTypeDef * RTC_DateStruct)
   RTC_DateStruct->RTC_Date = timeinfo->tm_mday;
 }
 
-void RTC_TimeStructInit(RTC_TimeTypeDef* RTC_TimeStruct) { }
-void RTC_DateStructInit(RTC_DateTypeDef* RTC_DateStruct) { }
-void PWR_BackupAccessCmd(FunctionalState NewState) { }
-void PWR_BackupRegulatorCmd(FunctionalState NewState) { }
-void RCC_RTCCLKConfig(uint32_t RCC_RTCCLKSource) { }
-void RCC_APB1PeriphClockCmd(uint32_t RCC_APB1Periph, FunctionalState NewState) { }
-void RCC_RTCCLKCmd(FunctionalState NewState) { }
-ErrorStatus RTC_Init(RTC_InitTypeDef* RTC_InitStruct) { return SUCCESS; }
-void USART_SendData(USART_TypeDef* USARTx, uint16_t Data) { }
-FlagStatus USART_GetFlagStatus(USART_TypeDef* USARTx, uint16_t USART_FLAG) { return SET; }
-void GPIO_PinAFConfig(GPIO_TypeDef* GPIOx, uint16_t GPIO_PinSource, uint8_t GPIO_AF) { }
-void USART_Init(USART_TypeDef* USARTx, USART_InitTypeDef* USART_InitStruct) { }
-void USART_Cmd(USART_TypeDef* USARTx, FunctionalState NewState) { }
-void USART_ClearITPendingBit(USART_TypeDef*, unsigned short) { }
-uint16_t USART_ReceiveData(USART_TypeDef*) { return 0; }
-void USART_DMACmd(USART_TypeDef* USARTx, uint16_t USART_DMAReq, FunctionalState NewState) { }
-void USART_ITConfig(USART_TypeDef* USARTx, uint16_t USART_IT, FunctionalState NewState) { }
-// void TIM_TimeBaseInit(TIM_TypeDef* TIMx, TIM_TimeBaseInitTypeDef* TIM_TimeBaseInitStruct) { }
-// void TIM_OC1Init(TIM_TypeDef* TIMx, TIM_OCInitTypeDef* TIM_OCInitStruct) { }
-void TIM_DMAConfig(TIM_TypeDef* TIMx, uint16_t TIM_DMABase, uint16_t TIM_DMABurstLength) { }
-void TIM_DMACmd(TIM_TypeDef* TIMx, uint16_t TIM_DMASource, FunctionalState NewState) { }
-void TIM_CtrlPWMOutputs(TIM_TypeDef* TIMx, FunctionalState NewState) { }
-void RCC_PLLI2SConfig(uint32_t PLLI2SN, uint32_t PLLI2SR) { }
-void RCC_PLLI2SCmd(FunctionalState NewState) { }
-void RCC_I2SCLKConfig(uint32_t RCC_I2SCLKSource) { }
-void SPI_I2S_DeInit(SPI_TypeDef* SPIx) { }
-void I2S_Init(SPI_TypeDef* SPIx, I2S_InitTypeDef* I2S_InitStruct) { }
-void I2S_Cmd(SPI_TypeDef* SPIx, FunctionalState NewState) { }
-void SPI_I2S_ITConfig(SPI_TypeDef* SPIx, uint8_t SPI_I2S_IT, FunctionalState NewState) { }
-void RCC_LSEConfig(uint8_t RCC_LSE) { }
-void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks) { };
-FlagStatus RCC_GetFlagStatus(uint8_t RCC_FLAG) { return SET; }
-ErrorStatus RTC_WaitForSynchro(void) { return SUCCESS; }
+
 void unlockFlash() { }
 void lockFlash() { }
 void flashWrite(uint32_t *address, uint32_t *buffer) { simuSleep(100); }
@@ -721,6 +758,10 @@ uint32_t isBootloaderStart(const uint8_t * block) { return 1; }
 
 #if defined(PCBHORUS)
 void LCD_ControlLight(uint16_t dutyCycle) { }
+#endif
+
+#if defined(PCBXLITES)
+bool isJackPlugged() { return false; }
 #endif
 
 #if defined(CPUPIC)
