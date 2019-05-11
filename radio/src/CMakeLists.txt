@@ -374,15 +374,10 @@ else()
   if(MODULE_R9M_FLEX_FW)
     add_definitions(-DMODULE_R9M_FLEX_FW)
   endif()
+endif()
 
-<<<<<<< HEAD
-  if(PXX2)
-    add_definitions(-DPXX2)
-  endif()
-=======
 if(FRSKY_RELEASE)
   add_definitions(-DFRSKY_RELEASE)
->>>>>>> 8ccc354a88d96d5c6ea4175632b0f6db19368884
 endif()
 
 if(PCB STREQUAL TANGO)
@@ -423,11 +418,6 @@ if(GUI)
   foreach(FILE ${GUI_SRC})
     set(SRC ${SRC} gui/${GUI_DIR}/${FILE})
   endforeach()
-<<<<<<< HEAD
-  set(SRC ${SRC} gui/gui_common_arm.cpp
-          )
-=======
->>>>>>> 8ccc354a88d96d5c6ea4175632b0f6db19368884
 endif()
 
 foreach(FILE ${TARGET_SRC})
