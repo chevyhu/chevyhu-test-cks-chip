@@ -10,7 +10,7 @@ set(ARCH ARM)
 set(STM32USB_DIR ${THIRDPARTY_DIR}/STM32_USB-Host-Device_Lib_V2.2.0/Libraries)
 if (PCB STREQUAL TANGO)
     add_definitions(-DSTM32 -DLUA_INPUTS -DVARIO -DCROSSFIRE)
-else
+else()
     add_definitions(-DSTM32 -DLUA_INPUTS -DVARIO)
 endif()
 
@@ -107,18 +107,19 @@ foreach(FILE ${STM32USB_SRC})
     )
 endforeach()
 
-if (PCB STREQUAL TANGO)
-    set(SRC
-            ${SRC}
-            telemetry/crossfire.cpp
-            io/bootloader_flash.cpp
-            )
-else
-    set(SRC
-            ${SRC}
-            io/bootloader_flash.cpp
-            )
-endif
+if(PCB STREQUAL TANGO)
+  set(SRC
+   ${SRC}
+     telemetry/crossfire.cpp
+     io/bootloader_flash.cpp
+     )
+else()
+  set(SRC
+   ${SRC}
+     telemetry/crossfire.cpp
+     io/bootloader_flash.cpp
+     )
+endif()
 
 
 set(PULSES_SRC

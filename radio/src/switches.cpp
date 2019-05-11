@@ -150,8 +150,6 @@ void getSwitchesPosition(bool startup)
 #else
   CHECK_3POS(4, SW_SE);
 #endif
-
-#if !defined(PCBXLITE)
 #if defined(PCBXLITE) && !defined(PCBXLITES)
   // No SF
 #else

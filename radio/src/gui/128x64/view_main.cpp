@@ -355,7 +355,7 @@ void menuMainView(event_t event)
 #endif
 
     case EVT_KEY_MODEL_MENU:
-      //pushMenu(menuModelSelect);
+      pushMenu(menuModelSelect);
       killEvents(event);
       break;
 

@@ -21,6 +21,7 @@
 #ifndef _DATACONSTANTS_H_
 #define _DATACONSTANTS_H_
 
+
 #include "board.h"
 
 #define NUM_STICKS                     4
@@ -84,7 +85,6 @@
   #define MAX_INPUTS                   32
   #define MAX_TRAINER_CHANNELS         16
   #define MAX_TELEMETRY_SENSORS        32
-  #define MAX_TELEMETRY_SENSORS        40
 #elif defined(PCBSKY9X)
   #define MAX_MODELS                   60
   #define MAX_OUTPUT_CHANNELS          32 // number of real output channels CH1-CH32
@@ -258,7 +258,7 @@ enum BeeperMode {
   #define TRAINER_MODE_MAX()             HAS_WIRELESS_TRAINER_HARDWARE() ? TRAINER_MODE_MASTER_BATTERY_COMPARTMENT : TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE
 #endif
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
   #define IS_INTERNAL_MODULE_ENABLED() (g_model.moduleData[INTERNAL_MODULE].type != MODULE_TYPE_NONE)
 #elif defined(PCBSKY9X)
   #define IS_INTERNAL_MODULE_ENABLED() (false)
@@ -415,7 +415,6 @@ enum SwitchSources {
 
   SWSRC_FIRST_SWITCH,
 
-#if defined(PCBHORUS) || defined(PCBTARANIS)
 #if defined(PCBTANGO)
   SWSRC_SA0 = SWSRC_FIRST_SWITCH,
   SWSRC_SA1,
@@ -843,23 +842,17 @@ enum CountDownModes {
 };
 
 enum ResetFunctionParam {
-  FUNC_RESET_TIMER1,
-  FUNC_RESET_TIMER2,
-  FUNC_RESET_TIMER3,
-  FUNC_RESET_FLIGHT,
+    FUNC_RESET_TIMER1,
+    FUNC_RESET_TIMER2,
+    FUNC_RESET_TIMER3,
+    FUNC_RESET_FLIGHT,
 #if defined(TELEMETRY_FRSKY)
-  FUNC_RESET_TELEMETRY,
+    FUNC_RESET_TELEMETRY,
 #endif
-#if ROTARY_ENCODERS > 0
-  FUNC_RESET_ROTENC1,
-#endif
-#if ROTARY_ENCODERS > 1
-  FUNC_RESET_ROTENC2,
-#endif
-  FUNC_RESET_PARAM_FIRST_TELEM,
-  FUNC_RESET_PARAM_LAST_TELEM = FUNC_RESET_PARAM_FIRST_TELEM + MAX_TELEMETRY_SENSORS,
-  FUNC_RESET_PARAMS_COUNT,
-  FUNC_RESET_PARAM_LAST = FUNC_RESET_PARAMS_COUNT-1,
+    FUNC_RESET_PARAM_FIRST_TELEM,
+    FUNC_RESET_PARAM_LAST_TELEM = FUNC_RESET_PARAM_FIRST_TELEM + MAX_TELEMETRY_SENSORS,
+    FUNC_RESET_PARAMS_COUNT,
+    FUNC_RESET_PARAM_LAST = FUNC_RESET_PARAMS_COUNT-1,
 };
 
 enum AdjustGvarFunctionParam {
@@ -874,5 +867,10 @@ enum BluetoothModes {
   BLUETOOTH_TELEMETRY,
   BLUETOOTH_TRAINER,
 };
+
+// PXX2 constants
+#define PXX2_LEN_REGISTRATION_ID            8
+#define PXX2_LEN_RX_NAME                    8
+#define PXX2_MAX_RECEIVERS_PER_MODULE       3
 
 #endif // _DATACONSTANTS_H_

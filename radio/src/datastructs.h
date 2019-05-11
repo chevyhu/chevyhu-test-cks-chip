@@ -703,7 +703,6 @@ PACK(struct TrainerData {
   #define BLUETOOTH_FIELDS
   #endif
   #define EXTRA_GENERAL_FIELDS \
-      EXTRA_GENERAL_FIELDS_ARM \
       uint8_t  serial2Mode:4; \
       uint8_t  slidersConfig:4; \
       uint8_t  potsConfig; /* two bits per pot */\
@@ -907,21 +906,21 @@ static inline void check_struct()
   CHKTYPE(CurveData, 4);
 #else
   // Common for all variants
-  CHKSIZE(LimitData, 5);
-  CHKSIZE(SwashRingData, 3);
-  CHKSIZE(FrSkyBarData, 3);
+  CHKSIZE(LimitData, 11);
+  CHKSIZE(SwashRingData, 8);
+  CHKSIZE(FrSkyBarData, 5);
   CHKSIZE(FrSkyLineData, 2);
-  CHKSIZE(ModelHeader, 11);
-  CHKTYPE(CurveData, 1);
+  CHKSIZE(ModelHeader, 22);
+  CHKTYPE(CurveData, 4);
 
-  CHKSIZE(MixData, 9);
-  CHKSIZE(ExpoData, 4);
+  CHKSIZE(MixData, 20);
+  CHKSIZE(ExpoData, 17);
 
-  CHKSIZE(CustomFunctionData, 3);
-  CHKSIZE(TimerData, 3);
+  CHKSIZE(CustomFunctionData, 9);
+  CHKSIZE(TimerData, 11);
 
-  CHKSIZE(FlightModeData, 30);
-  CHKSIZE(RadioData, 85);
+  CHKSIZE(FlightModeData, 36);
+  CHKSIZE(RadioData, 731);
 
 #endif /* board specific ifdefs*/
 
@@ -936,8 +935,8 @@ static inline void check_struct()
   CHKSIZE(RadioData, 860);
   CHKSIZE(ModelData, 6157);
 #elif defined(PCBXLITE)
-  CHKSIZE(RadioData, 852);
-  CHKSIZE(ModelData, 6157);
+  CHKSIZE(RadioData, 869);
+  CHKSIZE(ModelData, 6045);
 #elif defined(PCBX7)
   CHKSIZE(RadioData, 858);
   CHKSIZE(ModelData, 6157);

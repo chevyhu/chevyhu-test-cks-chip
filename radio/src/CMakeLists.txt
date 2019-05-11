@@ -389,7 +389,7 @@ if(PCB STREQUAL TANGO)
           switches.cpp
           mixer.cpp
           stamp.cpp
-          opentx_timers.cpp
+          #opentx_timers.cpp
           trainer_input.cpp
           )
 else()
