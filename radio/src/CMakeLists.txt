@@ -3,10 +3,11 @@ include(Bitmaps)
 set(PROJECT_TYPE TBS_TANGO)
 
 if (PROJECT_TYPE STREQUAL TBS_TANGO)
-  set(PCB_TYPES X7 XLITE X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X TANGO)
+  set(PCB_TYPES X3 X7 XLITE XLITES X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X TANGO)
 else()
-  set(PCB_TYPES X7 XLITE X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X)
+  set(PCB_TYPES X3 X7 XLITE XLITES X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X)
 endif()
+
 set(GUI_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL)
 set(TTS_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL RU)
 
@@ -66,7 +67,7 @@ option(FRSKY_STICKS "Reverse sticks for FrSky sticks" OFF)
 option(NANO "Use nano newlib and binalloc")
 option(NIGHTLY_BUILD_WARNING "Warn this is a nightly build" OFF)
 option(MODULE_R9M_FLEX_FW "Add R9M options for non certified firmwwares" OFF)
-option(PXX2 "Enable PXX v2 support" OFF)
+option(FRSKY_RELEASE "Used to build FrSky released firmware" OFF)
 
 # since we reset all default CMAKE compiler flags for firmware builds, provide an alternate way for user to specify additional flags.
 set(FIRMWARE_C_FLAGS "" CACHE STRING "Additional flags for firmware target c compiler (note: all CMAKE_C_FLAGS[_*] are ignored for firmware/bootloader).")
@@ -110,7 +111,7 @@ set(FATFS_SRC
 
 if(PCB STREQUAL X12S OR PCB STREQUAL X10)
   include(targets/horus/CMakeLists.txt)
-elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X9D OR PCB STREQUAL X7 OR PCB STREQUAL XLITE)
+elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X9D OR PCB STREQUAL X7 OR PCB STREQUAL X3 OR PCB STREQUAL XLITE OR PCB STREQUAL XLITES)
   include(targets/taranis/CMakeLists.txt)
 elseif(PCB STREQUAL SKY9X OR PCB STREQUAL 9XRPRO OR PCB STREQUAL AR9X)
   include(targets/sky9x/CMakeLists.txt)
@@ -176,10 +177,7 @@ else()
   add_definitions(-DEEPROM -DEEPROM_RAW)
 endif()
 
-if(ARCH STREQUAL ARM AND NOT PCB STREQUAL X12S AND NOT PCB STREQUAL X10 AND NOT PCB STREQUAL XLITE)
-  add_definitions(-DEEPROM_CONVERSIONS)
-  set(SRC ${SRC} storage/eeprom_conversions.cpp)
-endif()
+include(storage/conversions/CMakeLists.txt)
 
 add_definitions(-DFLAVOUR="${FLAVOUR}")
 
@@ -335,9 +333,7 @@ if(DANGEROUS_MODULE_FUNCTIONS)
   add_definitions(-DDANGEROUS_MODULE_FUNCTIONS)
 endif()
 
-if(SPLASH STREQUAL FRSKY)
-  add_definitions(-DSPLASH -DSPLASH_FRSKY)
-elseif(NOT SPLASH STREQUAL OFF)
+if(NOT SPLASH STREQUAL OFF)
   add_definitions(-DSPLASH)
 endif()
 
@@ -367,7 +363,7 @@ endif()
 
 if(NIGHTLY_BUILD_WARNING)
   add_definitions(-DNIGHTLY_BUILD_WARNING)
-endif(NIGHTLY_BUILD_WARNING)
+endif()
 
 if(PCB STREQUAL TANGO)
   #TODO need be deleted, because 2.3 have no this
@@ -379,9 +375,14 @@ else()
     add_definitions(-DMODULE_R9M_FLEX_FW)
   endif()
 
+<<<<<<< HEAD
   if(PXX2)
     add_definitions(-DPXX2)
   endif()
+=======
+if(FRSKY_RELEASE)
+  add_definitions(-DFRSKY_RELEASE)
+>>>>>>> 8ccc354a88d96d5c6ea4175632b0f6db19368884
 endif()
 
 if(PCB STREQUAL TANGO)
@@ -422,8 +423,11 @@ if(GUI)
   foreach(FILE ${GUI_SRC})
     set(SRC ${SRC} gui/${GUI_DIR}/${FILE})
   endforeach()
+<<<<<<< HEAD
   set(SRC ${SRC} gui/gui_common_arm.cpp
           )
+=======
+>>>>>>> 8ccc354a88d96d5c6ea4175632b0f6db19368884
 endif()
 
 foreach(FILE ${TARGET_SRC})
@@ -535,7 +539,7 @@ if(NOT MSVC)
       set(SRC ${SRC} bin_allocator.cpp)
     endif()
 
-    if(PCB STREQUAL XLITE OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X10 OR PCB STREQUAL X12S)
+    if(PCB STREQUAL XLITE OR PCB STREQUAL XLITES OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X3 OR PCB STREQUAL X10 OR PCB STREQUAL X12S)
       add_subdirectory(targets/common/arm/stm32/bootloader)
       include_directories(${CMAKE_CURRENT_BINARY_DIR}/targets/common/arm/stm32/bootloader)
       set(FIRMWARE_DEPENDENCIES ${FIRMWARE_DEPENDENCIES} bootloader)
