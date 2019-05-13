@@ -29,6 +29,15 @@
 #include "modules.h"
 #include "ff.h"
 
+enum ModuleFlag
+{
+    MODULE_NORMAL_MODE,
+    MODULE_RANGECHECK,
+    MODULE_BIND,
+    // MODULE_OFF, // will need an EEPROM conversion
+};
+extern uint8_t moduleFlag[NUM_MODULES];
+
 #if NUM_MODULES > 1
   #define IS_RANGECHECK_ENABLE()             (moduleState[0].mode == MODULE_MODE_RANGECHECK || moduleState[1].mode == MODULE_MODE_RANGECHECK)
 #else

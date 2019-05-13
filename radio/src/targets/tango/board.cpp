@@ -21,6 +21,8 @@
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
 
+HardwareOptions hardwareOptions;
+
 RTOS_TASK_HANDLE crossfireTaskId;
 RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
 
@@ -365,7 +367,7 @@ uint8_t currentTrainerMode = 0xff;
 
 void checkTrainerSettings()
 {
-  uint8_t requiredTrainerMode = g_model.trainerMode;
+  uint8_t requiredTrainerMode = g_model.trainerData.mode;
   if (requiredTrainerMode != currentTrainerMode) {
     switch (currentTrainerMode) {
       case TRAINER_MODE_MASTER_TRAINER_JACK:

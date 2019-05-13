@@ -169,6 +169,17 @@ enum CurveType {
 
 #define XPOTS_MULTIPOS_COUNT           6
 
+#if defined(PCBSKY9X) && defined(REVX)
+#define MAX_ROTARY_ENCODERS          1
+  #define NUM_ROTARY_ENCODERS          0
+#elif defined(PCBSKY9X)
+  #define MAX_ROTARY_ENCODERS          1
+  #define NUM_ROTARY_ENCODERS          1
+#else
+  #define MAX_ROTARY_ENCODERS          0
+  #define NUM_ROTARY_ENCODERS          0
+#endif
+
 #if defined(COLORLCD)
 enum MainViews {
   VIEW_BLANK,
@@ -688,6 +699,14 @@ enum MixSources {
   MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")
   MIXSRC_SC,                        LUA_EXPORT("sc", "Switch C")
   MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
+#elif defined(PCBTANGO)
+    MIXSRC_SA = MIXSRC_FIRST_SWITCH,  LUA_EXPORT("sa", "Switch A")
+    MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")
+    MIXSRC_SC,                        LUA_EXPORT("sc", "Switch C")
+    MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
+    MIXSRC_SE,                        LUA_EXPORT("se", "Switch E")
+    MIXSRC_SF,                        LUA_EXPORT("sf", "Switch F")
+    MIXSRC_LAST_SWITCH = MIXSRC_SF,
 #if defined(PCBHORUS) || defined(PCBX9) || defined(PCBXLITES)
   MIXSRC_SE,                        LUA_EXPORT("se", "Switch E")
 #endif

@@ -868,6 +868,12 @@
   #define TRAINER_DMA_STREAM            DMA1_Stream2
   #define TRAINER_DMA_IRQn              DMA1_Stream2_IRQn
   #define TRAINER_DMA_IRQHandler        DMA1_Stream2_IRQHandler
+  #define TRAINER_OUT_COUNTER_REGISTER  TRAINER_TIMER->CCR1
+  #define TRAINER_IN_COUNTER_REGISTER   TRAINER_TIMER->CCR2
+  #define TRAINER_SETUP_REGISTER        TRAINER_TIMER->CCR3
+  #define TRAINER_OUT_CCER              TIM_CCER_CC1E
+  #define TRAINER_CCER_POLARYTY         TIM_CCER_CC1P
+  #define TRAINER_IN_CCER               TIM_CCER_CC2E
   #define TRAINER_DMA_FLAG_TC           DMA_IT_TCIF2
   #define TRAINER_TIMER_IRQn            TIM3_IRQn
   #define TRAINER_TIMER_IRQHandler      TIM3_IRQHandler
@@ -1355,6 +1361,7 @@
 
 // Bluetooth
 #if defined(PCBTANGO)
+  #define BT_USART_GPIO                GPIOG
   #define BT_USART                     USART6
   #define BT_GPIO_AF                   GPIO_AF_USART6
   #define BT_USART_IRQn                USART6_IRQn

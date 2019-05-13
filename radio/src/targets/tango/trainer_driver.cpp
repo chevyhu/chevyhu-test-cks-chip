@@ -98,16 +98,23 @@ void stop_trainer_capture()
 
 void trainerSendNextFrame()
 {
-  TRAINER_TIMER->CCR4 = GET_PPM_DELAY(TRAINER_MODULE)*2;
-  TRAINER_TIMER->CCER = TIM_CCER_CC4E | (GET_PPM_POLARITY(TRAINER_MODULE) ? 0 : TIM_CCER_CC4P);
-  TRAINER_TIMER->CCR1 = *(trainerPulsesData.ppm.ptr - 1) - 4000; // 2mS in advance
+  TRAINER_OUT_COUNTER_REGISTER = GET_TRAINER_PPM_DELAY() * 2;
+  TRAINER_TIMER->CCER = TRAINER_OUT_CCER | (GET_TRAINER_PPM_POLARITY() ? 0 : TRAINER_CCER_POLARYTY);
+  TRAINER_SETUP_REGISTER = *(trainerPulsesData.ppm.ptr - 1) - 4000; // 2mS in advance
 
+#if defined(TRAINER_DMA_STREAM)
   TRAINER_DMA_STREAM->CR &= ~DMA_SxCR_EN; // Disable DMA
   TRAINER_DMA_STREAM->CR |= TRAINER_DMA_CHANNEL | DMA_SxCR_DIR_0 | DMA_SxCR_MINC | DMA_SxCR_PSIZE_0 | DMA_SxCR_MSIZE_0 | DMA_SxCR_PL_0 | DMA_SxCR_PL_1;
   TRAINER_DMA_STREAM->PAR = CONVERT_PTR_UINT(&TRAINER_TIMER->ARR);
   TRAINER_DMA_STREAM->M0AR = CONVERT_PTR_UINT(trainerPulsesData.ppm.pulses);
   TRAINER_DMA_STREAM->NDTR = trainerPulsesData.ppm.ptr - trainerPulsesData.ppm.pulses;
   TRAINER_DMA_STREAM->CR |= DMA_SxCR_EN | DMA_SxCR_TCIE; // Enable DMA
+#else
+  trainerPulsesData.ppm.ptr = trainerPulsesData.ppm.pulses;
+  TRAINER_TIMER->DIER |= TIM_DIER_UDE;
+  TRAINER_TIMER->SR &= ~TIM_SR_UIF; // Clear this flag
+  TRAINER_TIMER->DIER |= TIM_DIER_UIE; // Enable this interrupt
+#endif
 }
 
 extern "C" void TRAINER_DMA_IRQHandler()

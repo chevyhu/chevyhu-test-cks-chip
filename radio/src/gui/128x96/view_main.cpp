@@ -271,7 +271,7 @@ void displayBattVoltage()
 // #define EVT_KEY_TELEMETRY              EVT_KEY_LONG(KEY_DOWN)
 // #define EVT_KEY_STATISTICS             EVT_KEY_LONG(KEY_UP)
 
-#if defined(NAVIGATION_MENUS)
+
 void onMainViewMenu(const char *result)
 {
   if (result == STR_MODEL_SELECT) {
@@ -315,7 +315,6 @@ void onMainViewMenu(const char *result)
     chainMenu(menuAboutView);
   }
 }
-#endif
 
 
 void menuMainView(event_t event)
@@ -608,9 +607,9 @@ void menuMainView(event_t event)
 #endif
 
 #if defined(DSM2)
-  if (moduleFlag[0] == MODULE_BIND) {
+  if (moduleState[0].mode == MODULE_MODE_BIND) {
     // Issue 98
-    lcdDrawText(15*FW, 0, PSTR("BIND"), 0);
+    lcdDrawText(15*FW, 0, "BIND", 0);
   }
 #endif
 }

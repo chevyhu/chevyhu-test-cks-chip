@@ -83,7 +83,7 @@ inline bool isBadAntennaDetected()
 void telemetryWakeup()
 {
 #if defined(PCBTANGO)
-  uint8_t requiredTelemetryProtocol = PROTOCOL_PULSES_CROSSFIRE;
+  uint8_t requiredTelemetryProtocol = PROTOCOL_TELEMETRY_CROSSFIRE;
 #else
   uint8_t requiredTelemetryProtocol = modelTelemetryProtocol();
 

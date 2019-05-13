@@ -249,3 +249,4 @@ void drawProgressScreen(const char * title, const char * message, int num, int d
   }
   lcdRefresh();
 }
+

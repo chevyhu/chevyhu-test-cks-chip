@@ -113,8 +113,6 @@ void readModelNotes()
 #else
   strcat_currentmodelname(&s_text_file[sizeof(MODELS_PATH)]);
 #endif
-  waitKeysReleased();
-  strcpy(buf, TEXT_EXT);
 
   waitKeysReleased();
   event_t event = EVT_ENTRY;

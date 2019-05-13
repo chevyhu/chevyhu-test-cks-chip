@@ -715,12 +715,14 @@ void RCC_LSEConfig(uint8_t RCC_LSE) { }
 void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks) { };
 FlagStatus RCC_GetFlagStatus(uint8_t RCC_FLAG) { return SET; }
 
+#if 0  //temporary comment here for compilation
 // EXTI fake functions
 void SYSCFG_EXTILineConfig(uint8_t EXTI_PortSourceGPIOx, uint8_t EXTI_PinSourcex) { }
 void EXTI_StructInit(EXTI_InitTypeDef* EXTI_InitStruct) { }
 ITStatus EXTI_GetITStatus(uint32_t EXTI_Line) { return RESET; }
 void EXTI_Init(EXTI_InitTypeDef* EXTI_InitStruct) { }
 void EXTI_ClearITPendingBit(uint32_t EXTI_Line) { }
+#endif
 
 // RTC fake functions
 ErrorStatus RTC_Init(RTC_InitTypeDef* RTC_InitStruct) { return SUCCESS; }

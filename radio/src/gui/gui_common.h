@@ -25,11 +25,11 @@
 #include "keys.h"
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  #define CASE_EVT_ROTARY_LEFT         case EVT_ROTARY_LEFT:
+#define CASE_EVT_ROTARY_LEFT         case EVT_ROTARY_LEFT:
   #define CASE_EVT_ROTARY_RIGHT        case EVT_ROTARY_RIGHT:
 #else
-  #define CASE_EVT_ROTARY_LEFT
-  #define CASE_EVT_ROTARY_RIGHT
+#define CASE_EVT_ROTARY_LEFT
+#define CASE_EVT_ROTARY_RIGHT
 #endif
 
 typedef bool (*IsValueAvailable)(int);

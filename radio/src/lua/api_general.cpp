@@ -41,6 +41,8 @@
   #include "lua/lua_exports_xlite.inc"
 #elif defined(PCBTARANIS)
   #include "lua/lua_exports_x9d.inc"
+#elif defined(PCBTANGO)
+  #include "lua/lua_exports_tango.inc"
 #endif
 
 #if defined(SIMU)
@@ -1444,13 +1446,17 @@ const luaR_value_entry opentxConstants[] = {
   { "MIXSRC_SB", MIXSRC_SB },
   { "MIXSRC_SC", MIXSRC_SC },
   { "MIXSRC_SD", MIXSRC_SD },
-#if !defined(PCBX7) && !defined(PCBXLITE) && !defined(PCBX3)
+#if !defined(PCBX7) && !defined(PCBXLITE) && !defined(PCBX3) && !defined(PCBTANGO)
   { "MIXSRC_SE", MIXSRC_SE },
   { "MIXSRC_SG", MIXSRC_SG },
 #endif
-#if !defined(PCBXLITE) && !defined(PCBX3)
+#if !defined(PCBXLITE) && !defined(PCBX3) && !defined(PCBTANGO)
   { "MIXSRC_SF", MIXSRC_SF },
   { "MIXSRC_SH", MIXSRC_SH },
+#endif
+#if defined(PCBTANGO)
+  { "MIXSRC_SE", MIXSRC_SE },
+  { "MIXSRC_SF", MIXSRC_SF },
 #endif
   { "MIXSRC_CH1", MIXSRC_CH1 },
   { "SWSRC_LAST", SWSRC_LAST_LOGICAL_SWITCH },

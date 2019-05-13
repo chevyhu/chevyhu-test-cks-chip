@@ -1994,7 +1994,8 @@ int main()
 
 #if !defined(EEPROM)
   if (!SD_CARD_PRESENT() && !UNEXPECTED_SHUTDOWN()) {
-    runFatalErrorScreen(STR_NO_SDCARD);
+    /* This function just support the COLOR lcds, we comment it temporary, 2019.05.13 by Chevy */
+    //runFatalErrorScreen(STR_NO_SDCARD);
   }
 #endif
 

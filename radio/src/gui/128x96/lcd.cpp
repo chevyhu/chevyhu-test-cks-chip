@@ -244,7 +244,7 @@ uint8_t getTextWidth(const char * s, uint8_t len, LcdFlags flags)
 {
   uint8_t width = 0;
   for (int i=0; len==0 || i<len; ++i) {
-    unsigned char c = (flags & ZCHAR) ? idx2char(*s) : *s;
+    unsigned char c = (flags & ZCHAR) ? zchar2char(*s) : *s;
     if (!c) {
       break;
     }
@@ -258,24 +258,34 @@ uint8_t getTextWidth(const char * s, uint8_t len, LcdFlags flags)
 void lcdDrawSizedText(coord_t x, coord_t y, const char * s, uint8_t len, LcdFlags flags)
 {
   const coord_t orig_x = x;
+
   const uint8_t orig_len = len;
   uint32_t fontsize = FONTSIZE(flags);
-  bool setx = false;
-  uint8_t width = 0;
 
 #if !defined(BOOT)
+  uint8_t width = 0;
   if (flags & RIGHT) {
     width = getTextWidth(s, len, flags);
     x -= width;
   }
 #endif
 
+  bool setx = false;
   while (len--) {
-#if defined(BOOT)
-    unsigned char c = *s;
-#else
-    unsigned char c = (flags & ZCHAR) ? idx2char(*s) : *s;
+    unsigned char c;
+    switch (flags & (BSS+ZCHAR)) {
+      case BSS:
+        c = *s;
+        break;
+#if !defined(BOOT)
+      case ZCHAR:
+        c = zchar2char(*s);
+        break;
 #endif
+      default:
+        c = *s;
+        break;
+    }
 
     if (setx) {
       x = c;
@@ -285,20 +295,8 @@ void lcdDrawSizedText(coord_t x, coord_t y, const char * s, uint8_t len, LcdFlag
       break;
     }
     else if (c >= 0x20) {
-      if ( ( c == 46) && ((FONTSIZE(flags) == TINSIZE))) { // '.' handling
-        if (((flags & BLINK) && BLINK_ON_PHASE) || ((!(flags & BLINK) && (flags & INVERS)))) {
-          lcdDrawSolidVerticalLine(x, y-1, 5);
-          lcdDrawPoint(x, y + 5);
-        }
-        else {
-          lcdDrawPoint(x, y + 5 -1 , flags);
-        }
-        x+=2;
-      }
-      else {
-        lcdDrawChar(x, y, c, flags);
-        x = lcdNextPos;
-      }
+      lcdDrawChar(x, y, c, flags);
+      x = lcdNextPos;
     }
     else if (c == 0x1F) {  //X-coord prefix
       setx = true;
@@ -324,22 +322,22 @@ void lcdDrawSizedText(coord_t x, coord_t y, const char * s, uint8_t len, LcdFlag
     }
     s++;
   }
-
   lcdLastRightPos = x;
   lcdNextPos = x;
+#if !defined(BOOT)
   if (fontsize == MIDSIZE) {
     lcdLastRightPos += 1;
   }
-
   if (flags & RIGHT) {
     lcdLastRightPos -= width;
     lcdNextPos -= width;
     lcdLastLeftPos = lcdLastRightPos;
-    lcdLastRightPos = orig_x;
+    lcdLastRightPos =  orig_x;
   }
   else {
     lcdLastLeftPos = orig_x;
   }
+#endif
 }
 
 void lcdDrawSizedText(coord_t x, coord_t y, const pm_char * s, uint8_t len)
@@ -351,6 +349,13 @@ void lcdDrawText(coord_t x, coord_t y, const pm_char * s, LcdFlags flags)
 {
   lcdDrawSizedText(x, y, s, 255, flags);
 }
+
+void lcdDrawCenteredText(coord_t y, const char * s, LcdFlags flags)
+{
+  coord_t x = (LCD_W - getTextWidth(s, flags)) / 2;
+  lcdDrawText(x, y, s, flags);
+}
+
 
 void lcdDrawText(coord_t x, coord_t y, const pm_char * s)
 {
@@ -379,12 +384,29 @@ void lcdDrawHexNumber(coord_t x, coord_t y, uint32_t val, LcdFlags flags)
   }
 }
 
-void lcdDrawNumber(coord_t x, coord_t y, int32_t val, LcdFlags flags)
+void lcdDrawHexChar(coord_t x, coord_t y, uint8_t val, LcdFlags flags)
+{
+  x += FWNUM*2;
+  for (int i=0; i<2; i++) {
+    x -= FWNUM;
+    char c = val & 0xf;
+    c = c>9 ? c+'A'-10 : c+'0';
+    lcdDrawChar(x, y, c, flags|(c>='A' ? CONDENSED : 0));
+    val >>= 4;
+  }
+}
+
+void lcdDraw8bitsNumber(coord_t x, coord_t y, int8_t val)
+{
+  lcdDrawNumber(x, y, val);
+}
+
+void lcdDrawNumber(coord_t x, coord_t y, lcdint_t val, LcdFlags flags)
 {
   lcdDrawNumber(x, y, val, flags, 0);
 }
 
-void lcdDrawNumber(coord_t x, coord_t y, int32_t val, LcdFlags flags, uint8_t len)
+void lcdDrawNumber(coord_t x, coord_t y, lcdint_t val, LcdFlags flags, uint8_t len)
 {
   char str[16+1];
   char *s = str+16;
@@ -570,6 +592,24 @@ void lcdDrawVerticalLine(coord_t x, scoord_t y, scoord_t h, uint8_t pat, LcdFlag
       pat = pat >> 1;
     }
     y++;
+  }
+}
+
+void drawReceiverName(coord_t x, coord_t y, uint8_t moduleIdx, uint8_t receiverIdx, LcdFlags flags)
+{
+  if (isModulePXX2(moduleIdx)) {
+    if (g_model.moduleData[moduleIdx].pxx2.receiverName[receiverIdx][0] != '\0')
+      lcdDrawSizedText(x, y, g_model.moduleData[moduleIdx].pxx2.receiverName[receiverIdx], effectiveLen(g_model.moduleData[moduleIdx].pxx2.receiverName[receiverIdx], PXX2_LEN_RX_NAME), flags);
+    else
+      lcdDrawText(x, y, "---", flags);
+  }
+#if defined(HARDWARE_INTERNAL_MODULE)
+    else if (moduleIdx == INTERNAL_MODULE) {
+    lcdDrawText(x, y, "Internal", flags);
+  }
+#endif
+  else {
+    lcdDrawText(x, y, "External", flags);
   }
 }
 

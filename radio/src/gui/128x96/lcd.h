@@ -134,6 +134,7 @@ extern coord_t lcdNextPos;
 
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c);
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c, LcdFlags flags);
+void lcdDrawCenteredText(coord_t y, const char * s, LcdFlags flags = 0);
 void lcdDrawText(coord_t x, coord_t y, const char * s, LcdFlags flags);
 void lcdDrawTextAtIndex(coord_t x, coord_t y, const char * s, uint8_t idx, LcdFlags flags);
 void lcdDrawSizedText(coord_t x, coord_t y, const char * s, unsigned char len, LcdFlags flags);
@@ -143,7 +144,8 @@ void lcdDrawTextAlignedLeft(coord_t y, const char * s);
 
 #define lcdDrawTextAlignedCenter(y, s) lcdDrawText((LCD_W-sizeof(TR_##s)*FW+FW+1)/2, y, STR_##s)
 
-  void lcdDrawHexNumber(coord_t x, coord_t y, uint32_t val, LcdFlags mode=0);
+void lcdDrawHexNumber(coord_t x, coord_t y, uint32_t val, LcdFlags mode=0);
+void lcdDrawHexChar(coord_t x, coord_t y, uint8_t val, LcdFlags flags=0);
 
 void lcdDrawNumber(coord_t x, coord_t y, lcdint_t val, LcdFlags mode, uint8_t len);
 void lcdDrawNumber(coord_t x, coord_t y, lcdint_t val, LcdFlags mode=0);
@@ -177,6 +179,7 @@ void putsVBat(coord_t x, coord_t y, LcdFlags att);
 
 void drawRtcTime(coord_t x, coord_t y, LcdFlags att);
 void drawTimer(coord_t x, coord_t y, putstime_t tme, LcdFlags att, LcdFlags att2);
+void drawReceiverName(coord_t x, coord_t y, uint8_t moduleIdx, uint8_t receiverIdx, LcdFlags flags=0);
 inline void drawTimer(coord_t x, coord_t y, putstime_t tme, LcdFlags att)
 {
   drawTimer(x, y, tme, att, att);

@@ -536,7 +536,8 @@ void perMain()
 #if !defined(EEPROM)
   // In case the SD card is removed during the session
   if (!SD_CARD_PRESENT() && !unexpectedShutdown) {
-    drawFatalErrorScreen(STR_NO_SDCARD);
+    /* This function just support the COLOR lcds, we comment it temporary, 2019.05.13 by Chevy */
+    //drawFatalErrorScreen(STR_NO_SDCARD);
     return;
   }
 #endif

@@ -57,13 +57,23 @@ void chainMenu(MenuHandlerFunc newMenu);
 void pushMenu(MenuHandlerFunc newMenu);
 void popMenu();
 
+
+inline bool isRadioMenuDisplayed()
+{
+  return menuVerticalPositions[0] == 1;
+}
+
+inline bool isModelMenuDisplayed()
+{
+  return menuVerticalPositions[0] == 0;
+}
+
 inline MenuHandlerFunc lastPopMenu()
 {
   return menuHandlers[menuLevel+1];
 }
 
 void onMainViewMenu(const char * result);
-
 void menuFirstCalib(event_t event);
 void menuMainView(event_t event);
 void menuViewTelemetryFrsky(event_t event);
@@ -141,6 +151,7 @@ void menuModelLogicalSwitches(event_t event);
 void menuModelSpecialFunctions(event_t event);
 void menuModelCustomScripts(event_t event);
 void menuModelTelemetryFrsky(event_t event);
+void menuModelSensor(event_t event);
 void menuModelDisplay(event_t event);
 void menuModelTemplates(event_t event);
 void menuModelGVarOne(event_t event);

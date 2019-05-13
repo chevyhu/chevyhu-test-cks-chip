@@ -164,11 +164,7 @@ endforeach()
 set(SRC ${SRC} debug.cpp)
 
 if(${EEPROM} STREQUAL SDCARD)
-  if(PCB STREQUAL TANGO)
-    set(SRC ${SRC} storage/storage_common.cpp storage/sdcard_raw.cpp)
-  else()
-    set(SRC ${SRC} storage/storage_common.cpp storage/sdcard_raw.cpp storage/modelslist.cpp)
-  endif()
+  set(SRC ${SRC} storage/storage_common.cpp storage/sdcard_raw.cpp storage/modelslist.cpp)
 elseif(${EEPROM} STREQUAL EEPROM_RLC)
   set(SRC ${SRC} storage/storage_common.cpp storage/eeprom_common.cpp storage/eeprom_rlc.cpp)
   add_definitions(-DEEPROM -DEEPROM_RLC)
@@ -183,11 +179,9 @@ add_definitions(-DFLAVOUR="${FLAVOUR}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-if(PCB STREQUAL TANGO)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${BITMAPS_TARGET_DIR})
-else()
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${GUI_DIR})
-endif()
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/bitmaps/${GUI_DIR})
+
 
 add_subdirectory(lua)
 include(gui/CMakeLists.txt)
@@ -389,6 +383,7 @@ if(PCB STREQUAL TANGO)
           switches.cpp
           mixer.cpp
           stamp.cpp
+          timers.cpp
           #opentx_timers.cpp
           trainer_input.cpp
           )
