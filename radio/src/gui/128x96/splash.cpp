@@ -31,11 +31,7 @@ const unsigned char * const splash_lbm = splashdata+4;
 void drawSplash()
 {
   lcdClear();
-#if defined(PCBTANGO)
-  lcdDraw1bitBitmap(0, 16, splash_lbm, 0, 0);
-#else
   lcdDraw1bitBitmap(0, 0, splash_lbm, 0, 0);
-#endif
 
 
 #if MENUS_LOCK == 1

@@ -64,7 +64,6 @@ void espInit(uint32_t baudrate, bool use_dma)
   USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
   USART_Init(ESP_USART, &USART_InitStructure);
 
-//  USART_ITConfig(ESP_USART, USART_IT_TC, ENABLE);
   USART_ITConfig(ESP_USART, USART_IT_RXNE, ENABLE);
 
   NVIC_InitStructure.NVIC_IRQChannel = ESP_USART_IRQn;
@@ -74,10 +73,10 @@ void espInit(uint32_t baudrate, bool use_dma)
   NVIC_Init(&NVIC_InitStructure);
 
   USART_Cmd(ESP_USART, ENABLE);
-  
+
   espTxFifo.clear();
   espRxFifo.clear();
-  
+
   GPIO_SetBits(ESP_EN_GPIO, ESP_EN_GPIO_PIN); // open esp
 }
 
@@ -111,10 +110,11 @@ uint8_t espReadBuffer(uint8_t* buf){
 void ESP_WriteHandler(void){
 	while(1){
 	  uint8_t data;
-	  if(espTxFifo.pop(data)){
-//		  TRACE("esptx:%x", data);
-		USART_SendData(ESP_USART, data);
-	  }
+		  if(espTxFifo.pop(data)){
+			while(USART_GetFlagStatus(ESP_USART, USART_FLAG_TXE) == RESET);
+			USART_SendData(ESP_USART, data);
+
+		  }
 	  else{
 		  break;
 	  }
@@ -122,13 +122,6 @@ void ESP_WriteHandler(void){
 }
 
 extern "C" void ESP_USART_IRQHandler(void){
-//  if(USART_GetITStatus(ESP_USART, USART_IT_TC)!=RESET){
-//    USART_ClearITPendingBit(ESP_USART, USART_IT_TC);
-//    uint8_t data;
-//    if(espTxFifo.pop(data)){
-//      USART_SendData(ESP_USART, data);
-//    }
-//  }
 
   if(USART_GetITStatus(ESP_USART, USART_IT_RXNE)!=RESET){
     USART_ClearITPendingBit(ESP_USART, USART_IT_RXNE);

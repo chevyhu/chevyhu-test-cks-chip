@@ -1834,12 +1834,18 @@ void opentxInit(OPENTX_INIT_ARGS)
     unexpectedShutdown = 1;
   }
 
-#if defined(SDCARD) && !defined(PCBMEGA2560)
+#if defined(PCBTANGO)
+  //No emergency mode for Tango 2. Always read from the SD card on power up, it's a temporary solution.
+  sdInit();
+  logsInit();
+#else
+ #if defined(SDCARD) && !defined(PCBMEGA2560)
   // SDCARD related stuff, only done if not unexpectedShutdown
   if (!unexpectedShutdown) {
     sdInit();
     logsInit();
   }
+ #endif
 #endif
 
 #if defined(EEPROM)

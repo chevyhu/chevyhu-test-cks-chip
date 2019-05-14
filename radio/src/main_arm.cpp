@@ -80,10 +80,6 @@ void handleUsbConnection()
 #endif
   }
 #endif // defined(STM32) && !defined(SIMU)
-
-#if defined(AGENT) && !defined(SIMU)
-  AgentHandler();
-#endif
 }
 
 void checkSpeakerVolume()

@@ -19,6 +19,9 @@
  */
 
 #include "opentx.h"
+#if defined(PCBTANGO) && defined(CRSF_OPENTX) && defined(CRSF_SD)
+#include "io/crsf/crossfire.h"
+#endif
 
 RTOS_TASK_HANDLE menusTaskId;
 RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
@@ -130,6 +133,7 @@ TASK_FUNCTION(mixerTask)
       DEBUG_TIMER_SAMPLE(debugTimerMixerIterval);
       RTOS_UNLOCK_MUTEX(mixerMutex);
       DEBUG_TIMER_STOP(debugTimerMixer);
+      //TRACE("mixer, min:%d, max:%d\n", debugTimers[debugTimerMixer].getMin(), debugTimers[debugTimerMixer].getMax());
 
 #if defined(STM32) && !defined(SIMU)
       if (getSelectedUsbMode() == USB_JOYSTICK_MODE) {
@@ -183,6 +187,11 @@ TASK_FUNCTION(menusTask)
   getDefaultSwConfig();
 #endif
 
+#if defined(PCBTANGO) && defined(LUA)
+    // Start crossfire for TANGO
+    //luaExec("/CROSSFIRE/crossfire.lua");
+#endif
+
 #if defined(PWR_BUTTON_PRESS)
   while (1) {
     uint32_t pwr_check = pwrCheck();
@@ -216,6 +225,13 @@ TASK_FUNCTION(menusTask)
 
     resetForcePowerOffRequest();
   }
+
+#if defined(PCBTANGO) && defined(CRSF_OPENTX) && defined(CRSF_SD)
+    crossfireSharedData.crsfEEPROMSaveFlag = 1;
+    while(crossfireSharedData.crsfEEPROMSaveFlag){
+    	delay_ms(1);
+    }
+#endif
 
 #if defined(PCBX9E)
   toplcdOff();
