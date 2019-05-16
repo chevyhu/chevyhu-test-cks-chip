@@ -506,7 +506,7 @@ void _general_exception_handler (unsigned int * hardfault_args)
     stacked_pc = ((unsigned long) hardfault_args[6]);
     stacked_psr = ((unsigned long) hardfault_args[7]);
 
-    hf_printf ("\r\n\n***Hard Fault Handler Debug Printing***\r\n");
+    hf_printf ("\r\n\n***OpenTx Hard Fault Handler Debug Printing***\r\n");
     hf_printf ("R0\t\t= 0x%.8x\r\n", stacked_r0);
     hf_printf ("R1\t\t= 0x%.8x\r\n", stacked_r1);
     hf_printf ("R2\t\t= 0x%.8x\r\n", stacked_r2);
