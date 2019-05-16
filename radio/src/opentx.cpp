@@ -195,7 +195,9 @@ void per10ms()
   sdPoll10ms();
 #endif
 
+#if !defined(PCBTANGO)
   outputTelemetryBuffer.per10ms();
+#endif
 
   heartbeat |= HEART_TIMER_10MS;
 }

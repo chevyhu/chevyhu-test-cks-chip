@@ -20,10 +20,11 @@
 
 #include "opentx.h"
 
-uint32_t rotencPosition;
+//uint32_t rotencPosition;
 
 void rotaryEncoderInit()
 {
+#if 0
   SYSCFG_EXTILineConfig(ROTARY_ENCODER_EXTI_PortSource, ROTARY_ENCODER_EXTI_PinSource1);
 
 #if defined(ROTARY_ENCODER_EXTI_LINE2)
@@ -56,10 +57,12 @@ void rotaryEncoderInit()
 #endif
 
   rotencPosition = ROTARY_ENCODER_POSITION();
+#endif
 }
 
 void rotaryEncoderCheck()
 {
+#if 0
   uint32_t newpos = ROTARY_ENCODER_POSITION();
   if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
     if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
@@ -75,10 +78,12 @@ void rotaryEncoderCheck()
     }
 #endif
   }
+#endif
 }
 
 extern "C" void ROTARY_ENCODER_EXTI_IRQHandler1(void)
 {
+#if 0
   if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE1) != RESET) {
     rotaryEncoderCheck();
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE1);
@@ -90,14 +95,17 @@ extern "C" void ROTARY_ENCODER_EXTI_IRQHandler1(void)
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE2);
   }
 #endif
+#endif
 }
 
 #if defined(ROTARY_ENCODER_EXTI_IRQn2)
 extern "C" void ROTARY_ENCODER_EXTI_IRQHandler2(void)
 {
+#if 0
   if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE2) != RESET) {
     rotaryEncoderCheck();
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE2);
   }
+#endif
 }
 #endif

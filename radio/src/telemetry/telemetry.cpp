@@ -283,7 +283,12 @@ void telemetryInit(uint8_t protocol)
   else if (protocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
     telemetryPortInit(CROSSFIRE_BAUDRATE, TELEMETRY_SERIAL_DEFAULT);
 #if defined(LUA)
-    outputTelemetryBuffer.reset();
+  #if defined(PCBTANGO)
+      outputTelemetryBufferSize = 0;
+      outputTelemetryBufferTrigger = 0;
+  #else
+      outputTelemetryBuffer.reset();
+  #endif
 #endif
     telemetryPortSetDirectionOutput();
   }
@@ -299,7 +304,12 @@ void telemetryInit(uint8_t protocol)
   else {
     telemetryPortInit(FRSKY_SPORT_BAUDRATE, TELEMETRY_SERIAL_WITHOUT_DMA);
 #if defined(LUA)
-    outputTelemetryBuffer.reset();
+  #if defined(PCBTANGO)
+      outputTelemetryBufferSize = 0;
+      outputTelemetryBufferTrigger = 0;
+  #else
+      outputTelemetryBuffer.reset();
+  #endif
 #endif
   }
 
@@ -334,8 +344,13 @@ void logTelemetryWriteByte(uint8_t data)
 }
 #endif
 
+#if defined(PCBTANGO)
+uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;
+uint8_t outputTelemetryBufferSize = 0;
+uint8_t outputTelemetryBufferTrigger = 0;
+#else
 OutputTelemetryBuffer outputTelemetryBuffer __DMA;
-
+#endif
 #if defined(LUA)
 Fifo<uint8_t, LUA_TELEMETRY_INPUT_FIFO_SIZE> * luaInputTelemetryFifo = NULL;
 #endif

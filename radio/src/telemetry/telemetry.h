@@ -230,7 +230,24 @@ class OutputTelemetryBuffer {
     uint8_t destination;
 };
 
-extern OutputTelemetryBuffer outputTelemetryBuffer __DMA;
+#if defined(PCBTANGO)
+#define TELEMETRY_OUTPUT_FIFO_SIZE 16
+extern uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;
+extern uint8_t outputTelemetryBufferSize;
+extern uint8_t outputTelemetryBufferTrigger;
+inline void telemetryOutputPushByte(uint8_t byte)
+{
+  outputTelemetryBuffer[outputTelemetryBufferSize++] = byte;
+}
+
+inline void telemetryOutputSetTrigger(uint8_t byte)
+{
+  outputTelemetryBufferTrigger = byte;
+}
+#else
+  extern OutputTelemetryBuffer outputTelemetryBuffer __DMA;
+#endif
+
 
 #if defined(LUA)
 #define LUA_TELEMETRY_INPUT_FIFO_SIZE  256

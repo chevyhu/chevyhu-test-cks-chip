@@ -256,7 +256,7 @@ void boardInit()
 #endif
 
 #if defined(BLUETOOTH)
-  bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE);
+  bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE, true);
 #endif
 
 #if defined(DEBUG)

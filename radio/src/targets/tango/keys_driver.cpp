@@ -247,10 +247,10 @@ void checkRotaryEncoder()
   uint32_t newpos = ROTARY_ENCODER_POSITION();
   if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
     if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
-      --rotencValue[0];
+      --rotencValue;
     }
     else {
-      ++rotencValue[0];
+      ++rotencValue;
     }
     rotencPosition = newpos;
 #if !defined(BOOT)

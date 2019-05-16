@@ -111,6 +111,8 @@ enum {
     MENU_OFFSET_EXTERNAL
 };
 
+#define NAVIGATION_MENUS
+
 #include "../common/stdlcd/popups.h"
 #endif
 

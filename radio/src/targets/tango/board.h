@@ -110,6 +110,7 @@ extern "C" {
 extern uint16_t sessionTimer;
 
 // Board driver
+void boardPreInit(void);
 void boardInit(void);
 void boardOff(void);
 
@@ -457,9 +458,12 @@ extern uint8_t g_trimState;
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
+
 #if (defined(PCBX9E) || defined(PCBX7) || defined(PCBTANGO) && !defined(SIMU))
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
+void rotaryEncoderInit(void);
+void rotaryEncoderCheck(void);
 void checkRotaryEncoder(void);
 #endif
 
@@ -518,27 +522,27 @@ enum Analogs {
 
 
 #if defined(STICKS_PWM)
-#define NUM_PWMSTICKS                 4
+  #define NUM_PWMSTICKS                 4
   #define STICKS_PWM_ENABLED()          (!hardwareOptions.sticksPwmDisabled)
   void sticksPwmInit(void);
   void sticksPwmRead(uint16_t * values);
   extern volatile uint32_t pwm_interrupt_count; // TODO => reusable buffer (boot section)
   #define NUM_TRIMS_KEYS                4
 #else
-#define NUM_TRIMS_KEYS                8
-#define STICKS_PWM_ENABLED()          false
+  #define NUM_TRIMS_KEYS                8
+  #define STICKS_PWM_ENABLED()          false
 #endif
 
+
+// Hardware options
+typedef struct
+{
 #if NUM_PWMSTICKS > 0
-PACK(typedef struct {
   uint8_t sticksPwmDisabled:1;
-  uint8_t pxx2Enabled:1;
-}) HardwareOptions;
-#else
-PACK(typedef struct {
-    uint8_t pxx2Enabled:1;
-}) HardwareOptions;
 #endif
+  uint8_t pxx2Enabled:1;
+} HardwareOptions;
+
 
 extern HardwareOptions hardwareOptions;
 

@@ -47,6 +47,7 @@ uint8_t createCrossfireChannelsFrame(uint8_t * frame, int16_t * pulses)
   return buf - frame;
 }
 
+#if !defined(PCBTANGO)
 void setupPulsesCrossfire()
 {
   if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
@@ -64,3 +65,4 @@ void setupPulsesCrossfire()
     }
   }
 }
+#endif

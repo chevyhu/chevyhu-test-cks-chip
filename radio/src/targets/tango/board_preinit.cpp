@@ -18,34 +18,20 @@
  * GNU General Public License for more details.
  */
 
-#ifndef _IO_FRSKY_SPORT_H_
-#define _IO_FRSKY_SPORT_H_
+#include "board.h"
 
-#include "dataconstants.h"
-
-#if defined(TELEMETRY_FRSKY_SPORT)
-PACK(union SportTelemetryPacket
+void boardPreInit()
 {
-  struct {
-    uint8_t physicalId;
-    uint8_t primId;
-    uint16_t dataId;
-    uint32_t value;
-  };
-  uint8_t raw[8];
-});
-#endif
+#if defined(INTMODULE_BOOTCMD_GPIO)
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 
-#if defined(PCBTANGO)
-void sportProcessPacket(uint8_t * packet);
-bool isSportOutputBufferAvailable();
-void sportOutputPushPacket(SportTelemetryPacket * packet);
-void sportFlashDevice(ModuleIndex module, const char * filename);
-#endif
 
-#if defined(STM32)
-bool isBootloader(const char * filename);
-void bootloaderFlash(const char * filename);
+  GPIO_SetBits(INTMODULE_BOOTCMD_GPIO, INTMODULE_BOOTCMD_GPIO_PIN);
+  GPIO_InitStructure.GPIO_Pin = INTMODULE_BOOTCMD_GPIO_PIN;
+  GPIO_Init(INTMODULE_BOOTCMD_GPIO, &GPIO_InitStructure);
 #endif
-
-#endif // _IO_FRSKY_SPORT_H_
+}

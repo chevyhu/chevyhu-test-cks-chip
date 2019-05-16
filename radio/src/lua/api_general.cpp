@@ -25,6 +25,7 @@
 #include "lua_api.h"
 #include "telemetry/frsky.h"
 
+
 #if defined(PCBX12S)
   #include "lua/lua_exports_x12s.inc"   // this line must be after lua headers
 #elif defined(PCBX10)
@@ -43,6 +44,7 @@
   #include "lua/lua_exports_x9d.inc"
 #elif defined(PCBTANGO)
   #include "lua/lua_exports_tango.inc"
+  #include "io/crsf/crossfire.h"
 #endif
 
 #if defined(SIMU)
@@ -426,6 +428,24 @@ When called without parameters, it will only return the status of the output buf
 
 static int luaSportTelemetryPush(lua_State * L)
 {
+#if defined(PCBTANGO)
+  if (lua_gettop(L) == 0) {
+    lua_pushboolean(L, isSportOutputBufferAvailable());
+  }
+  else if (isSportOutputBufferAvailable()) {
+    SportTelemetryPacket packet;
+    packet.physicalId = getDataId(luaL_checkunsigned(L, 1));
+    packet.primId = luaL_checkunsigned(L, 2);
+    packet.dataId = luaL_checkunsigned(L, 3);
+    packet.value = luaL_checkunsigned(L, 4);
+    sportOutputPushPacket(&packet);
+    lua_pushboolean(L, true);
+  }
+  else {
+    lua_pushboolean(L, false);
+  }
+  return 1;
+#else
   if (lua_gettop(L) == 0) {
     lua_pushboolean(L, outputTelemetryBuffer.isAvailable());
     return 1;
@@ -484,6 +504,7 @@ static int luaSportTelemetryPush(lua_State * L)
 
   lua_pushboolean(L, false);
   return 1;
+#endif
 }
 
 #if defined(PXX2)
@@ -596,6 +617,35 @@ When called without parameters, it will only return the status of the output buf
 */
 static int luaCrossfireTelemetryPush(lua_State * L)
 {
+#if defined(PCBTANGO)
+  if (lua_gettop(L) == 0) {
+    lua_pushboolean(L, isCrossfireOutputBufferAvailable());
+  }
+  else if (isCrossfireOutputBufferAvailable()) {
+    uint8_t command = luaL_checkunsigned(L, 1);
+    luaL_checktype(L, 2, LUA_TTABLE);
+    uint8_t length = luaL_len(L, 2);
+    telemetryOutputPushByte(MODULE_ADDRESS);
+    telemetryOutputPushByte(2 + length); // 1(COMMAND) + data length + 1(CRC)
+    telemetryOutputPushByte(command); // COMMAND
+    for (int i=0; i<length; i++) {
+      lua_rawgeti(L, 2, i+1);
+      telemetryOutputPushByte(luaL_checkunsigned(L, -1));
+    }
+    telemetryOutputPushByte(crc8(outputTelemetryBuffer+2, 1 + length));
+    telemetryOutputSetTrigger(command);
+#if defined(PCBTANGO) && !defined(SIMU)
+    libCrsf_CRSF_Routing( DEVICE_INTERNAL, outputTelemetryBuffer);
+    outputTelemetryBufferTrigger = 0x00;
+    outputTelemetryBufferSize = 0;
+#endif
+    lua_pushboolean(L, true);
+  }
+  else {
+    lua_pushboolean(L, false);
+  }
+  return 1;
+#else
   if (lua_gettop(L) == 0) {
     lua_pushboolean(L, outputTelemetryBuffer.isAvailable());
   }
@@ -618,6 +668,7 @@ static int luaCrossfireTelemetryPush(lua_State * L)
     lua_pushboolean(L, false);
   }
   return 1;
+#endif
 }
 #endif
 
