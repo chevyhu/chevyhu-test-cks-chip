@@ -297,7 +297,6 @@ void menuRadioSdManager(event_t _event)
       break;
 
 #if !defined(PCBTARANIS) && !defined(PCBTANGO)
-      CASE_EVT_ROTARY_BREAK
     case EVT_KEY_FIRST(KEY_RIGHT):
 #endif
     case EVT_KEY_BREAK(KEY_ENTER):

@@ -174,11 +174,12 @@ void processCrossfireTelemetryFrame()
   }
 }
 
+#if defined(PCBTANGO)
 bool isCrossfireOutputBufferAvailable()
 {
   return outputTelemetryBufferSize == 0;
 }
-
+#endif
 
 void processCrossfireTelemetryData(uint8_t data)
 {

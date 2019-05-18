@@ -537,7 +537,7 @@ PACK(struct CustomScreenData {
   NOBACKUP(CustomScreenData screenData[MAX_CUSTOM_SCREENS]); \
   NOBACKUP(Topbar::PersistentData topbarData); \
   NOBACKUP(uint8_t view);
-#elif defined(PCBTARANIS) || defined(PCBTANGO)
+#else
 #define CUSTOM_SCREENS_DATA \
   uint8_t screensType; /* 2bits per screen (None/Gauges/Numbers/Script) */ \
   TelemetryScreenData screens[MAX_TELEMETRY_SCREENS]; \
@@ -545,18 +545,18 @@ PACK(struct CustomScreenData {
 #endif
 
 #if defined(PCBX9)
-  #define TOPBAR_DATA \
+#define TOPBAR_DATA \
     NOBACKUP(uint8_t voltsSource); \
     NOBACKUP(uint8_t altitudeSource);
 #else
-  #define TOPBAR_DATA
+#define TOPBAR_DATA
 #endif
 
 #if defined(PCBHORUS) || defined(PCBTARANIS) || defined(PCBTANGO)
-  #define SCRIPT_DATA \
+#define SCRIPT_DATA \
     NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);
 #else
-  #define SCRIPT_DATA
+#define SCRIPT_DATA
 #endif
 
 PACK(struct ModelData {
@@ -932,19 +932,19 @@ static inline void check_struct()
   CHKSIZE(TrainerData, 16);
 
 #if defined(PCBXLITES)
-  CHKSIZE(RadioData, 860);
-  CHKSIZE(ModelData, 6157);
+  CHKSIZE(RadioData, 877);
+  CHKSIZE(ModelData, 6045);
 #elif defined(PCBXLITE)
   CHKSIZE(RadioData, 869);
   CHKSIZE(ModelData, 6045);
 #elif defined(PCBX7)
-  CHKSIZE(RadioData, 858);
-  CHKSIZE(ModelData, 6157);
+  CHKSIZE(RadioData, 875);
+  CHKSIZE(ModelData, 6045);
 #elif defined(PCBX9E)
-  CHKSIZE(RadioData, 960);
+  CHKSIZE(RadioData, 977);
   CHKSIZE(ModelData, 6614);
 #elif defined(PCBX9D) || defined(PCBX9DP)
-  CHKSIZE(RadioData, 880);
+  CHKSIZE(RadioData, 897);
   CHKSIZE(ModelData, 6601);
 #elif defined(PCBSKY9X)
   CHKSIZE(RadioData, 735);

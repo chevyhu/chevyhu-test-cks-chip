@@ -699,14 +699,6 @@ enum MixSources {
   MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")
   MIXSRC_SC,                        LUA_EXPORT("sc", "Switch C")
   MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
-#elif defined(PCBTANGO)
-    MIXSRC_SA = MIXSRC_FIRST_SWITCH,  LUA_EXPORT("sa", "Switch A")
-    MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")
-    MIXSRC_SC,                        LUA_EXPORT("sc", "Switch C")
-    MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
-    MIXSRC_SE,                        LUA_EXPORT("se", "Switch E")
-    MIXSRC_SF,                        LUA_EXPORT("sf", "Switch F")
-    MIXSRC_LAST_SWITCH = MIXSRC_SF,
 #if defined(PCBHORUS) || defined(PCBX9) || defined(PCBXLITES)
   MIXSRC_SE,                        LUA_EXPORT("se", "Switch E")
 #endif
@@ -731,6 +723,14 @@ enum MixSources {
   MIXSRC_SQ,                        LUA_EXPORT("sq", "Switch Q")
   MIXSRC_SR,                        LUA_EXPORT("sr", "Switch R")
 #endif
+#elif defined(PCBTANGO)
+    MIXSRC_SA = MIXSRC_FIRST_SWITCH,  LUA_EXPORT("sa", "Switch A")
+    MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")
+    MIXSRC_SC,                        LUA_EXPORT("sc", "Switch C")
+    MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
+    MIXSRC_SE,                        LUA_EXPORT("se", "Switch E")
+    MIXSRC_SF,                        LUA_EXPORT("sf", "Switch F")
+    MIXSRC_LAST_SWITCH = MIXSRC_SF,
 #else
   MIXSRC_3POS = MIXSRC_FIRST_SWITCH,
   MIXSRC_THR,
