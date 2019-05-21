@@ -313,7 +313,7 @@ void boardInit()
       lcdRefreshWait();
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
-//      boardOff();
+      boardOff();
     }
   }
   else {
