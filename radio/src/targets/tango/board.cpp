@@ -421,6 +421,31 @@ uint16_t getBatteryVoltage()
   return (uint16_t)instant_vbat;
 }
 
+uint32_t ReadBackupReg(uint8_t index){
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+    PWR_BackupRegulatorCmd(ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
+    PWR_BackupAccessCmd(ENABLE);
+    while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
+    return *(__IO uint32_t *) (BKPSRAM_BASE + index*4);
+}
+
+void writeBackupReg(uint8_t index, uint32_t data){
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+	PWR_BackupRegulatorCmd(ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
+	PWR_BackupAccessCmd(ENABLE);
+	while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
+	*(__IO uint32_t *) (BKPSRAM_BASE + index*4) = data;
+}
+
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId){
+	usbStop();
+	writeBackupReg(BOOTLOADER_IS_NEED_FLASH_ADDR, isNeedFlash);
+	writeBackupReg(BOOTLOADER_HW_ID_ADDR, HwId);
+	NVIC_SystemReset();
+}
+
 RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 {
   return crossfireTaskId;

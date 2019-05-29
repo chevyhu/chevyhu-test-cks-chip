@@ -101,6 +101,29 @@ void CRSF_This_Device( uint8_t *p_arr )
       }
       break;
 
+#ifdef LIBCRSF_ENABLE_COMMAND
+#define LIBCRSF_GENERAL_CMD	0x0a
+#define LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD	0x0a
+
+    case LIBCRSF_CMD_FRAME:
+			if( ( *( p_arr + *(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET ) )
+				== libCRC8_Get_CRC_Arr( ( p_arr + LIBCRSF_TYPE_ADD ), *(p_arr + LIBCRSF_LENGTH_ADD) - 1, POLYNOM_1 ) &&
+				( *( p_arr + *(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET - 1) )
+				== libCRC8_Get_CRC_Arr( ( p_arr + LIBCRSF_TYPE_ADD ), *(p_arr + LIBCRSF_LENGTH_ADD) - 2, POLYNOM_2 )) {
+					//TODO
+				// commands( ( libCrsf_Commands ) *( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 2 )
+				//     , *( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 3 )
+				//     , ( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 4 ) );
+				if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 2 ) == LIBCRSF_GENERAL_CMD){
+					if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 3 ) == LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD){
+						boot2bootloader(1, libCrsf_MyHwID);
+					}
+				}
+			}
+            break;
+#endif
+
+
 #if defined(CRSF_OPENTX)
     case LIBCRSF_OPENTX_RELATED:
 #if defined(CRSF_SD)
@@ -867,85 +890,3 @@ void crsfSdHandler() {
 }
 
 #endif // CRSF_OPENTX && CRSF_SD
-
-/* ****************************************************************************************************************** */
-/* TODO: perna remove the code below since we will strictly use CRSF  */
-static uint8_t ToSendDataBuffer[64];
-static uint8_t AgentCrc;
-
-
-void WR_TO_USB_Writebuff ( uint8_t Position, uint8_t Data_In )
-{
-  ToSendDataBuffer[Position] = Data_In;
-  libCRC8_Calc(Data_In, &AgentCrc, POLYNOM_1);
-}
-
-
-void USB_WRITE_SIMPLE_CMD( uint8_t COMMAND )
-{
-  libCRC8_Reset( &AgentCrc );
-  WR_TO_USB_Writebuff(0, '\n');
-  WR_TO_USB_Writebuff(1, COMMAND);
-  ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-  usbAgentWrite(ToSendDataBuffer);
-}
-
-
-void USB_Send_Serial_Number()
-{
-  libCRC8_Reset( &AgentCrc );
-  WR_TO_USB_Writebuff(0, '\n');
-  WR_TO_USB_Writebuff(1, 30);
-
-  WR_TO_USB_Writebuff(2, 0);
-  WR_TO_USB_Writebuff(3, 0);
-  WR_TO_USB_Writebuff(4, 0);
-  WR_TO_USB_Writebuff(5, 1);
-
-  ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-  usbAgentWrite(ToSendDataBuffer);
-}
-
-
-void AgentLegacyCalls( uint8_t *pArr )
-{
-  pArr++;
-  switch( *pArr )
-  {
-    case 2: //USB_DEVICE_INFO_REQUEST:$
-      libCRC8_Reset( &AgentCrc );
-      WR_TO_USB_Writebuff(0, '\n');
-      WR_TO_USB_Writebuff(1, 3);
-      WR_TO_USB_Writebuff(2, 2);
-
-      WR_TO_USB_Writebuff(3, 0x00);
-      WR_TO_USB_Writebuff(4, 0x04);
-      WR_TO_USB_Writebuff(5, 0x00);
-      WR_TO_USB_Writebuff(6, 0x00);
-      WR_TO_USB_Writebuff(7, 0x01);
-      WR_TO_USB_Writebuff(8, 0x00);
-
-      WR_TO_USB_Writebuff(9, 8);
-      WR_TO_USB_Writebuff(10, 'T');
-      WR_TO_USB_Writebuff(11, 'a');
-      WR_TO_USB_Writebuff(12, 'n');
-      WR_TO_USB_Writebuff(13, 'g');
-      WR_TO_USB_Writebuff(14, 'o');
-      WR_TO_USB_Writebuff(15, ' ');
-      WR_TO_USB_Writebuff(16, 'I');
-      WR_TO_USB_Writebuff(17, 'I');
-
-      ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-      usbAgentWrite(ToSendDataBuffer);
-      break;
-
-    case 6:  // USB_MUX_CMDS_TO_SUB_CPU:
-      USB_WRITE_SIMPLE_CMD( 7 );
-      break;
-
-    case 18: //USB_SERIAL_NUMBER_REQUEST:
-      USB_Send_Serial_Number();
-      break;
-
-  }
-}

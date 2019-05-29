@@ -213,19 +213,14 @@ void AgentHandler(){
   extern uint8_t ReportReceived;
   extern uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
   if(ReportReceived){
-	  ReportReceived = 0;
-	  if (HID_Buffer[0] == LIBCRSF_AGENT_LEGACY_SYNC) {
-		AgentLegacyCalls( &HID_Buffer[0] );
+	ReportReceived = 0;
+	static _libCrsf_CRSF_PARSE_DATA HID_CRSF_Data;
+	for( uint8_t i = 0; i < HID_AGENT_OUT_PACKET; i++ ){
+	  if ( libCrsf_CRSF_Parse( &HID_CRSF_Data, HID_Buffer[i] )) {
+		libCrsf_CRSF_Routing( USB_HID, HID_CRSF_Data.Payload );
+		break;
 	  }
-	  else {
-		static _libCrsf_CRSF_PARSE_DATA HID_CRSF_Data;
-		for( uint8_t i = 0; i < HID_AGENT_OUT_PACKET; i++ ){
-		  if ( libCrsf_CRSF_Parse( &HID_CRSF_Data, HID_Buffer[i] )) {
-			libCrsf_CRSF_Routing( USB_HID, HID_CRSF_Data.Payload );
-			break;
-		  }
-		}
-	  }
+	}
   }
 }
 #endif // AGENT
