@@ -459,7 +459,7 @@ extern uint8_t g_trimState;
 #define KEYS_PRESSED()                  (readKeys())
 
 
-#if (defined(PCBX9E) || defined(PCBX7) || defined(PCBTANGO) && !defined(SIMU))
+#if defined(PCBX9E) || defined(PCBX7) || defined(PCBX3) || defined(PCBTANGO)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
 void rotaryEncoderInit(void);
