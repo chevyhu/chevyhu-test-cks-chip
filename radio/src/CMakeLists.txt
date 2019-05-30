@@ -551,6 +551,14 @@ if(NOT MSVC)
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
+    if (CROSSFIRE_COMBINED STREQUAL ON)
+      add_custom_command(
+              TARGET firmware POST_BUILD
+              COMMAND srec_cat ${CMAKE_BINARY_DIR}/firmware.bin -Binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/crossfire.bin -Binary -offset 0x00060000 -o ${CMAKE_BINARY_DIR}/combine.bin -Binary
+              WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      )
+    endif()
+
     find_program(GAWK gawk HINTS "c:/cygwin/bin/" "c:/msys/bin/" DOC "gawk for firmware size report.")  # OS X might only have "awk"
     if (BASH AND GAWK)
       add_custom_target(firmware-size
@@ -633,11 +641,21 @@ if(NOT MSVC)
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             )
 
-    add_custom_target(flash-jtag
-            COMMAND st-flash --reset write firmware.bin 0x8000000
-            DEPENDS firmware
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            )
+    if (CROSSFIRE_COMBINED STREQUAL ON)
+      add_custom_target(flash-jtag
+              COMMAND st-flash --reset write combine.bin 0x8000000
+              DEPENDS firmware
+              WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+              )
+    else()
+      add_custom_target(flash-jtag
+              COMMAND st-flash --reset write firmware.bin 0x8000000
+              DEPENDS firmware
+              WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+              )
+    endif()
+
+
 
     add_custom_target(flash-stlink
             COMMAND ST-LINK_CLI -c SWD -P firmware.bin 0x8000000 -Rst -Q
