@@ -445,8 +445,8 @@ TASK_FUNCTION(systemTask)
       set_model_id_needed = 0;
     }
 #endif
-    TASK_RETURN();
   }
+  TASK_RETURN();
 }
 #endif
 

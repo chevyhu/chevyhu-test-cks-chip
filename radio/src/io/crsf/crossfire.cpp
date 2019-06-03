@@ -202,6 +202,8 @@ void crsfSetModelID(void)
   txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
 
   CRSF_to_Shared_FIFO(txBuf);
+
+  TRACE("set model id command\r\n");
 }
 
 
