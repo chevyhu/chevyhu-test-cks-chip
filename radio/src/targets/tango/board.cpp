@@ -21,6 +21,8 @@
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
 
+uint8_t set_model_id_needed = 0;
+
 HardwareOptions hardwareOptions;
 
 RTOS_TASK_HANDLE crossfireTaskId;
@@ -432,13 +434,19 @@ RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 TASK_FUNCTION(systemTask)
 {
   while(1) {
-      crsfSharedFifoHandler();
-      crsfEspHandler();
+    crsfSharedFifoHandler();
+    crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)
-      AgentHandler();
+    AgentHandler();
 #endif
+#if 1
+    if (set_model_id_needed) {
+      crsfSetModelID();
+      set_model_id_needed = 0;
+    }
+#endif
+    TASK_RETURN();
   }
-  TASK_RETURN();
 }
 #endif
 

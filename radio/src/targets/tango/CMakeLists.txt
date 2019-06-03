@@ -66,7 +66,7 @@ elseif(PCB STREQUAL TANGO)
   endif()
 
   add_definitions(-DCROSSFIRE)
-  add_definitions(-DCRSF_OPENTX -DCRSF_SD)
+  add_definitions(-DCRSF_OPENTX -DCRSF_SD -DLIBCRSF_ENABLE_COMMAND)
 
   set(GUI_DIR 128x96)
   set(NAVIGATION_TYPE tango)

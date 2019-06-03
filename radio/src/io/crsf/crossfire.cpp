@@ -119,6 +119,14 @@ void CRSF_This_Device( uint8_t *p_arr )
 #endif
       break;
 #endif
+    case LIBCRSF_CMD_FRAME:
+      if( *(p_arr + CRSF_SD_SUBCMD_ADD) == 0x06 ){
+        TRACE("got 06 command\r\n");
+      }
+      else if ( *(p_arr + CRSF_SD_SUBCMD_ADD) == 0x07 ){
+        TRACE("got 07 command\r\n");
+      }
+      break;
 
     default:
       // Buffer telemetry data inside a FIFO to let telemetryWakeup read from it and keep the
@@ -174,6 +182,28 @@ void crsfSharedFifoHandler( void )
     }
   }
 }
+
+void crsfSetModelID(void)
+{
+  uint32_t count = 0;
+  BYTE txBuf[LIBCRSF_MAX_BUFFER_SIZE];
+
+  libUtil_Write8(txBuf, &count, LIBCRSF_UART_SYNC); /* device address */
+  libUtil_Write8(txBuf, &count, 0);                 /* frame length */
+  libUtil_Write8(txBuf, &count, LIBCRSF_CMD_FRAME); /* cmd type */
+  libUtil_Write8(txBuf, &count, LIBCRSF_RC_TX);     /* Destination Address */
+  libUtil_Write8(txBuf, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
+  libUtil_Write8(txBuf, &count, 0x10);              /* sub command */
+  libUtil_Write8(txBuf, &count, 0x06);              /* command of set model/receiver id */
+  libUtil_Write8(txBuf, &count, modelHeaders[g_eeGeneral.currModel].modelId[EXTERNAL_MODULE]);  /* model ID */
+
+  uint8_t crc = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_1);
+  libUtil_Write8(txBuf, &count, crc);
+  txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
+
+  CRSF_to_Shared_FIFO(txBuf);
+}
+
 
 void crsfEspHandler( void )
 {

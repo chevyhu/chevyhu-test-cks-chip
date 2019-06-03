@@ -20,6 +20,7 @@
 
 #include <opentx.h>
 #include "storage/modelslist.h"
+#include "io/crsf/crossfire.h"
 
 // TODO find why we need this (for REGISTER at least)
 #if defined(PCBXLITE)
@@ -1179,6 +1180,7 @@ void menuModelSetup(event_t event)
           CHECK_INCDEC_MODELVAR_ZERO(event, g_model.header.modelId[moduleIdx], MAX_RX_NUM(moduleIdx));
           if (checkIncDec_Ret) {
             modelHeaders[g_eeGeneral.currModel].modelId[moduleIdx] = g_model.header.modelId[moduleIdx];
+            set_model_id_needed = 1;
           }
         }
 #endif
