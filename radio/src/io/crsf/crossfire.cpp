@@ -120,11 +120,13 @@ void CRSF_This_Device( uint8_t *p_arr )
       break;
 #endif
     case LIBCRSF_CMD_FRAME:
-      if( *(p_arr + CRSF_SD_SUBCMD_ADD) == 0x06 ){
-        TRACE("got 06 command\r\n");
-      }
-      else if ( *(p_arr + CRSF_SD_SUBCMD_ADD) == 0x07 ){
-        TRACE("got 07 command\r\n");
+      if(*(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD) == 0x10){
+        if( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == 0x06 ){
+          TRACE("got 06 command\r\n");
+        }
+        else if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == 0x07 ){
+          TRACE("got 07 command\r\n");
+        }
       }
       break;
 
@@ -160,8 +162,10 @@ uint8_t telemetryGetByte(uint8_t * byte)
 
 void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 {
+  //TRACE("CRSF_to_Shared_FIFO:\r\n");
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
     crossfireSharedData.crsf_rx.push(*(p_arr + i));
+    //TRACE_NOCRLF("%02X ", *(p_arr + i));
   }
 }
 
@@ -177,6 +181,7 @@ void crsfSharedFifoHandler( void )
   uint8_t byte;
   static _libCrsf_CRSF_PARSE_DATA CRSF_Data;
   if ( crossfireSharedData.crsf_tx.pop(byte) ){
+    //TRACE_NOCRLF("%02X ", byte);
     if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
       libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
     }
@@ -195,10 +200,13 @@ void crsfSetModelID(void)
   libUtil_Write8(txBuf, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
   libUtil_Write8(txBuf, &count, 0x10);              /* sub command */
   libUtil_Write8(txBuf, &count, 0x06);              /* command of set model/receiver id */
-  libUtil_Write8(txBuf, &count, modelHeaders[g_eeGeneral.currModel].modelId[EXTERNAL_MODULE]);  /* model ID */
+  libUtil_Write8(txBuf, &count, modelHeaders[g_eeGeneral.currModel].modelId[EXTERNAL_MODULE]); /* model ID */
 
-  uint8_t crc = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_1);
-  libUtil_Write8(txBuf, &count, crc);
+  uint8_t crc2 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_2);
+  libUtil_Write8(txBuf, &count, crc2);
+  uint8_t crc1 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_1);
+  libUtil_Write8(txBuf, &count, crc1);
+
   txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
 
   CRSF_to_Shared_FIFO(txBuf);
