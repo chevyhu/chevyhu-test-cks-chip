@@ -21,7 +21,7 @@
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
 
-uint8_t set_model_id_needed = 0;
+bool set_model_id_needed = false;
 
 HardwareOptions hardwareOptions;
 
@@ -433,18 +433,33 @@ RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 #if !defined(SIMU)
 TASK_FUNCTION(systemTask)
 {
+  static uint32_t get_modelid_delay = 0;
+  set_model_id_needed = true;
+
   while(1) {
     crsfSharedFifoHandler();
     crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)
     AgentHandler();
 #endif
-#if 1
-    if (set_model_id_needed) {
+    if (set_model_id_needed && g_model.header.modelId[EXTERNAL_MODULE] != 0) {
       crsfSetModelID();
-      set_model_id_needed = 0;
+      set_model_id_needed = false;
+      crsfGetModelID();
+      get_modelid_delay = get_tmr10ms();
     }
-#endif
+    if (get_modelid_delay && (get_tmr10ms() - get_modelid_delay) > 100) {
+      if (current_crsf_model_id == g_model.header.modelId[EXTERNAL_MODULE]) {
+        /* Set model id successfully */
+        TRACE("Set model id for crossfire success, current id = %d\r\n", current_crsf_model_id);
+      }
+      else {
+        /* Set model id failed */
+        TRACE("Set model id for crossfire failed, current id = %d\r\n", current_crsf_model_id);
+        /* do something else here? */
+      }
+      get_modelid_delay = 0;
+    }
   }
   TASK_RETURN();
 }

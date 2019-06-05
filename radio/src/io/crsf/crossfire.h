@@ -144,8 +144,8 @@ typedef struct CRSF_SD_STRUCT{
 extern uint8_t enableOpentxSdWriteHandler;
 extern uint8_t enableOpentxSdReadHandler;
 extern uint8_t enableOpentxSdEraseHandler;
-extern uint8_t set_model_id_needed;
-
+extern bool set_model_id_needed;
+extern uint8_t current_crsf_model_id;
 void crsfSdHandler();
 
 #endif
@@ -156,6 +156,7 @@ typedef struct CrossfireSharedData CrossfireSharedData_t;
 void CRSF_Init( void );
 void crsfSharedFifoHandler( void );
 void crsfSetModelID(void);
+void crsfGetModelID(void);
 void crsfEspHandler( void );
 void CRSF_to_Shared_FIFO( uint8_t *p_arr );
 void CRSF_to_ESP( uint8_t *p_arr );

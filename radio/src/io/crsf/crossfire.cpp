@@ -60,6 +60,7 @@ static uint8_t isOpentxBufSet = 0;
 uint8_t enableOpentxSdWriteHandler = 0;
 uint8_t enableOpentxSdReadHandler = 0;
 uint8_t enableOpentxSdEraseHandler = 0;
+uint8_t current_crsf_model_id = 0;
 
 static void SetOpentxBuf(uint8_t* p_arr){
 	memcpy(OpentxBuf, p_arr, LIBCRSF_MAX_BUFFER_SIZE);
@@ -121,11 +122,8 @@ void CRSF_This_Device( uint8_t *p_arr )
 #endif
     case LIBCRSF_CMD_FRAME:
       if(*(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD) == 0x10){
-        if( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == 0x06 ){
-          TRACE("got 06 command\r\n");
-        }
-        else if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == 0x07 ){
-          TRACE("got 07 command\r\n");
+        if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == 0x07 ){
+          current_crsf_model_id = *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 2);
         }
       }
       break;
@@ -199,8 +197,8 @@ void crsfSetModelID(void)
   libUtil_Write8(txBuf, &count, LIBCRSF_RC_TX);     /* Destination Address */
   libUtil_Write8(txBuf, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
   libUtil_Write8(txBuf, &count, 0x10);              /* sub command */
-  libUtil_Write8(txBuf, &count, 0x06);              /* command of set model/receiver id */
-  libUtil_Write8(txBuf, &count, modelHeaders[g_eeGeneral.currModel].modelId[EXTERNAL_MODULE]); /* model ID */
+  libUtil_Write8(txBuf, &count, 0x05);              /* command of set model/receiver id */
+  libUtil_Write8(txBuf, &count, g_model.header.modelId[EXTERNAL_MODULE]); /* model ID */
 
   uint8_t crc2 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_2);
   libUtil_Write8(txBuf, &count, crc2);
@@ -210,8 +208,31 @@ void crsfSetModelID(void)
   txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
 
   CRSF_to_Shared_FIFO(txBuf);
+  //TRACE("set model id command\r\n");
+}
 
-  TRACE("set model id command\r\n");
+void crsfGetModelID(void)
+{
+  uint32_t count = 0;
+  BYTE txBuf[LIBCRSF_MAX_BUFFER_SIZE];
+
+  libUtil_Write8(txBuf, &count, LIBCRSF_UART_SYNC); /* device address */
+  libUtil_Write8(txBuf, &count, 0);                 /* frame length */
+  libUtil_Write8(txBuf, &count, LIBCRSF_CMD_FRAME); /* cmd type */
+  libUtil_Write8(txBuf, &count, LIBCRSF_RC_TX);     /* Destination Address */
+  libUtil_Write8(txBuf, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
+  libUtil_Write8(txBuf, &count, 0x10);              /* sub command */
+  libUtil_Write8(txBuf, &count, 0x06);              /* command of set model/receiver id */
+  libUtil_Write8(txBuf, &count, 0);                 /* the dummy byte of model ID */
+
+  uint8_t crc2 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_2);
+  libUtil_Write8(txBuf, &count, crc2);
+  uint8_t crc1 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_1);
+  libUtil_Write8(txBuf, &count, crc1);
+
+  txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
+
+  CRSF_to_Shared_FIFO(txBuf);
 }
 
 

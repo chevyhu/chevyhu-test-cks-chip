@@ -2000,7 +2000,6 @@ int main()
     //runFatalErrorScreen(STR_NO_SDCARD);
   }
 #endif
-
   tasksStart();
 }
 
