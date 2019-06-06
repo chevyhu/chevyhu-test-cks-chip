@@ -103,13 +103,16 @@ void CRSF_This_Device( uint8_t *p_arr )
       break;
 
 #ifdef LIBCRSF_ENABLE_COMMAND
-#define LIBCRSF_GENERAL_CMD	0x0a
-#define LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD	0x0a
+#define LIBCRSF_GENERAL_CMD										0x0a
+#define LIBCRSF_CROSSFIRE_CMD									0x10
+
+#define LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD					0x0a
+
+#define LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_SUBCMD		0x06
+#define LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_REPLY_SUBCMD	0x07
 
     case LIBCRSF_CMD_FRAME:
-			if( ( *( p_arr + *(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET ) )
-				== libCRC8_Get_CRC_Arr( ( p_arr + LIBCRSF_TYPE_ADD ), *(p_arr + LIBCRSF_LENGTH_ADD) - 1, POLYNOM_1 ) &&
-				( *( p_arr + *(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET - 1) )
+    		if( ( *( p_arr + *(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET - 1 ) )
 				== libCRC8_Get_CRC_Arr( ( p_arr + LIBCRSF_TYPE_ADD ), *(p_arr + LIBCRSF_LENGTH_ADD) - 2, POLYNOM_2 )) {
 					//TODO
 				// commands( ( libCrsf_Commands ) *( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 2 )
@@ -118,6 +121,11 @@ void CRSF_This_Device( uint8_t *p_arr )
 				if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 2 ) == LIBCRSF_GENERAL_CMD){
 					if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 3 ) == LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD){
 						boot2bootloader(1, libCrsf_MyHwID);
+					}
+				}
+				else if(*(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD) == LIBCRSF_CROSSFIRE_CMD){
+					if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_REPLY_SUBCMD ){
+					  current_crsf_model_id = *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 2);
 					}
 				}
 			}
@@ -143,13 +151,6 @@ void CRSF_This_Device( uint8_t *p_arr )
 #endif
       break;
 #endif
-    case LIBCRSF_CMD_FRAME:
-      if(*(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD) == 0x10){
-        if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == 0x07 ){
-          current_crsf_model_id = *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 2);
-        }
-      }
-      break;
 
     default:
       // Buffer telemetry data inside a FIFO to let telemetryWakeup read from it and keep the
