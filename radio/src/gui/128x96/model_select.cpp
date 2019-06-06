@@ -130,7 +130,7 @@ void onModelSelectMenu(const char * result)
     chainMenu(menuMainView);
   }
   else if (result == STR_DELETE_MODEL) {
-    POPUP_CONFIRMATION(STR_DELETEMODEL);
+    POPUP_CONFIRMATION(STR_DELETEMODEL, nullptr);
     SET_WARNING_INFO(currentModel->modelName, LEN_MODEL_NAME, 0);
     deleteMode = MODE_DELETE_MODEL;
   }
@@ -186,7 +186,7 @@ void onModelSelectMenu(const char * result)
       SET_WARNING_INFO(STR_CAT_NOT_EMPTY, sizeof(TR_CAT_NOT_EMPTY), 0);
     }
     else {
-      POPUP_CONFIRMATION(STR_DELETEMODEL);
+      POPUP_CONFIRMATION(STR_DELETEMODEL, nullptr);
       SET_WARNING_INFO(currentCategory->name, LEN_MODEL_FILENAME, 0);
       deleteMode = MODE_DELETE_CATEGORY;
     }

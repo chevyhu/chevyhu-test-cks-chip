@@ -21,6 +21,7 @@
 #ifndef _POPUPS_H_
 #define _POPUPS_H_
 
+#if 0
 #define MENU_X                         10
 #define MENU_Y                         16
 #define MENU_W                         LCD_W-(2*MENU_X)
@@ -84,6 +85,35 @@ extern uint8_t warningInfoFlags;
   extern uint16_t popupMenuNoItems;
   const char * runPopupMenu(event_t event);
   extern void (*popupMenuHandler)(const char * result);
+#endif
+
+#include "../common/stdlcd/popups.h"
+
+#else
+#define MESSAGEBOX_X                   10
+#define MESSAGEBOX_Y                   16
+#define MESSAGEBOX_W                   (LCD_W - 19)
+
+#define MENU_X                         MESSAGEBOX_X
+#define MENU_Y                         MESSAGEBOX_Y
+#define MENU_W                         MESSAGEBOX_W
+
+#define WARNING_LINE_LEN               20
+#define WARNING_LINE_X                 16
+#define WARNING_LINE_Y                 3*FH
+
+#define POPUP_MENU_MAX_LINES         12
+#define MENU_MAX_DISPLAY_LINES       6
+#define MENU_LINE_LENGTH             (LEN_MODEL_NAME+12)
+
+enum {
+    MENU_OFFSET_INTERNAL,
+    MENU_OFFSET_EXTERNAL
+};
+
+#define NAVIGATION_MENUS
+
+#include "../common/stdlcd/popups.h"
 #endif
 
 #endif // _POPUPS_H_

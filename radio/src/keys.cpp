@@ -77,7 +77,7 @@ void Key::input(bool val)
   if (m_state && m_vals == 0) {
     // key is released
     if (m_state != KSTATE_KILLED) {
-      TRACE("key %d BREAK", key());
+      //TRACE("key %d BREAK", key());
       putEvent(EVT_KEY_BREAK(key()));
     }
     m_state = KSTATE_OFF;
@@ -103,7 +103,7 @@ void Key::input(bool val)
       }
       break;
     case KSTATE_START:
-      TRACE("key %d FIRST", key());
+      //TRACE("key %d FIRST", key());
       putEvent(EVT_KEY_FIRST(key()));
       inactivity.counter = 0;
       m_state = KSTATE_RPTDELAY;
@@ -113,7 +113,7 @@ void Key::input(bool val)
     case KSTATE_RPTDELAY: // gruvin: delay state before first key repeat
       if (m_cnt == KEY_LONG_DELAY) {
         // generate long key press
-        TRACE("key %d LONG", key());
+        //TRACE("key %d LONG", key());
         putEvent(EVT_KEY_LONG(key()));
       }
       if (m_cnt == KEY_REPEAT_DELAY) {
@@ -134,7 +134,7 @@ void Key::input(bool val)
     case 1:
       if ((m_cnt & (m_state-1)) == 0) {
         // this produces repeat events that at first repeat slowly and then increase in speed
-        TRACE("key %d REPEAT", key());
+        //TRACE("key %d REPEAT", key());
         if (!IS_SHIFT_KEY(key()))
           putEvent(EVT_KEY_REPT(key()));
       }
@@ -180,20 +180,20 @@ void pauseEvents(event_t event)
 // Disables any further event generation (BREAK and REPEAT) for this key, until the key is released
 void killEvents(event_t event)
 {
-#if defined(ROTARY_ENCODERS)
-  if (event == EVT_ROTARY_LONG) {
-    killEvents(BTN_REa + g_eeGeneral.reNavigation - 1);
-    return;
-  }
-#endif
-
   event = EVT_KEY_MASK(event);
   if (event < (int)DIM(keys)) {
     keys[event].killEvents();
   }
 }
 
-bool clearKeyEvents()
+void killAllEvents()
+{
+  for (uint8_t key = 0; key < DIM(keys); key++) {
+    keys[key].killEvents();
+  }
+}
+
+bool waitKeysReleased()
 {
 #if defined(PCBSKY9X)
   RTOS_WAIT_MS(200); // 200ms

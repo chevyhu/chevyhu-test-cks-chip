@@ -21,6 +21,10 @@
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
 
+bool set_model_id_needed = false;
+
+HardwareOptions hardwareOptions;
+
 RTOS_TASK_HANDLE crossfireTaskId;
 RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
 
@@ -254,7 +258,7 @@ void boardInit()
 #endif
 
 #if defined(BLUETOOTH)
-  bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE);
+  bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE, true);
 #endif
 
 #if defined(DEBUG)
@@ -365,7 +369,7 @@ uint8_t currentTrainerMode = 0xff;
 
 void checkTrainerSettings()
 {
-  uint8_t requiredTrainerMode = g_model.trainerMode;
+  uint8_t requiredTrainerMode = g_model.trainerData.mode;
   if (requiredTrainerMode != currentTrainerMode) {
     switch (currentTrainerMode) {
       case TRAINER_MODE_MASTER_TRAINER_JACK:
@@ -454,12 +458,33 @@ RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 #if !defined(SIMU)
 TASK_FUNCTION(systemTask)
 {
+  static uint32_t get_modelid_delay = 0;
+  set_model_id_needed = true;
+
   while(1) {
-      crsfSharedFifoHandler();
-      crsfEspHandler();
+    crsfSharedFifoHandler();
+    crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)
-      AgentHandler();
+    AgentHandler();
 #endif
+    if (set_model_id_needed && g_model.header.modelId[EXTERNAL_MODULE] != 0) {
+      crsfSetModelID();
+      set_model_id_needed = false;
+      crsfGetModelID();
+      get_modelid_delay = get_tmr10ms();
+    }
+    if (get_modelid_delay && (get_tmr10ms() - get_modelid_delay) > 100) {
+      if (current_crsf_model_id == g_model.header.modelId[EXTERNAL_MODULE]) {
+        /* Set model id successfully */
+        TRACE("Set model id for crossfire success, current id = %d\r\n", current_crsf_model_id);
+      }
+      else {
+        /* Set model id failed */
+        TRACE("Set model id for crossfire failed, current id = %d\r\n", current_crsf_model_id);
+        /* do something else here? */
+      }
+      get_modelid_delay = 0;
+    }
   }
   TASK_RETURN();
 }

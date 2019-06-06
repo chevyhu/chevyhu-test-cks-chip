@@ -55,7 +55,7 @@ int getSelectedUsbMode()
 void setSelectedUsbMode(int mode)
 {
   static int prev_mode = USB_UNSELECTED_MODE;
-  selectedUsbMode = usbMode (mode);
+  selectedUsbMode = usbMode(mode);
 
   // for disconnecting usb from host without unplugging
   if(prev_mode != mode){
@@ -132,9 +132,8 @@ void usbStart()
 
 void usbStop()
 {
-  USBD_DeInit(&USB_OTG_dev);
-  // modified to do after USBD_DeInit for using usbDriverStarted in USB_OTG_BSP_Deinit, in order to deconnect usb without unplugging.
   usbDriverStarted = false;
+  USBD_DeInit(&USB_OTG_dev);
 }
 
 bool usbStarted()

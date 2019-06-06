@@ -20,17 +20,39 @@
 
 #include "opentx.h"
 
-void displayPresetChoice(event_t event)
+void runPopupCurvePreset(event_t event)
 {
-  runPopupWarning(event);
-  lcdDrawNumber(WARNING_LINE_X+FW*7, WARNING_LINE_Y, 45*warningInputValue/4, LEFT|INVERS);
+  warningResult = false;
+
+  drawMessageBox(warningText);
+
+  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH, STR_POPUPS_ENTER_EXIT);
+
+  switch (event) {
+    case EVT_KEY_BREAK(KEY_ENTER):
+      warningResult = true;
+      // no break
+
+    case EVT_KEY_BREAK(KEY_EXIT):
+      warningText = NULL;
+      warningType = WARNING_TYPE_ASTERISK;
+      break;
+
+    default:
+      s_editMode = EDIT_MODIFY_FIELD;
+      reusableBuffer.curveEdit.preset = checkIncDec(event, reusableBuffer.curveEdit.preset, -4, 4);
+      s_editMode = EDIT_SELECT_FIELD;
+      break;
+  }
+
+  lcdDrawNumber(WARNING_LINE_X+FW*7, WARNING_LINE_Y, 45 * reusableBuffer.curveEdit.preset / 4, LEFT|INVERS);
   lcdDrawChar(lcdLastRightPos, WARNING_LINE_Y, '@', INVERS);
 
   if (warningResult) {
     warningResult = 0;
     CurveInfo & crv = g_model.curves[s_curveChan];
     int8_t * points = curveAddress(s_curveChan);
-    int k = 25 * warningInputValue;
+    int k = 25 * reusableBuffer.curveEdit.preset;
     int dx = 2000 / (5+crv.points-1);
     for (uint8_t i=0; i<5+crv.points; i++) {
       int x = -1000 + i * dx;
@@ -45,7 +67,8 @@ void displayPresetChoice(event_t event)
 void onCurveOneMenu(const char * result)
 {
   if (result == STR_CURVE_PRESET) {
-    POPUP_INPUT(STR_PRESET, displayPresetChoice, 0, -4, 4);
+    reusableBuffer.curveEdit.preset = 4; // 45°
+    POPUP_INPUT(STR_PRESET, runPopupCurvePreset);
   }
   else if (result == STR_MIRROR) {
     CurveInfo & crv = g_model.curves[s_curveChan];
@@ -70,13 +93,13 @@ void menuModelCurveOne(event_t event)
   int8_t * points = curveAddress(s_curveChan);
 
   drawStringWithIndex(PSIZE(TR_MENUCURVES)*FW+FW, 0, STR_CV, s_curveChan+1);
-  
+
   SIMPLE_SUBMENU(STR_MENUCURVES, 4 + 5+crv.points + (crv.type==CURVE_TYPE_CUSTOM ? 5+crv.points-2 : 0));
 
   // Curve name
   lcdDrawTextAlignedLeft(FH + 1, STR_NAME);
   editName(INDENT_WIDTH, 2 * FH + 1, crv.name, sizeof(crv.name), event, menuVerticalPosition == 0);
-  
+
   // Curve type
   lcdDrawTextAlignedLeft(3 * FH + 1, NO_INDENT(STR_TYPE));
   LcdFlags attr = (menuVerticalPosition == 1 ? (s_editMode > 0 ? INVERS | BLINK : INVERS) : 0);
@@ -155,13 +178,13 @@ void menuModelCurveOne(event_t event)
     else if (menuVerticalPosition == 4+i) {
       selectionMode = 2;
     }
-    
+
     if (selectionMode > 0) {
       int8_t x = getCurveX(5+crv.points, i);
       if (crv.type==CURVE_TYPE_CUSTOM && i>0 && i<5+crv.points-1) {
         x = points[5+crv.points+i-1];
       }
-  
+
       // Selection X / Y
       lcdDrawFilledRect(3, 2*FH+4, 7*FW-2, 4*FH-2, SOLID, ERASE);
       lcdDrawRect(3, 2*FH+4, 7*FW-2, 4*FH-2);
@@ -170,11 +193,11 @@ void menuModelCurveOne(event_t event)
       lcdDrawNumber(7+2*FW+1, 4*FH, x, LEFT|(selectionMode==1?attr:0));
       lcdDrawText(7, 5*FH, "y=");
       lcdDrawNumber(7+2*FW+1, 5*FH, points[i], LEFT|(selectionMode==2?attr:0));
-      
+
       // Selection square
       lcdDrawFilledRect(point.x-1, point.y-2, 5, 5, SOLID, FORCE);
       lcdDrawFilledRect(point.x, point.y-1, 3, 3, SOLID);
-      
+
       if (s_editMode > 0) {
         if (selectionMode == 1)
           CHECK_INCDEC_MODELVAR(event, points[5+crv.points+i-1], i==1 ? -100 : points[5+crv.points+i-2], i==5+crv.points-2 ? 100 : points[5+crv.points+i]);  // edit X

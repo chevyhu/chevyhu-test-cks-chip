@@ -90,6 +90,17 @@
   #define ENC_GPIO_PIN_A                GPIO_Pin_10 // PA.10
   #define ENC_GPIO_PIN_B                GPIO_Pin_8  // PA.08
   #define ROTARY_ENCODER_POSITION()     ((ENC_GPIO->IDR >> 9) & 0x02) + ((ENC_GPIO->IDR >> 8) & 0x01)
+  #define ROTARY_ENCODER_GPIO           GPIOD
+  #define ROTARY_ENCODER_GPIO_PIN_A     GPIO_Pin_12 // PD.12
+  #define ROTARY_ENCODER_GPIO_PIN_B     GPIO_Pin_13 // PD.13
+  //#define ROTARY_ENCODER_POSITION()     (ROTARY_ENCODER_GPIO->IDR >> 12) & 0x03
+  #define ROTARY_ENCODER_EXTI_LINE1     0//EXTI_Line12
+  #define ROTARY_ENCODER_EXTI_LINE2     0//EXTI_Line13
+  #define ROTARY_ENCODER_EXTI_IRQn1        0//EXTI15_10_IRQn
+  #define ROTARY_ENCODER_EXTI_IRQHandler1  EXTI15_10_IRQHandler
+  #define ROTARY_ENCODER_EXTI_PortSource   0//EXTI_PortSourceGPIOD
+  #define ROTARY_ENCODER_EXTI_PinSource1   0//EXTI_PinSource12
+  #define ROTARY_ENCODER_EXTI_PinSource2   0//EXTI_PinSource13
 #elif defined(PCBX7)
   #define ENC_GPIO                      GPIOE
   #define ENC_GPIO_PIN_A                GPIO_Pin_9  // PE.09
@@ -487,6 +498,7 @@
 #define ADC_SET_DMA_FLAGS()             ADC_DMA->HIFCR = (DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | DMA_HIFCR_CTEIF4 | DMA_HIFCR_CDMEIF4 | DMA_HIFCR_CFEIF4)
 #define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
 #define ADC_SAMPTIME                    2   // sample time = 28 cycles
+#define ADC_CHANNEL_RTC                 ADC_Channel_18 // ADC1_IN18
 #if defined(PCBTANGO)
   #define ADC_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_DMA2)
   #define ADC_RCC_APB1Periph            0
@@ -782,14 +794,27 @@
 
 // External Module
 #define EXTMODULE_PULSES
-#if defined(PCBXLITE)
-  #define EXTMODULE_RCC_AHB1Periph      (RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA2)
-  #define EXTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM8 | RCC_APB2Periph_USART6)
-  #define EXTMODULE_PWR_GPIO            GPIOD
-  #define EXTMODULE_PWR_GPIO_PIN        GPIO_Pin_11 // PD.11
+
+#if defined(PCBXLITE) || defined(PCBX3)
+#define EXTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM8 | RCC_APB2Periph_USART6)
+  #if defined(PCBX3)
+    #define EXTMODULE_RCC_AHB1Periph    (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_DMA2)
+    #define EXTMODULE_PWR_GPIO          GPIOA
+    #define EXTMODULE_PWR_GPIO_PIN      GPIO_Pin_8  // PA.08
+  #else
+    #define EXTMODULE_RCC_AHB1Periph    (RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA2)
+    #define EXTMODULE_PWR_GPIO          GPIOD
+    #define EXTMODULE_PWR_GPIO_PIN      GPIO_Pin_11 // PD.11
+  #endif
+  #define EXTERNAL_MODULE_PWR_ON()      GPIO_SetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
+  #define EXTERNAL_MODULE_PWR_OFF()     GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
+  #define IS_EXTERNAL_MODULE_ON()       (GPIO_ReadInputDataBit(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == Bit_SET)
   #define EXTMODULE_TX_GPIO             GPIOC
+  #define EXTMODULE_USART_GPIO          GPIOC
   #define EXTMODULE_TX_GPIO_PIN         GPIO_Pin_6  // PC.06
   #define EXTMODULE_TX_GPIO_PinSource   GPIO_PinSource6
+  #define EXTMODULE_RX_GPIO_PIN         GPIO_Pin_7  // PC.07
+  #define EXTMODULE_RX_GPIO_PinSource   GPIO_PinSource7
   #define EXTMODULE_TIMER               TIM8
   #define EXTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
   #define EXTMODULE_TIMER_CC_IRQn       TIM8_CC_IRQn
@@ -802,36 +827,38 @@
   #define EXTMODULE_TIMER_DMA_FLAG_TC           DMA_IT_TCIF1
   #define EXTMODULE_TIMER_OUTPUT_ENABLE         TIM_CCER_CC1E
   #define EXTMODULE_TIMER_OUTPUT_POLARITY       TIM_CCER_CC1P
-  #define EXTMODULE_USART_TX_GPIO_AF    GPIO_AF_USART6
-  #define EXTMODULE_USART               USART6
-  #define EXTMODULE_USART_IRQn          USART6_IRQn
+  #define EXTMODULE_USART_GPIO_AF               GPIO_AF_USART6
+  #define EXTMODULE_USART                       USART6
+  #define EXTMODULE_USART_IRQn                  USART6_IRQn
+  #define EXTMODULE_USART_IRQHandler            USART6_IRQHandler
   #define EXTMODULE_USART_DMA_CHANNEL           DMA_Channel_5
   #define EXTMODULE_USART_DMA_STREAM            DMA2_Stream6
   #define EXTMODULE_USART_DMA_STREAM_IRQn       DMA2_Stream6_IRQn
-  #define EXTMODULE_USART_DMA_STREAM_IRQHandler DMA2_Stream6_IRQHandler
-  #define EXTMODULE_USART_DMA_FLAG_TC           DMA_IT_TCIF6
 #else
-  #define EXTMODULE_RCC_AHB1Periph      (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA2)
-  #define EXTMODULE_RCC_APB2Periph      RCC_APB2Periph_TIM8
-  #define EXTMODULE_PWR_GPIO            GPIOD
-  #define EXTMODULE_PWR_GPIO_PIN        GPIO_Pin_8  // PD.08
-  #define EXTMODULE_TX_GPIO             GPIOA
-  #define EXTMODULE_TX_GPIO_PIN         0//GPIO_Pin_7  // PA.07
-  #define EXTMODULE_TX_GPIO_PinSource   0//GPIO_PinSource7
-  #define EXTMODULE_TIMER               TIM8
-  #define EXTMODULE_TIMER_TX_GPIO_AF    GPIO_AF_TIM8 // TIM8_CH1N
-  #define EXTMODULE_TIMER_CC_IRQn       TIM8_CC_IRQn
-  #define EXTMODULE_TIMER_CC_IRQHandler TIM8_CC_IRQHandler
-  #define EXTMODULE_TIMER_DMA_CHANNEL         DMA_Channel_7
-  #define EXTMODULE_TIMER_DMA_STREAM          DMA2_Stream1
-  #define EXTMODULE_TIMER_DMA_STREAM_IRQn       DMA2_Stream1_IRQn
-  #define EXTMODULE_TIMER_DMA_STREAM_IRQHandler DMA2_Stream1_IRQHandler
-  #define EXTMODULE_TIMER_DMA_FLAG_TC         DMA_IT_TCIF1
-  #define EXTMODULE_TIMER_OUTPUT_ENABLE         TIM_CCER_CC1NE
-  #define EXTMODULE_TIMER_OUTPUT_POLARITY       TIM_CCER_CC1NP
-  #define EXTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
+#define EXTMODULE_PULSES
+#define EXTMODULE_RCC_AHB1Periph      (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA2)
+#define EXTMODULE_RCC_APB2Periph      RCC_APB2Periph_TIM8
+#define EXTMODULE_PWR_GPIO            GPIOD
+#define EXTMODULE_PWR_GPIO_PIN        0//GPIO_Pin_8  // PD.08
+#define EXTERNAL_MODULE_PWR_ON()      GPIO_SetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
+#define EXTERNAL_MODULE_PWR_OFF()     GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
+#define IS_EXTERNAL_MODULE_ON()       (GPIO_ReadInputDataBit(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == Bit_SET)
+#define EXTMODULE_TX_GPIO             GPIOA
+#define EXTMODULE_TX_GPIO_PIN         0//GPIO_Pin_7  // PA.07
+#define EXTMODULE_TX_GPIO_PinSource   GPIO_PinSource7
+#define EXTMODULE_TIMER               TIM8
+#define EXTMODULE_TIMER_TX_GPIO_AF    GPIO_AF_TIM8 // TIM8_CH1N
+#define EXTMODULE_TIMER_CC_IRQn       TIM8_CC_IRQn
+#define EXTMODULE_TIMER_CC_IRQHandler TIM8_CC_IRQHandler
+#define EXTMODULE_TIMER_DMA_CHANNEL         DMA_Channel_7
+#define EXTMODULE_TIMER_DMA_STREAM          DMA2_Stream1
+#define EXTMODULE_TIMER_DMA_STREAM_IRQn       DMA2_Stream1_IRQn
+#define EXTMODULE_TIMER_DMA_STREAM_IRQHandler DMA2_Stream1_IRQHandler
+#define EXTMODULE_TIMER_DMA_FLAG_TC           DMA_IT_TCIF1
+#define EXTMODULE_TIMER_OUTPUT_ENABLE         TIM_CCER_CC1NE
+#define EXTMODULE_TIMER_OUTPUT_POLARITY       TIM_CCER_CC1NP
+#define EXTMODULE_TIMER_FREQ                  (PERI2_FREQUENCY * TIMER_MULT_APB2)
 #endif
-
 // Trainer Port
 #if defined(PCBTANGO)
 	// no trainer port
@@ -852,6 +879,12 @@
   #define TRAINER_DMA_STREAM            DMA1_Stream2
   #define TRAINER_DMA_IRQn              DMA1_Stream2_IRQn
   #define TRAINER_DMA_IRQHandler        DMA1_Stream2_IRQHandler
+  #define TRAINER_OUT_COUNTER_REGISTER  TRAINER_TIMER->CCR1
+  #define TRAINER_IN_COUNTER_REGISTER   TRAINER_TIMER->CCR2
+  #define TRAINER_SETUP_REGISTER        TRAINER_TIMER->CCR3
+  #define TRAINER_OUT_CCER              TIM_CCER_CC1E
+  #define TRAINER_CCER_POLARYTY         TIM_CCER_CC1P
+  #define TRAINER_IN_CCER               TIM_CCER_CC2E
   #define TRAINER_DMA_FLAG_TC           DMA_IT_TCIF2
   #define TRAINER_TIMER_IRQn            TIM3_IRQn
   #define TRAINER_TIMER_IRQHandler      TIM3_IRQHandler
@@ -1339,6 +1372,7 @@
 
 // Bluetooth
 #if defined(PCBTANGO)
+  #define BT_USART_GPIO                GPIOG
   #define BT_USART                     USART6
   #define BT_GPIO_AF                   GPIO_AF_USART6
   #define BT_USART_IRQn                USART6_IRQn

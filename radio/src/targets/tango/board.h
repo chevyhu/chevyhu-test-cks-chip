@@ -110,6 +110,7 @@ extern "C" {
 extern uint16_t sessionTimer;
 
 // Board driver
+void boardPreInit(void);
 void boardInit(void);
 void boardOff(void);
 
@@ -189,16 +190,35 @@ uint32_t isBootloaderStart(const uint8_t * buffer);
 #else
   #define IS_UART_MODULE(port)          (false)
 #endif
-void init_no_pulses(uint32_t port);
-void disable_no_pulses(uint32_t port);
-void init_ppm( uint32_t module_index);
-void disable_ppm( uint32_t module_index);
-void init_pxx( uint32_t module_index);
-void disable_pxx( uint32_t module_index);
-void init_serial( uint32_t module_index, uint32_t baudrate, uint32_t period);
-void disable_serial( uint32_t module_index);
-void init_module_timer( uint32_t module_index, uint32_t period, uint8_t state);
-void disable_module_timer( uint32_t module_index);
+
+void init_ppm(uint8_t module);
+void disable_ppm(uint8_t module);
+void init_pxx2(uint8_t module);
+void disable_pxx2(uint8_t module);
+void init_pxx1_pulses(uint8_t module);
+void init_pxx1_serial(uint8_t module);
+void disable_pxx1_pulses(uint8_t module);
+void disable_pxx1_serial(uint8_t module);
+void disable_serial(uint8_t module);
+void intmoduleStop();
+void intmodulePxxStart();
+void intmoduleSerialStart(uint32_t baudrate, uint8_t rxEnable);
+#if defined(TARANIS_INTERNAL_PPM)
+void intmodulePpmStart(void);
+#endif
+
+void extmoduleSendNextFrame();
+void extmoduleSendBuffer(const uint8_t * data, uint8_t size);
+
+void extmoduleStop();
+void extmodulePpmStart();
+void extmodulePxxPulsesStart();
+void extmodulePxxSerialStart();
+void extmodulePxx2Start();
+void extmoduleSerialStart(uint32_t baudrate, uint32_t period_half_us, bool inverted);
+void extmoduleInvertedSerialStart(uint32_t baudrate);
+void extmoduleSendBuffer(const uint8_t * data, uint8_t size);
+void extmoduleSendNextFrame();
 
 // Trainer driver
 #define SLAVE_MODE()                    (g_model.trainerMode == TRAINER_MODE_SLAVE)
@@ -438,9 +458,12 @@ extern uint8_t g_trimState;
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
-#if (defined(PCBX9E) || defined(PCBX7) || defined(PCBTANGO) && !defined(SIMU))
+
+#if defined(PCBX9E) || defined(PCBX7) || defined(PCBX3) || defined(PCBTANGO)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
+void rotaryEncoderInit(void);
+void rotaryEncoderCheck(void);
 void checkRotaryEncoder(void);
 #endif
 
@@ -485,7 +508,8 @@ enum Analogs {
   SLIDER2,
 #endif
   TX_VOLTAGE,
-  NUM_ANALOGS
+  NUM_ANALOGS,
+  TX_RTC = NUM_ANALOGS
 };
 
 #define NUM_POTS                        0//(POT_LAST-POT_FIRST+1)
@@ -495,17 +519,32 @@ enum Analogs {
 #define NUM_MOUSE_ANALOGS               0
 #define NUM_DUMMY_ANAS                  0
 
-#if defined(PCBXLITE)
+
+
+#if defined(STICKS_PWM)
   #define NUM_PWMSTICKS                 4
-  extern bool sticks_pwm_disabled;
-  #define STICKS_PWM_ENABLED()         (sticks_pwm_disabled == false)
+  #define STICKS_PWM_ENABLED()          (!hardwareOptions.sticksPwmDisabled)
   void sticksPwmInit(void);
   void sticksPwmRead(uint16_t * values);
-  extern volatile uint32_t pwm_interrupt_count;
+  extern volatile uint32_t pwm_interrupt_count; // TODO => reusable buffer (boot section)
   #define NUM_TRIMS_KEYS                4
 #else
   #define NUM_TRIMS_KEYS                8
+  #define STICKS_PWM_ENABLED()          false
 #endif
+
+
+// Hardware options
+typedef struct
+{
+#if NUM_PWMSTICKS > 0
+  uint8_t sticksPwmDisabled:1;
+#endif
+  uint8_t pxx2Enabled:1;
+} HardwareOptions;
+
+
+extern HardwareOptions hardwareOptions;
 
 enum CalibratedAnalogs {
   CALIBRATED_STICK1,
@@ -527,7 +566,7 @@ enum CalibratedAnalogs {
 #define IS_SLIDER(x)                    ((x)>POT_LAST && (x)<TX_VOLTAGE)
 void adcInit(void);
 void adcRead(void);
-extern uint16_t adcValues[NUM_ANALOGS];
+extern uint16_t adcValues[NUM_ANALOGS + 1/*RTC*/];
 uint16_t getAnalogValue(uint8_t index);
 
 // Battery driver
@@ -693,16 +732,28 @@ void serial2Stop(void);
 #endif
 
 // BT driver
+#define BT_TX_FIFO_SIZE    64
+#define BT_RX_FIFO_SIZE    128
 #define BLUETOOTH_DEFAULT_BAUDRATE      115200
+#define BLUETOOTH_BOOTLOADER_BAUDRATE   230400
 #if defined(PCBX9E) && !defined(USEHORUSBT)
 #define BLUETOOTH_FACTORY_BAUDRATE     9600
 #else
 #define BLUETOOTH_FACTORY_BAUDRATE      57600
 #endif
-void bluetoothInit(uint32_t baudrate);
+void bluetoothInit(uint32_t baudrate, bool enable);
 void bluetoothWriteWakeup(void);
 uint8_t bluetoothIsWriting(void);
+void bluetoothDisable(void);
 void bluetoothDone(void);
+#if defined(PCBX3)
+#define IS_BLUETOOTH_CHIP_PRESENT()     (false)
+#elif (defined(PCBX7) || defined(PCBXLITE)) && !defined(SIMU)
+extern volatile uint8_t btChipPresent;
+  #define IS_BLUETOOTH_CHIP_PRESENT()     (btChipPresent)
+#else
+#define IS_BLUETOOTH_CHIP_PRESENT()     (true)
+#endif
 
 // LED driver
 void ledInit(void);
