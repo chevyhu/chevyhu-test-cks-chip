@@ -863,4 +863,6 @@ void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId);
 
 void getDefaultSwConfig();
 
+void PrintData(char* header, uint8_t* data);
+
 #endif // _BOARD_H_

@@ -185,6 +185,7 @@ uint8_t telemetryGetByte(uint8_t * byte)
 void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 {
   //TRACE("CRSF_to_Shared_FIFO:\r\n");
+  *p_arr = LIBCRSF_UART_SYNC;
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
     crossfireSharedData.crsf_rx.push(*(p_arr + i));
     //TRACE_NOCRLF("%02X ", *(p_arr + i));
@@ -193,6 +194,7 @@ void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 
 void CRSF_to_ESP( uint8_t *p_arr )
 {
+  *p_arr = LIBCRSF_UART_SYNC;
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
 	  espTxFifo.push(*(p_arr + i));
   }

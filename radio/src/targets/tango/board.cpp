@@ -450,6 +450,14 @@ void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId){
 	NVIC_SystemReset();
 }
 
+void PrintData(char* header, uint8_t* data){
+	TRACE_NOCRLF("\r\n%s: ", header);
+	for(int i = 0; i < data[1] + 2; i++){
+		TRACE_NOCRLF("%x ", data[i]);
+	}
+	TRACE_NOCRLF("\r\n");
+}
+
 RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 {
   return crossfireTaskId;
