@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 
-#if defined(ROTARY_ENCODER_NAVIGATION)
+#if defined(ROTARY_ENCODER_NAVIGATION) && defined(SIMU)
 uint32_t rotencPosition;
 #endif
 
@@ -140,7 +140,6 @@ void readKeysAndTrims()
   for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
     keys[index++].input(trims_input & i);
   }
-
 #if defined(PWR_BUTTON_PRESS)
   if ((keys_input || trims_input || pwrPressed()) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
 #else
@@ -241,7 +240,7 @@ uint32_t switchState(uint8_t index)
 }
 #endif
 
-#if defined(ROTARY_ENCODER_NAVIGATION)
+#if defined(ROTARY_ENCODER_NAVIGATION) && defined(SIMU)
 void checkRotaryEncoder()
 {
   uint32_t newpos = ROTARY_ENCODER_POSITION();
@@ -306,6 +305,6 @@ void keysInit()
 #endif
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  rotencPosition = ROTARY_ENCODER_POSITION();
+  //rotencPosition = ROTARY_ENCODER_POSITION();
 #endif
 }

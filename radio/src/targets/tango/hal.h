@@ -87,20 +87,18 @@
   #define ROTARY_ENCODER_POSITION()     (ENC_GPIO->IDR >> 12) & 0x03
 #elif defined(PCBTANGO)
   #define ENC_GPIO                      GPIOA
-  #define ENC_GPIO_PIN_A                GPIO_Pin_10 // PA.10
-  #define ENC_GPIO_PIN_B                GPIO_Pin_8  // PA.08
+  #define ENC_GPIO_PIN_A                GPIO_Pin_8    // PA.8
+  #define ENC_GPIO_PIN_B                GPIO_Pin_11   // PA.11
   #define ROTARY_ENCODER_POSITION()     ((ENC_GPIO->IDR >> 9) & 0x02) + ((ENC_GPIO->IDR >> 8) & 0x01)
-  #define ROTARY_ENCODER_GPIO           GPIOD
-  #define ROTARY_ENCODER_GPIO_PIN_A     GPIO_Pin_12 // PD.12
-  #define ROTARY_ENCODER_GPIO_PIN_B     GPIO_Pin_13 // PD.13
-  //#define ROTARY_ENCODER_POSITION()     (ROTARY_ENCODER_GPIO->IDR >> 12) & 0x03
-  #define ROTARY_ENCODER_EXTI_LINE1     0//EXTI_Line12
-  #define ROTARY_ENCODER_EXTI_LINE2     0//EXTI_Line13
-  #define ROTARY_ENCODER_EXTI_IRQn1        0//EXTI15_10_IRQn
-  #define ROTARY_ENCODER_EXTI_IRQHandler1  EXTI15_10_IRQHandler
-  #define ROTARY_ENCODER_EXTI_PortSource   0//EXTI_PortSourceGPIOD
-  #define ROTARY_ENCODER_EXTI_PinSource1   0//EXTI_PinSource12
-  #define ROTARY_ENCODER_EXTI_PinSource2   0//EXTI_PinSource13
+  #define ROTARY_ENCODER_EXTI_LINE1     EXTI_Line8
+  #define ROTARY_ENCODER_EXTI_LINE2     EXTI_Line11
+  #define ROTARY_ENCODER_EXTI_IRQn1        EXTI9_5_IRQn
+  #define ROTARY_ENCODER_EXTI_IRQHandler1  EXTI9_5_IRQHandler
+  #define ROTARY_ENCODER_EXTI_IRQn2        EXTI15_10_IRQn
+  #define ROTARY_ENCODER_EXTI_IRQHandler2  EXTI15_10_IRQHandler
+  #define ROTARY_ENCODER_EXTI_PortSource  EXTI_PortSourceGPIOA
+  #define ROTARY_ENCODER_EXTI_PinSource1  EXTI_PinSource8
+  #define ROTARY_ENCODER_EXTI_PinSource2  EXTI_PinSource11
 #elif defined(PCBX7)
   #define ENC_GPIO                      GPIOE
   #define ENC_GPIO_PIN_A                GPIO_Pin_9  // PE.09

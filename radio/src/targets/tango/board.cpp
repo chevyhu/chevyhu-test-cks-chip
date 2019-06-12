@@ -109,7 +109,7 @@ void interrupt5ms()
   }
 #endif
 
-#if defined(ROTARY_ENCODER_NAVIGATION)
+#if defined(ROTARY_ENCODER_NAVIGATION) && defined(SIMU)
   checkRotaryEncoder();
 #endif
 
@@ -232,6 +232,10 @@ void boardInit()
   if (pwm_interrupt_count < 32) {
     sticks_pwm_disabled = true;
   }
+#endif
+
+#if defined(ROTARY_ENCODER_NAVIGATION)
+  rotaryEncoderInit();
 #endif
 
   adcInit();
@@ -475,13 +479,21 @@ void tangoUpdateChannel( void )
 
 extern "C" {
 
+#if !defined(SIMU)
 void EXTI15_10_IRQHandler(void)
 {
 	void (*Crossfire_Task)(void);
 	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
 	/* call DIOCN handler of crossfire */
 	Crossfire_Task();
+
+	/* for rotary checking */
+  if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE2) != RESET) {
+    rotaryEncoderCheck();
+    EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE2);
+  }
 }
+#endif
 
 #include <stdio.h>
 #include <stdarg.h>

@@ -41,6 +41,10 @@
 #define KSTATE_PAUSE                98
 #define KSTATE_KILLED               99
 
+#if defined(PCBTANGO)
+uint8_t g_trimEditMode = EDIT_TRIM_DISABLED;
+#endif
+
 
 event_t s_evt;
 struct t_inactivity inactivity = {0};
@@ -60,6 +64,7 @@ event_t getEvent(bool trim)
     return 0;
   }
 }
+
 
 void Key::input(bool val)
 {
@@ -109,8 +114,33 @@ void Key::input(bool val)
       m_state = KSTATE_RPTDELAY;
       m_cnt = 0;
       break;
-
     case KSTATE_RPTDELAY: // gruvin: delay state before first key repeat
+#if defined(PCBTANGO) && !defined(SIMU)
+      if (g_trimEditMode != EDIT_TRIM_DISABLED) {
+        if (m_cnt == 2) {
+          // generate long key press
+          TRACE("key %d LONG", key());
+          putEvent(EVT_KEY_LONG(key()));
+        }
+        if (m_cnt == 4) {
+          m_state = 2;
+          m_cnt = 0;
+        }
+        break;
+      }
+      else {
+        if (m_cnt == KEY_LONG_DELAY) {
+          // generate long key press
+          //TRACE("key %d LONG", key());
+          putEvent(EVT_KEY_LONG(key()));
+        }
+        if (m_cnt == KEY_REPEAT_DELAY) {
+          m_state = 16;
+          m_cnt = 0;
+        }
+        break;
+      }
+#else
       if (m_cnt == KEY_LONG_DELAY) {
         // generate long key press
         //TRACE("key %d LONG", key());
@@ -121,7 +151,7 @@ void Key::input(bool val)
         m_cnt = 0;
       }
       break;
-
+#endif
     case 16:
     case 8:
     case 4:
