@@ -102,6 +102,37 @@ void CRSF_This_Device( uint8_t *p_arr )
       }
       break;
 
+#ifdef LIBCRSF_ENABLE_COMMAND
+#define LIBCRSF_GENERAL_CMD										0x0a
+#define LIBCRSF_CROSSFIRE_CMD									0x10
+
+#define LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD					0x0a
+
+#define LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_SUBCMD		0x06
+#define LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_REPLY_SUBCMD	0x07
+
+    case LIBCRSF_CMD_FRAME:
+    		if( ( *( p_arr + *(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET - 1 ) )
+				== libCRC8_Get_CRC_Arr( ( p_arr + LIBCRSF_TYPE_ADD ), *(p_arr + LIBCRSF_LENGTH_ADD) - 2, POLYNOM_2 )) {
+					//TODO
+				// commands( ( libCrsf_Commands ) *( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 2 )
+				//     , *( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 3 )
+				//     , ( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 4 ) );
+				if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 2 ) == LIBCRSF_GENERAL_CMD){
+					if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 3 ) == LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD){
+						boot2bootloader(1, libCrsf_MyHwID);
+					}
+				}
+				else if(*(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD) == LIBCRSF_CROSSFIRE_CMD){
+					if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_REPLY_SUBCMD ){
+					  current_crsf_model_id = *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 2);
+					}
+				}
+			}
+            break;
+#endif
+
+
 #if defined(CRSF_OPENTX)
     case LIBCRSF_OPENTX_RELATED:
 #if defined(CRSF_SD)
@@ -120,13 +151,6 @@ void CRSF_This_Device( uint8_t *p_arr )
 #endif
       break;
 #endif
-    case LIBCRSF_CMD_FRAME:
-      if(*(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD) == 0x10){
-        if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == 0x07 ){
-          current_crsf_model_id = *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 2);
-        }
-      }
-      break;
 
     default:
       // Buffer telemetry data inside a FIFO to let telemetryWakeup read from it and keep the
@@ -161,6 +185,7 @@ uint8_t telemetryGetByte(uint8_t * byte)
 void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 {
   //TRACE("CRSF_to_Shared_FIFO:\r\n");
+  *p_arr = LIBCRSF_UART_SYNC;
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
     crossfireSharedData.crsf_rx.push(*(p_arr + i));
     //TRACE_NOCRLF("%02X ", *(p_arr + i));
@@ -169,6 +194,7 @@ void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 
 void CRSF_to_ESP( uint8_t *p_arr )
 {
+  *p_arr = LIBCRSF_UART_SYNC;
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
 	  espTxFifo.push(*(p_arr + i));
   }
@@ -333,6 +359,7 @@ static void crsfSdPackFrame(CrsfSd_t* crsfSd){
 	libUtil_Write8(crsfSd->txBuf, &count, crsfSd->org);
 	libUtil_Write8(crsfSd->txBuf, &count, crsfSd->subcmd);
 	libUtil_Write8(crsfSd->txBuf, &count, crsfSd->flag);
+	libUtil_Write8(crsfSd->txBuf, &count, crsfSd->bufSize);
 	libUtil_Write32(crsfSd->txBuf, &count, crsfSd->chunk);
 	libUtil_Write32(crsfSd->txBuf, &count, crsfSd->requestDataLength);
 	libUtil_WriteBytes(crsfSd->txBuf, &count, crsfSd->payload, crsfSd->numOfBytesRead);
@@ -350,6 +377,7 @@ static void crsfSdUnpackFrame(CrsfSd_t* crsfSd){
 	crsfSd->org = libUtil_Read8(crsfSd->rxBuf, &count);
 	crsfSd->subcmd = libUtil_Read8(crsfSd->rxBuf, &count);
 	crsfSd->flag = libUtil_Read8(crsfSd->rxBuf, &count);
+	crsfSd->bufSize = libUtil_Read8(crsfSd->rxBuf, &count);
 	crsfSd->chunk = libUtil_Read32(crsfSd->rxBuf, &count);
 	crsfSd->requestDataLength = libUtil_Read32(crsfSd->rxBuf, &count);
 	for(uint8_t i = 0; i < crsfSd->length - CRSF_SD_DATA_START_ADD + 1; i++){
@@ -362,7 +390,6 @@ static void crsfSdUnpackFrame(CrsfSd_t* crsfSd){
 static void crsfSdEraseHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
-	static uint8_t targetDst = 0;
 	static uint16_t stateRepeatCount = 0;
 	static uint8_t prevState = CRSF_SD_START;
 
@@ -379,7 +406,7 @@ static void crsfSdEraseHandler(){
 
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_START){
 					state = CRSF_SD_WRITE;
-					targetDst = CrsfSdOpentx.org;
+					CrsfSdOpentx.targetDst = CrsfSdOpentx.org;
 					CrsfSdOpentx.result = f_unlink((char*)CrsfSdOpentx.payload);
 					delay_us(CRSF_SD_DELAY);
 					if( CrsfSdOpentx.result == FR_OK ){
@@ -417,7 +444,7 @@ static void crsfSdEraseHandler(){
 		case CRSF_SD_WRITE:
 		{
 			if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdOpentx.dst = targetDst;
+				CrsfSdOpentx.dst = CrsfSdOpentx.targetDst;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_ERASE;
 				CrsfSdOpentx.flag = CRSF_SD_FLAG_OK;
@@ -508,7 +535,6 @@ static void crsfSdEraseHandler(){
 static void crsfSdWriteHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
-	static uint8_t targetDst = 0;
 	static uint16_t stateRepeatCount = 0;
 	static uint8_t prevState = CRSF_SD_START;
 
@@ -524,7 +550,7 @@ static void crsfSdWriteHandler(){
 				#endif
 
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_START){
-					targetDst = CrsfSdOpentx.org;
+					CrsfSdOpentx.targetDst = CrsfSdOpentx.org;
 					#ifdef DEBUG_CRSF_SD_WRITE
 					TRACE("crsfSdWriteHandler:CRSF_SD_START:start to write");
 					TRACE("crsfSdWriteHandler:CRSF_SD_START:file:%s", CrsfSdOpentx.payload);
@@ -546,6 +572,7 @@ static void crsfSdWriteHandler(){
 							TRACE("crsfSdWriteHandler:CRSF_SD_START:get info successful:fsize:%d", CrsfSdOpentx.fileInfo.fsize);
 							#endif
 							CrsfSdOpentx.bytesPendingToSend = CrsfSdOpentx.requestDataLength;
+							CrsfSdOpentx.requestDataLength = CrsfSdOpentx.bufSize;
 							state = CRSF_SD_WRITE;
 						}
 						else{
@@ -593,13 +620,13 @@ static void crsfSdWriteHandler(){
 			}
 			else if((CrsfSdOpentx.bytesPendingToSend > 0  && (CrsfSdOpentx.flag == CRSF_SD_FLAG_START || CrsfSdOpentx.flag == CRSF_SD_FLAG_ACK) && crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE))){
 				CrsfSdOpentx.result = f_read(&CrsfSdOpentx.file, CrsfSdOpentx.payload, CrsfSdOpentx.requestDataLength, (UINT*)&CrsfSdOpentx.numOfBytesRead);
-				delay_us(CRSF_SD_DELAY);
+				delay_us(CRSF_SD_READ_DELAY);
 				if( CrsfSdOpentx.result == FR_OK ){
 					CrsfSdOpentx.chunk = CrsfSdOpentx.bytesPendingToSend / CrsfSdOpentx.numOfBytesRead;
 					if(CrsfSdOpentx.chunk == 1 && (CrsfSdOpentx.bytesPendingToSend - CrsfSdOpentx.numOfBytesRead == 0)){
 						CrsfSdOpentx.chunk = 0;
 					}
-					CrsfSdOpentx.dst = targetDst;
+					CrsfSdOpentx.dst = CrsfSdOpentx.targetDst;
 					CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 					CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 					CrsfSdOpentx.flag = CRSF_SD_FLAG_OK;
@@ -612,7 +639,7 @@ static void crsfSdWriteHandler(){
 				}
 			}
 			else if(CrsfSdOpentx.flag == CRSF_SD_FLAG_RETRY && crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdOpentx.dst = targetDst;
+				CrsfSdOpentx.dst = CrsfSdOpentx.targetDst;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_READ;
 				CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
@@ -707,7 +734,6 @@ static void crsfSdWriteHandler(){
 static void crsfSdReadHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
-	static uint8_t targetDst = 0;
 	static uint16_t stateRepeatCount = 0;
 	static uint8_t prevState = CRSF_SD_START;
 
@@ -736,7 +762,7 @@ static void crsfSdReadHandler(){
 						TRACE("crsfSdReadHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
 						#endif
 						if(CrsfSdOpentx.result == FR_OK){
-							targetDst = CrsfSdOpentx.org;
+							CrsfSdOpentx.targetDst = CrsfSdOpentx.org;
 							state = CRSF_SD_ACK;
 						}
 						else{
@@ -805,7 +831,7 @@ static void crsfSdReadHandler(){
 		case CRSF_SD_ACK:
 		{
 			if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdOpentx.dst = targetDst;
+				CrsfSdOpentx.dst = CrsfSdOpentx.targetDst;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_WRITE;
 				if(CrsfSdOpentx.chunk > 0){
@@ -858,7 +884,7 @@ static void crsfSdReadHandler(){
 			TRACE("crsfSdReadHandler:CRSF_SD_ERROR");
 			#endif
 			if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
-				CrsfSdOpentx.dst = targetDst;
+				CrsfSdOpentx.dst = CrsfSdOpentx.targetDst;
 				CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
 				CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_WRITE;
 				CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
@@ -928,85 +954,3 @@ void crsfSdHandler() {
 }
 
 #endif // CRSF_OPENTX && CRSF_SD
-
-/* ****************************************************************************************************************** */
-/* TODO: perna remove the code below since we will strictly use CRSF  */
-static uint8_t ToSendDataBuffer[64];
-static uint8_t AgentCrc;
-
-
-void WR_TO_USB_Writebuff ( uint8_t Position, uint8_t Data_In )
-{
-  ToSendDataBuffer[Position] = Data_In;
-  libCRC8_Calc(Data_In, &AgentCrc, POLYNOM_1);
-}
-
-
-void USB_WRITE_SIMPLE_CMD( uint8_t COMMAND )
-{
-  libCRC8_Reset( &AgentCrc );
-  WR_TO_USB_Writebuff(0, '\n');
-  WR_TO_USB_Writebuff(1, COMMAND);
-  ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-  usbAgentWrite(ToSendDataBuffer);
-}
-
-
-void USB_Send_Serial_Number()
-{
-  libCRC8_Reset( &AgentCrc );
-  WR_TO_USB_Writebuff(0, '\n');
-  WR_TO_USB_Writebuff(1, 30);
-
-  WR_TO_USB_Writebuff(2, 0);
-  WR_TO_USB_Writebuff(3, 0);
-  WR_TO_USB_Writebuff(4, 0);
-  WR_TO_USB_Writebuff(5, 1);
-
-  ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-  usbAgentWrite(ToSendDataBuffer);
-}
-
-
-void AgentLegacyCalls( uint8_t *pArr )
-{
-  pArr++;
-  switch( *pArr )
-  {
-    case 2: //USB_DEVICE_INFO_REQUEST:$
-      libCRC8_Reset( &AgentCrc );
-      WR_TO_USB_Writebuff(0, '\n');
-      WR_TO_USB_Writebuff(1, 3);
-      WR_TO_USB_Writebuff(2, 2);
-
-      WR_TO_USB_Writebuff(3, 0x00);
-      WR_TO_USB_Writebuff(4, 0x04);
-      WR_TO_USB_Writebuff(5, 0x00);
-      WR_TO_USB_Writebuff(6, 0x00);
-      WR_TO_USB_Writebuff(7, 0x01);
-      WR_TO_USB_Writebuff(8, 0x00);
-
-      WR_TO_USB_Writebuff(9, 8);
-      WR_TO_USB_Writebuff(10, 'T');
-      WR_TO_USB_Writebuff(11, 'a');
-      WR_TO_USB_Writebuff(12, 'n');
-      WR_TO_USB_Writebuff(13, 'g');
-      WR_TO_USB_Writebuff(14, 'o');
-      WR_TO_USB_Writebuff(15, ' ');
-      WR_TO_USB_Writebuff(16, 'I');
-      WR_TO_USB_Writebuff(17, 'I');
-
-      ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-      usbAgentWrite(ToSendDataBuffer);
-      break;
-
-    case 6:  // USB_MUX_CMDS_TO_SUB_CPU:
-      USB_WRITE_SIMPLE_CMD( 7 );
-      break;
-
-    case 18: //USB_SERIAL_NUMBER_REQUEST:
-      USB_Send_Serial_Number();
-      break;
-
-  }
-}

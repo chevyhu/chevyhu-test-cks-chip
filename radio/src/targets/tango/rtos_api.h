@@ -9,11 +9,12 @@
 #ifdef DEF_API_CMD
     //          id,   function                          ,  return_type, params  
     DEF_API_CMD( 1, RTOS_WAIT_TICKS                     , uint8_t       , const TickType_t xTicksToDelay)
-//    DEF_API_CMD( 2, ulTaskNotifyTake                    , uint32_t    , BaseType_t xClearCountOnExit, TickType_t xTicksToWait)
-//    DEF_API_CMD( 3, vTaskNotifyGiveFromISR              , void        , TaskHandle_t xTaskToNotify, BaseType_t *pxHigherPriorityTaskWoken)
+    DEF_API_CMD( 2, CoWaitForSingleFlag                 , uint32_t    , OS_FlagID id, U32 timeout)
+    DEF_API_CMD( 3, isr_SetFlag              			, StatusType  , OS_FlagID id)
     DEF_API_CMD( 4, Crossfire_Get_Firmware_Task_Handle  , RTOS_TASK_HANDLE, void)
 //    DEF_API_CMD( 5, vTaskGetRunTimeStats                , void        , char *pcWriteBuffer)
-            
+//    DEF_API_CMD( 6, ulPortSetTickCB                     , uint32_t    , void* cb)
+    DEF_API_CMD( 7, CoCreateFlag                        , BOOL bAutoReset, BOOL bInitialState)
 #undef DEF_API_CMD
 #else
             

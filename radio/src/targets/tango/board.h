@@ -96,7 +96,7 @@ extern "C" {
 
 #define FLASHSIZE                       0x60000
 #define BOOTLOADER_SIZE                 0x9000
-#define FIRMWARE_ADDRESS                0x08000000
+#define FIRMWARE_ADDRESS                0x08009000
 
 #define LUA_MEM_MAX                     (0)    // max allowed memory usage for complete Lua  (in bytes), 0 means unlimited
 
@@ -861,6 +861,12 @@ void ESP_WriteHandler(void);
 uint8_t espReadBuffer(uint8_t* buf);
 #endif
 
+#define BOOTLOADER_IS_NEED_FLASH_ADDR	0x0
+#define BOOTLOADER_HW_ID_ADDR			0x1
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId);
+
 void getDefaultSwConfig();
+
+void PrintData(char* header, uint8_t* data);
 
 #endif // _BOARD_H_

@@ -321,7 +321,7 @@ void boardInit()
       lcdRefreshWait();
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
-      //boardOff();
+      boardOff();
     }
   }
   else {
@@ -427,6 +427,39 @@ uint16_t getBatteryVoltage()
   instant_vbat = (instant_vbat * BATT_SCALE * (128 + g_eeGeneral.txVoltageCalibration) ) / 26214;
 //  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
   return (uint16_t)instant_vbat;
+}
+
+uint32_t ReadBackupReg(uint8_t index){
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+    PWR_BackupRegulatorCmd(ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
+    PWR_BackupAccessCmd(ENABLE);
+    while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
+    return *(__IO uint32_t *) (BKPSRAM_BASE + index*4);
+}
+
+void writeBackupReg(uint8_t index, uint32_t data){
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+	PWR_BackupRegulatorCmd(ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
+	PWR_BackupAccessCmd(ENABLE);
+	while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
+	*(__IO uint32_t *) (BKPSRAM_BASE + index*4) = data;
+}
+
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId){
+	usbStop();
+	writeBackupReg(BOOTLOADER_IS_NEED_FLASH_ADDR, isNeedFlash);
+	writeBackupReg(BOOTLOADER_HW_ID_ADDR, HwId);
+	NVIC_SystemReset();
+}
+
+void PrintData(char* header, uint8_t* data){
+	TRACE_NOCRLF("\r\n%s: ", header);
+	for(int i = 0; i < data[1] + 2; i++){
+		TRACE_NOCRLF("%x ", data[i]);
+	}
+	TRACE_NOCRLF("\r\n");
 }
 
 RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
@@ -543,7 +576,7 @@ void _general_exception_handler (unsigned int * hardfault_args)
     stacked_pc = ((unsigned long) hardfault_args[6]);
     stacked_psr = ((unsigned long) hardfault_args[7]);
 
-    hf_printf ("\r\n\n***Hard Fault Handler Debug Printing***\r\n");
+    hf_printf ("\r\n\n***OpenTx Hard Fault Handler Debug Printing***\r\n");
     hf_printf ("R0\t\t= 0x%.8x\r\n", stacked_r0);
     hf_printf ("R1\t\t= 0x%.8x\r\n", stacked_r1);
     hf_printf ("R2\t\t= 0x%.8x\r\n", stacked_r2);
