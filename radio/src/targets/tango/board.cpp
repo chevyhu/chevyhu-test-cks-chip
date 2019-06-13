@@ -429,6 +429,7 @@ uint16_t getBatteryVoltage()
   return (uint16_t)instant_vbat;
 }
 
+#if !defined(SIMU)
 uint32_t ReadBackupReg(uint8_t index){
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
     PWR_BackupRegulatorCmd(ENABLE);
@@ -453,6 +454,7 @@ void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId){
 	writeBackupReg(BOOTLOADER_HW_ID_ADDR, HwId);
 	NVIC_SystemReset();
 }
+#endif
 
 void PrintData(char* header, uint8_t* data){
 	TRACE_NOCRLF("\r\n%s: ", header);

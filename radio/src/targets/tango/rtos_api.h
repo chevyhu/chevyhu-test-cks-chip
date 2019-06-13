@@ -7,6 +7,7 @@
 
     
 #ifdef DEF_API_CMD
+#if !defined(SIMU)
     //          id,   function                          ,  return_type, params  
     DEF_API_CMD( 1, RTOS_WAIT_TICKS                     , uint8_t       , const TickType_t xTicksToDelay)
     DEF_API_CMD( 2, CoWaitForSingleFlag                 , uint32_t    , OS_FlagID id, U32 timeout)
@@ -15,6 +16,7 @@
 //    DEF_API_CMD( 5, vTaskGetRunTimeStats                , void        , char *pcWriteBuffer)
 //    DEF_API_CMD( 6, ulPortSetTickCB                     , uint32_t    , void* cb)
     DEF_API_CMD( 7, CoCreateFlag                        , BOOL bAutoReset, BOOL bInitialState)
+#endif
 #undef DEF_API_CMD
 #else
             
