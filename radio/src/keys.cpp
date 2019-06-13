@@ -115,18 +115,21 @@ void Key::input(bool val)
       m_cnt = 0;
       break;
     case KSTATE_RPTDELAY: // gruvin: delay state before first key repeat
-#if defined(PCBTANGO) && !defined(SIMU)
+#if defined(PCBTANGO)
       if (g_trimEditMode != EDIT_TRIM_DISABLED) {
-        if (m_cnt == 2) {
-          // generate long key press
-          TRACE("key %d LONG", key());
-          putEvent(EVT_KEY_LONG(key()));
+#if defined(SIMU)
+        if (m_cnt == KEY_LONG_DELAY) {
+          m_state = 16;
+          m_cnt = 0;
         }
-        if (m_cnt == 4) {
+        break;
+#else
+        if (m_cnt == 6) {
           m_state = 2;
           m_cnt = 0;
         }
         break;
+#endif
       }
       else {
         if (m_cnt == KEY_LONG_DELAY) {

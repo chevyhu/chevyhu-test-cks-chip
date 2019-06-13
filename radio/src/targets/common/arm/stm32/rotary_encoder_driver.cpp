@@ -65,11 +65,9 @@ void rotaryEncoderCheck()
   if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
     if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
       --rotencValue;
-      //TRACE("here got --\n");
     }
     else {
       ++rotencValue;
-     //TRACE("here got ++\n");
     }
     rotencPosition = newpos;
 #if !defined(BOOT)
@@ -84,7 +82,6 @@ extern "C" void ROTARY_ENCODER_EXTI_IRQHandler1(void)
 {
   if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE1) != RESET) {
     rotaryEncoderCheck();
-    //TRACE("here got it\n");
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE1);
   }
 
@@ -96,7 +93,7 @@ extern "C" void ROTARY_ENCODER_EXTI_IRQHandler1(void)
 #endif
 }
 
-#if 0//defined(ROTARY_ENCODER_EXTI_IRQn2)
+#if defined(ROTARY_ENCODER_EXTI_IRQn2) && !defined(PCBTANGO)
 extern "C" void ROTARY_ENCODER_EXTI_IRQHandler2(void)
 {
   if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE2) != RESET) {

@@ -132,10 +132,9 @@ void per10ms()
       rePreviousValue = reNewValue;
 
       bool new_cw = (scrollRE < 0) ? false : true;
-      if ((g_tmr10ms - lastEvent >= 2/*10*/) || (cw == new_cw)) { // 100ms
+      if ((g_tmr10ms - lastEvent >= 10) || (cw == new_cw)) { // 100ms
 
 #if defined(PCBTANGO)
-        //TRACE("Got rotary\n");
         putEvent(new_cw ? EVT_ROTARY_LEFT : EVT_ROTARY_RIGHT);
 
         if (g_trimEditMode != EDIT_TRIM_DISABLED) {
@@ -151,7 +150,7 @@ void per10ms()
         putEvent(new_cw ? EVT_ROTARY_RIGHT : EVT_ROTARY_LEFT);
 #endif
         // rotary encoder navigation speed (acceleration) detection/calculation
-        static uint32_t delay = 2*ROTENC_DELAY_HIGHSPEED;//ROTENC_DELAY_MIDSPEED;
+        static uint32_t delay = 2*ROTENC_DELAY_MIDSPEED;
 
         if (new_cw == cw) {
           // Modified moving average filter used for smoother change of speed
