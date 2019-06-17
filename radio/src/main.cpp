@@ -212,7 +212,7 @@ void checkBattery()
   static uint8_t sampleCount;
   // filter battery voltage by averaging it
   if (g_vbat100mV == 0) {
-#if defined(PCBTANGO) && !defined(SIMU)
+#if  defined(PCBTANGO) && !defined(SIMU)
 	// wait for power stable
 	delay_ms(200);
 #endif

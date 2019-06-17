@@ -1163,7 +1163,6 @@ void checkTrims()
     if (!beepTrim) {
       AUDIO_TRIM_PRESS(after);
     }
-
   }
 }
 

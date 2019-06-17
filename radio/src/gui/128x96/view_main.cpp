@@ -59,8 +59,6 @@ const unsigned char icons[]  = {
 #include "icons.lbm"
 };
 
-uint8_t g_trimEditMode = EDIT_TRIM_DISABLED;
-
 
 #if defined(TELEMETRY_FRSKY) && defined(CPUARM)
 void drawRSSIGauge()

@@ -144,6 +144,7 @@ elseif(PCB STREQUAL XLITE)
   set(GVAR_SCREEN model_gvars.cpp)
 endif()
 
+
 if(PCB STREQUAL XLITE)
   if(PXX_FREQUENCY STREQUAL HIGH)
     add_definitions(-DPXX_FREQUENCY_HIGH)
@@ -166,6 +167,13 @@ else()
     ${PULSES_SRC}
     ../sbus.cpp
     )
+endif()
+
+if(PCB STREQUAL X9E OR PCB STREQUAL TANGO OR (PCB STREQUAL X7 AND NOT (PCBREV STREQUAL T12)) OR PCB STREQUAL X9LITE)
+  set(TARGET_SRC
+          ${TARGET_SRC}
+          ../common/arm/stm32/rotary_encoder_driver.cpp
+          )
 endif()
 
 if(PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL XLITE OR PCB STREQUAL TANGO)

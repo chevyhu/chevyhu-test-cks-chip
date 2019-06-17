@@ -554,8 +554,9 @@ bool setTrimValue(uint8_t phase, uint8_t idx, int trim);
 
 #if defined(PCBSKY9X)
   #define ROTARY_ENCODER_GRANULARITY (2 << g_eeGeneral.rotarySteps)
-#elif defined(PCBHORUS)
+#elif defined(PCBHORUS) || defined(PCBTANGO)
   #define ROTARY_ENCODER_GRANULARITY (1)
+
 #else
   #define ROTARY_ENCODER_GRANULARITY (2)
 #endif
