@@ -57,6 +57,7 @@ void watchdogInit(unsigned int duration)
   IWDG->RLR = duration;       // 1.5 seconds nominal
   IWDG->KR = 0xAAAA;      // reload
   IWDG->KR = 0xCCCC;      // start
+  TRACE("watchdog init\r\n");
 }
 
 // Starts TIMER at 2MHz
@@ -522,11 +523,13 @@ void EXTI15_10_IRQHandler(void)
 	/* call DIOCN handler of crossfire */
 	Crossfire_Task();
 
-	/* for rotary checking */
+	/* for rotary checking, seems not correct here, the interrupt always trigger without the rotary key event, we disable it temporary, By Chevy 2019.06.18 */
+#if 0
   if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE2) != RESET) {
     rotaryEncoderCheck();
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE2);
   }
+#endif
 }
 #endif
 

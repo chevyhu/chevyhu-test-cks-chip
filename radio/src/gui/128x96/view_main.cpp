@@ -310,6 +310,7 @@ void onMainViewMenu(const char *result)
     chainMenu(menuStatisticsView);
   }
   else if (result == STR_ABOUT_US) {
+    while (1); //waitting for watchdog reset
     chainMenu(menuAboutView);
   }
 }

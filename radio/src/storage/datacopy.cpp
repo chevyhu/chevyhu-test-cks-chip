@@ -322,7 +322,9 @@ void copyRadioData(A * dest, B * src)
   dest->spareRadio = src->spareRadio;
   dest->stickMode = src->stickMode;
   dest->telemetryBaudrate = src->telemetryBaudrate;
+#if !defined(PCBTANGO)
   dest->splashSpares = src->splashSpares;
+#endif
   dest->switchesDelay = src->switchesDelay;
   for (int i=0; i<64; i++) {
     copyCustomFunctionData(&dest->customFn[i], &src->customFn[i]);

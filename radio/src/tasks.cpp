@@ -110,6 +110,7 @@ TASK_FUNCTION(mixerTask)
   s_pulses_paused = true;
 
   while (1) {
+    wdt_reset();
 #if defined(PCBX9D) || defined(PCBX7)
     // SBUS on Hearbeat PIN (which is a serial RX)
     processSbusInput();
@@ -298,7 +299,7 @@ void tasksStart()
 
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);
   RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE, MENUS_TASK_PRIO);
-#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
+#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU) && 0
   extern RTOS_TASK_HANDLE crossfireTaskId;
   extern RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
   extern RTOS_TASK_HANDLE systemTaskId;
