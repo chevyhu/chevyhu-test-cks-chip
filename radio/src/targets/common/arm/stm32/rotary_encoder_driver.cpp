@@ -19,8 +19,7 @@
  */
 
 #include "opentx.h"
-
-#if defined(BOOT)
+#if !defined(SIMU)
 uint32_t rotencPosition;
 
 void rotaryEncoderInit()
@@ -85,7 +84,7 @@ extern "C" void ROTARY_ENCODER_EXTI_IRQHandler1(void)
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE1);
   }
 
-#if !defined(ROTARY_ENCODER_EXTI_IRQn2)
+#if !defined(ROTARY_ENCODER_EXTI_IRQn2) && !defined(PCBTANGO)
   if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE2) != RESET) {
     rotaryEncoderCheck();
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE2);
@@ -102,5 +101,4 @@ extern "C" void ROTARY_ENCODER_EXTI_IRQHandler2(void)
   }
 }
 #endif
-
 #endif

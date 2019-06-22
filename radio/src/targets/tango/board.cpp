@@ -234,6 +234,10 @@ void boardInit()
     sticks_pwm_disabled = true;
   }
 #endif
+
+#if defined(ROTARY_ENCODER_NAVIGATION)
+  rotaryEncoderInit();
+#endif
   adcInit();
   lcdInit(); // delaysInit() must be called before
   audioInit();
@@ -266,7 +270,7 @@ void boardInit()
 #endif
 
   pwrInit();
-#if defined(PWR_BUTTON_PRESS) && 0
+#if defined(PWR_BUTTON_PRESS)
 #if defined(PCBTANGO)
   if (!WAS_RESET_BY_WATCHDOG()) {
 #else

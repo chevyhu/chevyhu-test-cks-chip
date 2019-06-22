@@ -304,7 +304,7 @@ void tasksStart()
 
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);
   RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE, MENUS_TASK_PRIO);
-#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU) && 0
+#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
   extern RTOS_TASK_HANDLE crossfireTaskId;
   extern RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
   extern RTOS_TASK_HANDLE systemTaskId;

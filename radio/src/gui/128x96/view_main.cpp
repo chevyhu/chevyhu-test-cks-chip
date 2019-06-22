@@ -311,7 +311,6 @@ void onMainViewMenu(const char *result)
   }
   else if (result == STR_ABOUT_US) {
     test_watchdog_flag = 1;
-    while (1); //waitting for watchdog reset
     chainMenu(menuAboutView);
   }
 }
