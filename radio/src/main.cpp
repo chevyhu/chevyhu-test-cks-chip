@@ -478,7 +478,7 @@ void guiMain(event_t evt)
 void drawFatalErrorScreen(const char * message)
 {
   lcdClear();
-  lcdDrawText(LCD_W/2, LCD_H/2-20, message, DBLSIZE);
+  lcdDrawText(6, LCD_H/2 - 7, message, MIDSIZE);
   lcdRefresh();
 }
 
@@ -524,7 +524,7 @@ void perMain()
 
   event_t evt = getEvent(false);
 
-#if defined(RAMBACKUP) && 0
+#if defined(RAMBACKUP) && !defined(PCBTANGO)
   if (unexpectedShutdown) {
     drawFatalErrorScreen(STR_EMERGENCY_MODE);
     return;

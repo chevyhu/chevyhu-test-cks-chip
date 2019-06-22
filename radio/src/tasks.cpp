@@ -104,13 +104,18 @@ void sendSynchronousPulses()
 
 uint32_t nextMixerTime[NUM_MODULES];
 
+
+extern uint8_t  test_watchdog_flag;
 TASK_FUNCTION(mixerTask)
 {
   static uint32_t lastRunTime;
   s_pulses_paused = true;
 
   while (1) {
-    wdt_reset();
+    if (!test_watchdog_flag)
+    {
+      wdt_reset();
+    }
 #if defined(PCBX9D) || defined(PCBX7)
     // SBUS on Hearbeat PIN (which is a serial RX)
     processSbusInput();

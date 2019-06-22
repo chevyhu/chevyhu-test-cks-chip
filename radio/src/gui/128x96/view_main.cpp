@@ -269,7 +269,7 @@ void displayBattVoltage()
 // #define EVT_KEY_TELEMETRY              EVT_KEY_LONG(KEY_DOWN)
 // #define EVT_KEY_STATISTICS             EVT_KEY_LONG(KEY_UP)
 
-
+uint8_t  test_watchdog_flag = 0;
 void onMainViewMenu(const char *result)
 {
   if (result == STR_MODEL_SELECT) {
@@ -310,6 +310,7 @@ void onMainViewMenu(const char *result)
     chainMenu(menuStatisticsView);
   }
   else if (result == STR_ABOUT_US) {
+    test_watchdog_flag = 1;
     while (1); //waitting for watchdog reset
     chainMenu(menuAboutView);
   }
@@ -354,11 +355,15 @@ void menuMainView(event_t event)
 
 #if MENUS_LOCK != 2/*no menus*/
     case EVT_KEY_BREAK(KEY_MENU):
-      pushMenu(menuModelSetup);
+      if (g_trimEditMode == EDIT_TRIM_DISABLED) {
+        pushMenu(menuModelSetup);
+      }
       break;
 
     case EVT_KEY_LONG(KEY_MENU):
-      pushMenu(menuRadioSetup);
+      if (g_trimEditMode == EDIT_TRIM_DISABLED) {
+        pushMenu(menuRadioSetup);
+      }
       killEvents(event);
       break;
 #endif
