@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 
-#if !defined(SIMU)
+#if defined(BOOT)
 uint32_t rotencPosition;
 
 void rotaryEncoderInit()

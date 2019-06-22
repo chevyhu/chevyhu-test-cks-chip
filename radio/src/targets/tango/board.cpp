@@ -110,7 +110,7 @@ void interrupt5ms()
   }
 #endif
 
-#if defined(ROTARY_ENCODER_NAVIGATION) && defined(SIMU)
+#if defined(ROTARY_ENCODER_NAVIGATION)
   checkRotaryEncoder();
 #endif
 
@@ -234,11 +234,6 @@ void boardInit()
     sticks_pwm_disabled = true;
   }
 #endif
-
-#if defined(ROTARY_ENCODER_NAVIGATION)
-  rotaryEncoderInit();
-#endif
-
   adcInit();
   lcdInit(); // delaysInit() must be called before
   audioInit();
@@ -270,6 +265,7 @@ void boardInit()
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP|DBGMCU_TIM1_STOP|DBGMCU_TIM2_STOP|DBGMCU_TIM3_STOP|DBGMCU_TIM6_STOP|DBGMCU_TIM8_STOP|DBGMCU_TIM10_STOP|DBGMCU_TIM13_STOP|DBGMCU_TIM14_STOP, ENABLE);
 #endif
 
+  pwrInit();
 #if defined(PWR_BUTTON_PRESS) && 0
 #if defined(PCBTANGO)
   if (!WAS_RESET_BY_WATCHDOG()) {
