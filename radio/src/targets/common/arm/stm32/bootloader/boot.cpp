@@ -216,7 +216,7 @@ int main()
   keysInit();
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  rotaryEncoderInit();
+  //rotaryEncoderInit();
 #endif
 
   boardPreInit();
