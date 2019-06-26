@@ -52,3 +52,58 @@ void drawAlertBox(const char * title, const char * text, const char * action)
 #undef MESSAGE_LCD_OFFSET
 }
 
+void runPopupWarning(event_t event)
+{
+  warningResult = false;
+
+  drawMessageBox(warningText);
+
+  if (warningInfoText) {
+	lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, warningInfoFlags);
+  }
+
+  switch (warningType) {
+	case WARNING_TYPE_WAIT:
+	  return;
+
+	case WARNING_TYPE_INFO:
+	  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, STR_OK);
+	  break;
+
+	case WARNING_TYPE_ASTERISK:
+	  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, STR_EXIT);
+	  break;
+
+	default:
+	  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, STR_POPUPS_ENTER_EXIT);
+	  break;
+  }
+
+
+  switch (event) {
+	case EVT_KEY_BREAK(KEY_ENTER):
+	  if (warningType == WARNING_TYPE_ASTERISK)
+		// key ignored, the user has to press [EXIT]
+		break;
+
+	  if (warningType == WARNING_TYPE_CONFIRM) {
+		warningType = WARNING_TYPE_ASTERISK;
+		warningText = nullptr;
+		if (popupMenuHandler){
+		  popupMenuHandler(STR_OK);
+		}
+	    warningResult = true;
+		break;
+	  }
+	  // no break
+
+	case EVT_KEY_BREAK(KEY_EXIT):
+	  if (warningType == WARNING_TYPE_CONFIRM) {
+		if (popupMenuHandler)
+		  popupMenuHandler(STR_EXIT);
+	  }
+	  warningText = nullptr;
+	  warningType = WARNING_TYPE_ASTERISK;
+	  break;
+  }
+}

@@ -164,6 +164,7 @@ const char * runPopupMenu(event_t event)
   return result;
 }
 
+#if !defined(PCBTANGO)
 void runPopupWarning(event_t event)
 {
   warningResult = false;
@@ -219,6 +220,7 @@ void runPopupWarning(event_t event)
       break;
   }
 }
+#endif
 
 void showAlertBox(const char * title, const char * text, const char * action , uint8_t sound)
 {

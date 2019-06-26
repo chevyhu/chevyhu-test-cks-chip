@@ -109,7 +109,7 @@ void usbStart()
       USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_HID_cb, &USR_cb);
       break;
 #endif
-#if defined(AGENT)
+#if defined(AGENT) && !defined(BOOT)
     case USB_AGENT_MODE:
       // initialize USB as HID device
       USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_AGENT_cb, &USR_cb);

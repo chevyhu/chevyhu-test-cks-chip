@@ -155,7 +155,7 @@ local function fieldUnsignedLoad(field, data, offset, size)
   field.min = fieldGetValue(data, offset+size, size)
   field.max = fieldGetValue(data, offset+2*size, size)
   field.default = fieldGetValue(data, offset+3*size, size)
-  field.unit, offset = fieldGetString(data, offset+4*size)
+  field.unit, offset = ""
   field.step = 1
 end
 
@@ -194,7 +194,7 @@ local function fieldSignedSave(field, size)
 end
 
 local function fieldIntDisplay(field, y, attr)
-  lcd.drawNumber(89, y, field.value, LEFT + attr)
+  lcd.drawNumber(79, y, field.value, LEFT + attr)
   lcd.drawText(lcd.getLastPos(), y, field.unit, attr)
 end
 
@@ -246,7 +246,7 @@ local function fieldFloatLoad(field, data, offset)
     field.prec = 2
   end
   field.step = fieldGetValue(data, offset+17, 4)
-  field.unit, offset = fieldGetString(data, offset+21)
+  field.unit, offset = ""
 end
 
 local function fieldFloatDisplay(field, y, attr)
@@ -258,7 +258,7 @@ local function fieldFloatDisplay(field, y, attr)
   else
     attrnum = LEFT + attr
   end
-  lcd.drawNumber(89, y, field.value, attrnum)
+  lcd.drawNumber(79, y, field.value, attrnum)
   lcd.drawText(lcd.getLastPos(), y, field.unit, attr)
 end
 
@@ -277,7 +277,7 @@ local function fieldTextSelectionLoad(field, data, offset)
   field.min = data[offset+1]
   field.max = data[offset+2]
   field.default = data[offset+3]
-  field.unit, offset = fieldGetString(data, offset+4)
+  field.unit, offset = ""
 end
 
 local function fieldTextSelectionSave(field)
@@ -285,7 +285,7 @@ local function fieldTextSelectionSave(field)
 end
 
 local function fieldTextSelectionDisplay(field, y, attr)
-  lcd.drawText(89, y, field.values[field.value+1], attr)
+  lcd.drawText(79, y, field.values[field.value+1], attr)
   lcd.drawText(lcd.getLastPos(), y, field.unit, attr)
 end
 
@@ -308,10 +308,10 @@ end
 
 local function fieldStringDisplay(field, y, attr)
   if edit == true and attr then
-    lcd.drawText(89, y, field.value, FIXEDWIDTH)
-    lcd.drawText(83+6*charIndex, y, string.sub(field.value, charIndex, charIndex), FIXEDWIDTH + attr)
+    lcd.drawText(79, y, field.value, FIXEDWIDTH)
+    lcd.drawText(134+6*charIndex, y, string.sub(field.value, charIndex, charIndex), FIXEDWIDTH + attr)
   else
-    lcd.drawText(89, y, field.value, attr)
+    lcd.drawText(79, y, field.value, attr)
   end
 end
 
@@ -319,7 +319,7 @@ local function fieldCommandLoad(field, data, offset)
   field.status = data[offset]
   field.timeout = data[offset+1]
   field.info, offset = fieldGetString(data, offset+2)
-  if field.status < 2 or field.status > 3 then
+  if field.status == 0 then
     fieldPopup = nil
   end
 end
@@ -336,7 +336,7 @@ end
 local function fieldCommandDisplay(field, y, attr)
   lcd.drawText(0, y, field.name, attr)
   if field.info ~= "" then
-    lcd.drawText(89, y, "[" .. field.info .. "]")
+    lcd.drawText(79, y, "[" .. field.info .. "]")
   end
 end
 
@@ -406,7 +406,7 @@ local function refreshNext()
     if fieldPopup then
       if time > fieldTimeout then
         local frame = { deviceId, 0xEA, fieldPopup.id }
-        crossfireTelemetryPush(0x2D, frame)
+        crossfireTelemetryPush(0x2D, { deviceId, 0xEA, fieldPopup.id, 6 })
         fieldTimeout = time + fieldPopup.timeout
       end
     elseif time > fieldTimeout and not edit then
@@ -470,7 +470,7 @@ local function runDevicePage(event)
 
   lcd.clear()
   lcd.drawScreenTitle(deviceName, 0, 0)
-  for y = 1, 7 do
+  for y = 1, 11 do
     local field = getField(pageOffset+y)
     if not field then
       break
@@ -497,8 +497,10 @@ local function runPopupPage(event)
   end
   if result == "OK" then
     crossfireTelemetryPush(0x2D, { deviceId, 0xEA, fieldPopup.id, 4 })
+    fieldPopup.status = 2;
   elseif result == "CANCEL" then
     crossfireTelemetryPush(0x2D, { deviceId, 0xEA, fieldPopup.id, 5 })
+    fieldPopup.status = 2;
   end
   return 0
 end
