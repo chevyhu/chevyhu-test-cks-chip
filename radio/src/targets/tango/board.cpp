@@ -57,6 +57,7 @@ void watchdogInit(unsigned int duration)
   IWDG->RLR = duration;       // 1.5 seconds nominal
   IWDG->KR = 0xAAAA;      // reload
   IWDG->KR = 0xCCCC;      // start
+  TRACE("watchdog init\r\n");
 }
 
 // Starts TIMER at 2MHz
@@ -109,7 +110,7 @@ void interrupt5ms()
   }
 #endif
 
-#if defined(ROTARY_ENCODER_NAVIGATION) && defined(SIMU)
+#if defined(ROTARY_ENCODER_NAVIGATION)
   checkRotaryEncoder();
 #endif
 
@@ -237,7 +238,6 @@ void boardInit()
 #if defined(ROTARY_ENCODER_NAVIGATION)
   rotaryEncoderInit();
 #endif
-
   adcInit();
   lcdInit(); // delaysInit() must be called before
   audioInit();
@@ -269,6 +269,7 @@ void boardInit()
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP|DBGMCU_TIM1_STOP|DBGMCU_TIM2_STOP|DBGMCU_TIM3_STOP|DBGMCU_TIM6_STOP|DBGMCU_TIM8_STOP|DBGMCU_TIM10_STOP|DBGMCU_TIM13_STOP|DBGMCU_TIM14_STOP, ENABLE);
 #endif
 
+  pwrInit();
 #if defined(PWR_BUTTON_PRESS)
 #if defined(PCBTANGO)
   if (!WAS_RESET_BY_WATCHDOG()) {
@@ -522,11 +523,13 @@ void EXTI15_10_IRQHandler(void)
 	/* call DIOCN handler of crossfire */
 	Crossfire_Task();
 
-	/* for rotary checking */
+	/* for rotary checking, seems not correct here, the interrupt always trigger without the rotary key event, we disable it temporary, By Chevy 2019.06.18 */
+#if 0
   if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE2) != RESET) {
     rotaryEncoderCheck();
     EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE2);
   }
+#endif
 }
 #endif
 

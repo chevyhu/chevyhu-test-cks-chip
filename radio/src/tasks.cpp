@@ -104,6 +104,7 @@ void sendSynchronousPulses()
 
 uint32_t nextMixerTime[NUM_MODULES];
 
+
 TASK_FUNCTION(mixerTask)
 {
   static uint32_t lastRunTime;

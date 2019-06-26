@@ -517,7 +517,7 @@ void perMain()
 
   event_t evt = getEvent(false);
 
-#if defined(RAMBACKUP)
+#if defined(RAMBACKUP) && !defined(PCBTANGO)
   if (unexpectedShutdown) {
     drawFatalErrorScreen(STR_EMERGENCY_MODE);
     return;

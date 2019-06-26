@@ -20,9 +20,10 @@
 
 #include "opentx.h"
 
-#if defined(ROTARY_ENCODER_NAVIGATION) && defined(SIMU)
-uint32_t rotencPosition;
+#if defined(ROTARY_ENCODER_NAVIGATION)
+uint32_t rotencPositionValue;
 #endif
+
 
 #if defined(PCBTANGO)
 uint8_t  g_trimState = 0;
@@ -240,18 +241,18 @@ uint32_t switchState(uint8_t index)
 }
 #endif
 
-#if defined(ROTARY_ENCODER_NAVIGATION) && defined(SIMU)
+#if defined(ROTARY_ENCODER_NAVIGATION) && !defined(BOOT)
 void checkRotaryEncoder()
 {
   uint32_t newpos = ROTARY_ENCODER_POSITION();
-  if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
-    if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
+  if (newpos != rotencPositionValue && !keyState(KEY_ENTER)) {
+    if ((rotencPositionValue & 0x01) ^ ((newpos & 0x02) >> 1)) {
       --rotencValue;
     }
     else {
       ++rotencValue;
     }
-    rotencPosition = newpos;
+    rotencPositionValue = newpos;
 #if !defined(BOOT)
     if (g_eeGeneral.backlightMode & e_backlight_mode_keys) {
       backlightOn();
@@ -305,6 +306,6 @@ void keysInit()
 #endif
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  //rotencPosition = ROTARY_ENCODER_POSITION();
+  rotencPositionValue = ROTARY_ENCODER_POSITION();
 #endif
 }

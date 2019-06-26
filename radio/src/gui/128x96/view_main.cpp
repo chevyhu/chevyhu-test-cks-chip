@@ -269,7 +269,7 @@ void displayBattVoltage()
 // #define EVT_KEY_TELEMETRY              EVT_KEY_LONG(KEY_DOWN)
 // #define EVT_KEY_STATISTICS             EVT_KEY_LONG(KEY_UP)
 
-
+uint8_t  test_watchdog_flag = 0;
 void onMainViewMenu(const char *result)
 {
   if (result == STR_MODEL_SELECT) {
@@ -310,6 +310,7 @@ void onMainViewMenu(const char *result)
     chainMenu(menuStatisticsView);
   }
   else if (result == STR_ABOUT_US) {
+    test_watchdog_flag = 1;
     chainMenu(menuAboutView);
   }
 }
@@ -353,11 +354,15 @@ void menuMainView(event_t event)
 
 #if MENUS_LOCK != 2/*no menus*/
     case EVT_KEY_BREAK(KEY_MENU):
-      pushMenu(menuModelSetup);
+      if (g_trimEditMode == EDIT_TRIM_DISABLED) {
+        pushMenu(menuModelSetup);
+      }
       break;
 
     case EVT_KEY_LONG(KEY_MENU):
-      pushMenu(menuRadioSetup);
+      if (g_trimEditMode == EDIT_TRIM_DISABLED) {
+        pushMenu(menuRadioSetup);
+      }
       killEvents(event);
       break;
 #endif
@@ -427,6 +432,7 @@ void menuMainView(event_t event)
 #endif
       if (g_trimEditMode != EDIT_TRIM_DISABLED) {
         g_trimEditMode = EDIT_TRIM_DISABLED;
+        AUDIO_MAIN_MENU();
         idx = -1;
         oldIdx = -1;
       }
@@ -565,7 +571,7 @@ void menuMainView(event_t event)
 
       // Logical Switches
       uint8_t index = 0;
-      uint8_t y = LCD_H-20;
+      uint8_t y = LCD_H-40;
       for (uint8_t line=0; line<2; line++) {
         for (uint8_t column=0; column<MAX_LOGICAL_SWITCHES/2; column++) {
           int8_t len = getSwitch(SWSRC_SW1+index) ? 10 : 1;
@@ -574,7 +580,7 @@ void menuMainView(event_t event)
           lcdDrawSolidVerticalLine(x,   y-len, len);
           index++;
         }
-        y += 12;
+        y += 18;
       }
     }
   }
