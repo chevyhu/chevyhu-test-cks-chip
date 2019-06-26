@@ -475,13 +475,6 @@ void guiMain(event_t evt)
 }
 #endif
 
-void drawFatalErrorScreen(const char * message)
-{
-  lcdClear();
-  lcdDrawText(6, LCD_H/2 - 7, message, MIDSIZE);
-  lcdRefresh();
-}
-
 void perMain()
 {
 #if defined(PCBTANGO)

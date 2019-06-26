@@ -592,6 +592,7 @@ void audioTimerCountdown(uint8_t timer, int value);
 #define AUDIO_ELEVATOR_TRIM()    AUDIO_BUZZER(audioEvent(AU_ELEVATOR_TRIM), beep(2))
 #define AUDIO_THROTTLE_TRIM()    AUDIO_BUZZER(audioEvent(AU_THROTTLE_TRIM), beep(2))
 #define AUDIO_RUDDER_TIME()      AUDIO_BUZZER(audioEvent(AU_RUDDER_TRIME), beep(2))
+#define AUDIO_MAIN_MENU()        AUDIO_BUZZER(audioEvent(AU_MAIN_MENU), beep(2))
 #endif
 
 #define AUDIO_HEARTBEAT()

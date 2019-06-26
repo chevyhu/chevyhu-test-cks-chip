@@ -212,6 +212,7 @@ const char * const audioFilenames[] = {
   "elevator_trim",
   "throttle_trim",
   "rudder_trim",
+  "main_page",
 #endif
 #if defined(PCBTARANIS) || defined(PCBHORUS)
   "midpot1",
