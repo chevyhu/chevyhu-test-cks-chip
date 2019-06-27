@@ -234,10 +234,6 @@ void boardInit()
     sticks_pwm_disabled = true;
   }
 #endif
-
-#if defined(ROTARY_ENCODER_NAVIGATION)
-  rotaryEncoderInit();
-#endif
   adcInit();
   lcdInit(); // delaysInit() must be called before
   audioInit();
