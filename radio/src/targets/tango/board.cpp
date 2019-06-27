@@ -518,14 +518,6 @@ void EXTI15_10_IRQHandler(void)
 	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
 	/* call DIOCN handler of crossfire */
 	Crossfire_Task();
-
-	/* for rotary checking, seems not correct here, the interrupt always trigger without the rotary key event, we disable it temporary, By Chevy 2019.06.18 */
-#if 0
-  if (EXTI_GetITStatus(ROTARY_ENCODER_EXTI_LINE2) != RESET) {
-    rotaryEncoderCheck();
-    EXTI_ClearITPendingBit(ROTARY_ENCODER_EXTI_LINE2);
-  }
-#endif
 }
 #endif
 
