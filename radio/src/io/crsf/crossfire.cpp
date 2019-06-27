@@ -69,6 +69,26 @@ static void SetOpentxBuf(uint8_t* p_arr){
 
 #endif
 
+#define LIBCRSF_EX_PARAM_SETTING_READ	0x2c
+#define LIBCRSF_EX_PARAM_SETTING_ENTRY 0x2b
+
+void crsfPackParam( uint8_t *p_arr )
+{
+  uint32_t count = 0;
+
+  libUtil_Write8(p_arr, &count, LIBCRSF_UART_SYNC); /* device address */
+  libUtil_Write8(p_arr, &count, 0);                 /* frame length */
+  libUtil_Write8(p_arr, &count, LIBCRSF_EX_PARAM_SETTING_ENTRY); /* cmd type */
+  libUtil_Write8(p_arr, &count, LIBCRSF_USB_HOST_ADD);     /* Destination Address */
+  libUtil_Write8(p_arr, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
+  libUtil_Write8(p_arr, &count, 0x0);              /* param number */
+
+  uint8_t crc1 = libCRC8_Get_CRC_Arr(&p_arr[2], count-2, POLYNOM_1);
+  libUtil_Write8(p_arr, &count, crc1);
+
+  p_arr[LIBCRSF_LENGTH_ADD] = count - 2;
+}
+
 void CRSF_Init( void )
 {
   /* init crsf library */
@@ -100,6 +120,11 @@ void CRSF_This_Device( uint8_t *p_arr )
         libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
         libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
       }
+      break;
+
+    case LIBCRSF_EX_PARAM_SETTING_READ:
+      crsfPackParam(p_arr);
+	  libCrsf_CRSF_Routing( DEVICE_INTERNAL, &p_arr[0] );
       break;
 
 #ifdef LIBCRSF_ENABLE_COMMAND
