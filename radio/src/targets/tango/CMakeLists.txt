@@ -48,7 +48,6 @@ elseif(PCB STREQUAL TANGO)
   add_definitions(-DEEPROM_VARIANT=0x8000)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   add_definitions(-DSOFTWARE_VOLUME)
-  add_definitions(-DAGENT )
 
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
@@ -194,6 +193,11 @@ if(PCB STREQUAL TANGO)
   set(TARGET_SRC
     ${TARGET_SRC}
     ../tango/esp_driver.cpp
+    )
+  add_definitions(-DAGENT)
+  set(TARGET_SRC
+    ${TARGET_SRC}
+    ../tango/usbd_hid_agent.c
     )
   set(SRC
     ${SRC}

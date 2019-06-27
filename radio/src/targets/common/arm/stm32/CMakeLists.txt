@@ -74,12 +74,7 @@ set(FIRMWARE_TARGET_SRC
   ${FIRMWARE_TARGET_SRC}
   ../common/arm/stm32/usbd_hid_joystick.c
   )
-if (PCB STREQUAL TANGO)
-    set(FIRMWARE_TARGET_SRC
-            ${FIRMWARE_TARGET_SRC}
-            ../common/arm/stm32/usbd_hid_agent.c
-            )
-endif()
+
 if(GVARS)
   set(GUI_SRC
     ${GUI_SRC}
