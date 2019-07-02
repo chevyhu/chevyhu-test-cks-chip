@@ -49,6 +49,8 @@ void KernelApiInit( void ){
 #include "rtos_api.h"
 }
 
+uint8_t isDisableBoardOff();
+
 void watchdogInit(unsigned int duration)
 {
   IWDG->KR = 0x5555;      // Unlock registers
@@ -322,7 +324,9 @@ void boardInit()
       lcdRefreshWait();
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
-      boardOff();
+    	if(!isDisableBoardOff()){
+    		boardOff();
+    	}
     }
   }
   else {
@@ -431,7 +435,7 @@ uint16_t getBatteryVoltage()
 }
 
 #if !defined(SIMU)
-uint32_t ReadBackupReg(uint8_t index){
+uint32_t readBackupReg(uint8_t index){
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
     PWR_BackupRegulatorCmd(ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
@@ -454,6 +458,12 @@ void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId){
 	writeBackupReg(BOOTLOADER_IS_NEED_FLASH_ADDR, isNeedFlash);
 	writeBackupReg(BOOTLOADER_HW_ID_ADDR, HwId);
 	NVIC_SystemReset();
+}
+
+uint8_t isDisableBoardOff(){
+	uint8_t value = (uint8_t)readBackupReg(BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR);
+	writeBackupReg(BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR, 0);
+	return value;
 }
 #endif
 

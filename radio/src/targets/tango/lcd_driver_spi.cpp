@@ -31,6 +31,7 @@
 #define LCD_DC_HIGH()                 LCD_DC_GPIO->BSRRL = LCD_DC_GPIO_PIN
 #define LCD_DC_LOW()                  LCD_DC_GPIO->BSRRH = LCD_DC_GPIO_PIN
 
+#define SPI_TIMEOUT					  10000000UL
 
 volatile bool lcd_busy = false;
 
@@ -39,14 +40,23 @@ static void spiWrite(uint8_t byte)
   LCD_DC_LOW();
   LCD_CS_LOW();
 
-  while ((LCD_SPI->SR & SPI_SR_TXE) == 0) {
+  uint32_t timeout = 0;
+
+  while ((LCD_SPI->SR & SPI_SR_TXE) == 0 && timeout++ < SPI_TIMEOUT) {
     // Wait
   }
+
+  if(timeout >= SPI_TIMEOUT ){
+	  LCD_CS_HIGH();
+	  return;
+  }
+
+  timeout = 0;
 
   (void)LCD_SPI->DR; // Clear receive
   LCD_SPI->DR = byte;
 
-  while ((LCD_SPI->SR & SPI_SR_RXNE) == 0) {
+  while ((LCD_SPI->SR & SPI_SR_RXNE) == 0 && timeout++ < SPI_TIMEOUT) {
     // Wait
   }
 
