@@ -1440,4 +1440,11 @@
 #define TIMER_2MHz_RCC_APB1Periph       RCC_APB1Periph_TIM7
 #define TIMER_2MHz_TIMER                TIM7
 
+// 1ms Interrupt
+#define INTERRUPT_1MS_RCC_APB1Periph    RCC_APB2Periph_TIM11
+#define INTERRUPT_1MS_TIMER             TIM11
+#define INTERRUPT_1MS_IRQn              TIM1_TRG_COM_TIM11_IRQn
+#define INTERRUPT_1MS_IRQHandler        TIM1_TRG_COM_TIM11_IRQHandler
+#define INTERRUPT_1MS_IRQ_PRI        	1
+
 #endif // _HAL_H_

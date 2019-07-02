@@ -780,6 +780,7 @@ void checkTrainerSettings(void);
 #define SHARED_MEMORY_ADDRESS   		0x10000040
 
 #define CROSSFIRE_STACK_SIZE   			700
+#define CROSSFIRE_TASK_PRIORITY  		0
 #define CROSSFIRE_TASK_ADDRESS 			0x8060010
 #define DIO_INT_TRAMPOLINE      		0x8060061
 #define SYSTEM_STACK_SIZE      			500
@@ -795,6 +796,8 @@ extern DMAFifo<32> serial2RxFifo;
 
 void CRSF_Init( void );
 void tangoUpdateChannel( void );
+uint32_t ulPortSetTickCB(uint32_t cb);
+void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr );
 
 #if defined(ESP_SERIAL)
 #define ESP_TX_BUFFER_SIZE            256

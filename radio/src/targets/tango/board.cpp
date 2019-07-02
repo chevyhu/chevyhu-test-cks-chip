@@ -123,6 +123,37 @@ extern "C" void INTERRUPT_xMS_IRQHandler()
 }
 #endif
 
+// Starts TIMER at 1KHz (1ms)
+void init1msTimer()
+{
+  INTERRUPT_1MS_TIMER->ARR = 999 ; // 1mS in uS
+  INTERRUPT_1MS_TIMER->PSC = (PERI2_FREQUENCY * TIMER_MULT_APB2) / 1000000 - 1 ; // 1uS
+  INTERRUPT_1MS_TIMER->CCER = 0 ;
+  INTERRUPT_1MS_TIMER->CCMR1 = 0 ;
+  INTERRUPT_1MS_TIMER->EGR = 0 ;
+  INTERRUPT_1MS_TIMER->CR1 = 5 ;
+  INTERRUPT_1MS_TIMER->DIER |= 1 ;
+  NVIC_SetPriority(INTERRUPT_1MS_IRQn, INTERRUPT_1MS_IRQ_PRI);
+  NVIC_EnableIRQ(INTERRUPT_1MS_IRQn) ;
+}
+
+typedef void (*RTOS_Tick_CB_FuncPtr) (void);
+RTOS_Tick_CB_FuncPtr RTOS_Tick_CB = 0;
+uint32_t ulPortSetTickCB( uint32_t cb )
+{
+    RTOS_Tick_CB = (RTOS_Tick_CB_FuncPtr)cb;
+    return 1;
+}
+
+#if !defined(SIMU)
+extern "C" void INTERRUPT_1MS_IRQHandler()
+{
+  INTERRUPT_1MS_TIMER->SR &= ~TIM_SR_UIF ;
+  if( RTOS_Tick_CB )
+      RTOS_Tick_CB();
+}
+#endif
+
 #if defined(PWR_BUTTON_PRESS) && !defined(SIMU)
   #define PWR_PRESS_DURATION_MIN        100 // 1s
   #define PWR_PRESS_DURATION_MAX        500 // 5s
@@ -207,7 +238,7 @@ void boardInit()
   RCC_APB2PeriphClockCmd(BACKLIGHT_RCC_APB2Periph | ADC_RCC_APB2Periph |
                          HAPTIC_RCC_APB2Periph | INTMODULE_RCC_APB2Periph |
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
-                         BT_RCC_APB2Periph, ENABLE);
+                         BT_RCC_APB2Periph | INTERRUPT_1MS_RCC_APB1Periph, ENABLE);
   KernelApiInit();
 #if !defined(PCBX9E) || !defined(PCBTANGO)
   // some X9E boards need that the pwrInit() is moved a little bit later
@@ -235,6 +266,7 @@ void boardInit()
   audioInit();
   init2MhzTimer();
   init5msTimer();
+  init1msTimer();
   CRSF_Init();
   __enable_irq();
   i2cInit();
@@ -426,6 +458,15 @@ RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
   return crossfireTaskId;
 };
 
+typedef bool ( *XF_UART_IRQ_HANDLER_TYPE )( uint8_t, uint8_t );
+XF_UART_IRQ_HANDLER_TYPE crossfire_uart_irq_handler;
+#define CROSSFIRE_API_UART_IRQ_HANLDER	1
+void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr ){
+	if( type == CROSSFIRE_API_UART_IRQ_HANLDER ){
+		crossfire_uart_irq_handler = (XF_UART_IRQ_HANDLER_TYPE)addr;
+	}
+}
+
 #if !defined(SIMU)
 TASK_FUNCTION(systemTask)
 {
@@ -448,14 +489,67 @@ void tangoUpdateChannel( void )
 //  TRACE("%d %d %d %d\n", crossfireSharedData.channels[0], crossfireSharedData.channels[1], crossfireSharedData.channels[2],crossfireSharedData.channels[3]);
 }
 
+#if 1
+#define UART_INT_MODE_TX     1
+#define UART_INT_MODE_RX     2
+extern Fifo<uint8_t, 512> serial2TxFifo;
+extern "C" void SERIAL_USART_IRQHandler(void)
+{
+  DEBUG_INTERRUPT(INT_SER2);
+  bool xf_active = false;
+  bool xf_valid = crossfire_uart_irq_handler ? true : false;
+  // Send
+  if (USART_GetITStatus(SERIAL_USART, USART_IT_TXE) != RESET) {
+    uint8_t txchar;
+    if( xf_valid )
+    	xf_active = crossfire_uart_irq_handler( UART_INT_MODE_TX, 0);
+    if( !xf_active ){
+		if (serial2TxFifo.pop(txchar)) {
+		  /* Write one byte to the transmit data register */
+		  USART_SendData(SERIAL_USART, txchar);
+		}
+		else {
+		  USART_ITConfig(SERIAL_USART, USART_IT_TXE, DISABLE);
+		}
+    }
+  }
+
+  if (xf_valid && USART_GetITStatus(SERIAL_USART, USART_IT_RXNE) != RESET) {
+    // Receive
+	uint8_t data = USART_ReceiveData(SERIAL_USART);
+	crossfire_uart_irq_handler( UART_INT_MODE_RX, data);
+  }
+
+#if 0//defined(CLI)
+  if (!(getSelectedUsbMode() == USB_SERIAL_MODE)) {
+    // Receive
+    uint32_t status = SERIAL_USART->SR;
+    while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
+      uint8_t data = SERIAL_USART->DR;
+      if (!(status & USART_FLAG_ERRORS)) {
+        switch (serial2Mode) {
+          case UART_MODE_DEBUG:
+            cliRxFifo.push(data);
+            break;
+        }
+      }
+      status = SERIAL_USART->SR;
+    }
+  }
+#endif
+}
+#endif
+
 extern "C" {
 
 void EXTI15_10_IRQHandler(void)
 {
+	CoEnterISR();
 	void (*Crossfire_Task)(void);
 	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
 	/* call DIOCN handler of crossfire */
 	Crossfire_Task();
+	CoExitISR();
 }
 
 #include <stdio.h>
