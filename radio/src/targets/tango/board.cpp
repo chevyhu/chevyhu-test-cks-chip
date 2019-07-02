@@ -545,10 +545,12 @@ extern "C" {
 
 void EXTI15_10_IRQHandler(void)
 {
+	CoEnterISR();
 	void (*Crossfire_Task)(void);
 	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
 	/* call DIOCN handler of crossfire */
 	Crossfire_Task();
+	CoExitISR();
 }
 
 #include <stdio.h>
