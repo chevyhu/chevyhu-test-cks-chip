@@ -101,9 +101,12 @@ void interrupt5ms()
 #if defined(HAPTIC)
   HAPTIC_HEARTBEAT();
 #endif
-
+#if defined(PCBTANGO)
+  if (++pre_scale % 2 == 0) {
+#else
   if (++pre_scale >= 2) {
     pre_scale = 0 ;
+#endif
     DEBUG_TIMER_START(debugTimerPer10ms);
     DEBUG_TIMER_SAMPLE(debugTimerPer10msPeriod);
     per10ms();
@@ -112,11 +115,16 @@ void interrupt5ms()
   }
 #endif
 
+#if defined(PCBTANGO)
+  if (pre_scale % ROTARY_ENCODER_PRESCALER == 0) {
+	    pre_scale = 0 ;
+#endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  checkRotaryEncoder();
+	    checkRotaryEncoder();
 #endif
 
 #if defined(PCBTANGO)
+  	  }
   }
 #endif
 }
@@ -453,10 +461,11 @@ void writeBackupReg(uint8_t index, uint32_t data){
 	*(__IO uint32_t *) (BKPSRAM_BASE + index*4) = data;
 }
 
-void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId){
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn){
 	usbStop();
 	writeBackupReg(BOOTLOADER_IS_NEED_FLASH_ADDR, isNeedFlash);
 	writeBackupReg(BOOTLOADER_HW_ID_ADDR, HwId);
+	writeBackupReg(BOOTLOADER_SERIAL_NO_ADDR, sn);
 	NVIC_SystemReset();
 }
 

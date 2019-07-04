@@ -466,6 +466,7 @@ extern uint8_t g_trimState;
 #if defined(PCBX9E) || defined(PCBX7) || defined(PCBX3) || defined(PCBTANGO)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
+#define ROTARY_ENCODER_PRESCALER		4
 void rotaryEncoderInit(void);
 void rotaryEncoderCheck(void);
 void checkRotaryEncoder(void);
@@ -864,7 +865,14 @@ uint8_t espReadBuffer(uint8_t* buf);
 #define BOOTLOADER_IS_NEED_FLASH_ADDR				0x0
 #define BOOTLOADER_HW_ID_ADDR						0x1
 #define BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR			0x2
-void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId);
+#define BOOTLOADER_SERIAL_NO_ADDR					0x3
+#define BOOTLOADER_HW_ID_ADDR_OPENTX				0x4
+#define BOOTLOADER_HW_ID_ADDR_XF					0x5
+#define BOOTLOADER_SERIAL_NO_ADDR_OPENTX			0x6
+#define BOOTLOADER_SERIAL_NO_ADDR_XF				0x7
+uint32_t readBackupReg(uint8_t index);
+void writeBackupReg(uint8_t index, uint32_t data);
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn);
 
 void getDefaultSwConfig();
 
