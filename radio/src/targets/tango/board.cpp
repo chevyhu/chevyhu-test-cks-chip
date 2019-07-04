@@ -111,20 +111,16 @@ void interrupt5ms()
     DEBUG_TIMER_SAMPLE(debugTimerPer10msPeriod);
     per10ms();
     DEBUG_TIMER_STOP(debugTimerPer10ms);
-#if !defined(PCBTANGO)
   }
-#endif
 
 #if defined(PCBTANGO)
-  if (pre_scale % ROTARY_ENCODER_PRESCALER == 0) {
-	    pre_scale = 0 ;
+  if(pre_scale % ROTARY_ENCODER_PRESCALER == 0) {
 #endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
-	    checkRotaryEncoder();
+	checkRotaryEncoder();
 #endif
 
 #if defined(PCBTANGO)
-  	  }
   }
 #endif
 }
