@@ -152,8 +152,13 @@
 
 /************************* PLL Parameters *************************************/
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
-#define PLL_M      4//12
-#define PLL_N      168//336
+#if defined(PCBTANGO)
+#define PLL_M      4
+#define PLL_N      168
+#else
+#define PLL_M      12
+#define PLL_N      336
+#endif
 
 /* SYSCLK = PLL_VCO / PLL_P */
 #define PLL_P      2
@@ -256,7 +261,7 @@ void SystemInit(void)
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
 #else
-  // SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+  SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
   extern uint32_t g_pfnVectors ;
   SCB->VTOR = (uint32_t) &g_pfnVectors ; /* Vector Table Relocation in Internal FLASH */
 #endif

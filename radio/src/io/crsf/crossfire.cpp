@@ -60,6 +60,7 @@ static uint8_t isOpentxBufSet = 0;
 uint8_t enableOpentxSdWriteHandler = 0;
 uint8_t enableOpentxSdReadHandler = 0;
 uint8_t enableOpentxSdEraseHandler = 0;
+uint8_t current_crsf_model_id = 0;
 
 static void SetOpentxBuf(uint8_t* p_arr){
 	memcpy(OpentxBuf, p_arr, LIBCRSF_MAX_BUFFER_SIZE);
@@ -68,11 +69,36 @@ static void SetOpentxBuf(uint8_t* p_arr){
 
 #endif
 
+#define LIBCRSF_EX_PARAM_SETTING_READ	0x2c
+#define LIBCRSF_EX_PARAM_SETTING_ENTRY 0x2b
+
+void crsfPackParam( uint8_t *p_arr )
+{
+  uint32_t count = 0;
+
+  libUtil_Write8(p_arr, &count, LIBCRSF_UART_SYNC); /* device address */
+  libUtil_Write8(p_arr, &count, 0);                 /* frame length */
+  libUtil_Write8(p_arr, &count, LIBCRSF_EX_PARAM_SETTING_ENTRY); /* cmd type */
+  libUtil_Write8(p_arr, &count, LIBCRSF_USB_HOST_ADD);     /* Destination Address */
+  libUtil_Write8(p_arr, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
+  libUtil_Write8(p_arr, &count, 0x0);              /* param number */
+
+  uint8_t crc1 = libCRC8_Get_CRC_Arr(&p_arr[2], count-2, POLYNOM_1);
+  libUtil_Write8(p_arr, &count, crc1);
+
+  p_arr[LIBCRSF_LENGTH_ADD] = count - 2;
+}
+
 void CRSF_Init( void )
 {
   /* init crsf library */
 
   memset( &crossfireSharedData, 0, sizeof(CrossfireSharedData) );
+
+  libCrsf_MyHwID = readBackupReg(BOOTLOADER_HW_ID_ADDR_OPENTX);
+  libCrsf_MySerialNo = readBackupReg(BOOTLOADER_SERIAL_NO_ADDR_OPENTX);
+  writeBackupReg(BOOTLOADER_HW_ID_ADDR_OPENTX, 0);
+  writeBackupReg(BOOTLOADER_SERIAL_NO_ADDR_OPENTX, 0);
 
   libCrsf_Init( libCrsf_MySlaveAddress, libCrsf_MyDeviceName, libCrsf_MySerialNo, libCrsf_MyHwID, libCrsf_MyFwID );
 
@@ -100,6 +126,42 @@ void CRSF_This_Device( uint8_t *p_arr )
         libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
       }
       break;
+
+    case LIBCRSF_EX_PARAM_SETTING_READ:
+      crsfPackParam(p_arr);
+	  libCrsf_CRSF_Routing( DEVICE_INTERNAL, &p_arr[0] );
+      break;
+
+#ifdef LIBCRSF_ENABLE_COMMAND
+#define LIBCRSF_GENERAL_CMD										0x0a
+#define LIBCRSF_CROSSFIRE_CMD									0x10
+
+#define LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD					0x0a
+
+#define LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_SUBCMD		0x06
+#define LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_REPLY_SUBCMD	0x07
+
+    case LIBCRSF_CMD_FRAME:
+    		if( ( *( p_arr + *(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET - 1 ) )
+				== libCRC8_Get_CRC_Arr( ( p_arr + LIBCRSF_TYPE_ADD ), *(p_arr + LIBCRSF_LENGTH_ADD) - 2, POLYNOM_2 )) {
+					//TODO
+				// commands( ( libCrsf_Commands ) *( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 2 )
+				//     , *( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 3 )
+				//     , ( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 4 ) );
+				if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 2 ) == LIBCRSF_GENERAL_CMD){
+					if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 3 ) == LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD){
+						boot2bootloader(1, libCrsf_MyHwID, libCrsf_MySerialNo);
+					}
+				}
+				else if(*(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD) == LIBCRSF_CROSSFIRE_CMD){
+					if ( *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 1) == LIBCRSF_CROSSFIRE_CURRENT_MODEL_SELECTION_REPLY_SUBCMD ){
+					  current_crsf_model_id = *(p_arr + LIBCRSF_EXT_PAYLOAD_START_ADD + 2);
+					}
+				}
+			}
+            break;
+#endif
+
 
 #if defined(CRSF_OPENTX)
     case LIBCRSF_OPENTX_RELATED:
@@ -138,7 +200,7 @@ uint8_t telemetryGetByte(uint8_t * byte)
 {
   bool res = crsf_telemetry_buffer.pop(*byte);
 #if defined(LUA)
-  if (telemetryProtocol == PROTOCOL_PULSES_CROSSFIRE) //henry: what is the protocol?
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) //henry: what is the protocol?
   {
     static uint8_t prevdata;
     if (prevdata == 0x7E && outputTelemetryBufferSize > 0 && *byte == outputTelemetryBufferTrigger) {
@@ -152,13 +214,17 @@ uint8_t telemetryGetByte(uint8_t * byte)
 
 void CRSF_to_Shared_FIFO( uint8_t *p_arr )
 {
+  //TRACE("CRSF_to_Shared_FIFO:\r\n");
+  *p_arr = LIBCRSF_UART_SYNC;
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
     crossfireSharedData.crsf_rx.push(*(p_arr + i));
+    //TRACE_NOCRLF("%02X ", *(p_arr + i));
   }
 }
 
 void CRSF_to_ESP( uint8_t *p_arr )
 {
+  *p_arr = LIBCRSF_UART_SYNC;
   for( uint8_t i = 0; i < (*(p_arr + LIBCRSF_LENGTH_ADD) + LIBCRSF_HEADER_OFFSET + LIBCRSF_CRC_SIZE); i++ ) {
 	  espTxFifo.push(*(p_arr + i));
   }
@@ -169,11 +235,62 @@ void crsfSharedFifoHandler( void )
   uint8_t byte;
   static _libCrsf_CRSF_PARSE_DATA CRSF_Data;
   if ( crossfireSharedData.crsf_tx.pop(byte) ){
+    //TRACE_NOCRLF("%02X ", byte);
     if ( libCrsf_CRSF_Parse( &CRSF_Data, byte )) {
       libCrsf_CRSF_Routing( CRSF_SHARED_FIFO, CRSF_Data.Payload );
     }
   }
 }
+
+void crsfSetModelID(void)
+{
+  uint32_t count = 0;
+  BYTE txBuf[LIBCRSF_MAX_BUFFER_SIZE];
+
+  libUtil_Write8(txBuf, &count, LIBCRSF_UART_SYNC); /* device address */
+  libUtil_Write8(txBuf, &count, 0);                 /* frame length */
+  libUtil_Write8(txBuf, &count, LIBCRSF_CMD_FRAME); /* cmd type */
+  libUtil_Write8(txBuf, &count, LIBCRSF_RC_TX);     /* Destination Address */
+  libUtil_Write8(txBuf, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
+  libUtil_Write8(txBuf, &count, 0x10);              /* sub command */
+  libUtil_Write8(txBuf, &count, 0x05);              /* command of set model/receiver id */
+  libUtil_Write8(txBuf, &count, g_model.header.modelId[EXTERNAL_MODULE]); /* model ID */
+
+  uint8_t crc2 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_2);
+  libUtil_Write8(txBuf, &count, crc2);
+  uint8_t crc1 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_1);
+  libUtil_Write8(txBuf, &count, crc1);
+
+  txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
+
+  CRSF_to_Shared_FIFO(txBuf);
+  //TRACE("set model id command\r\n");
+}
+
+void crsfGetModelID(void)
+{
+  uint32_t count = 0;
+  BYTE txBuf[LIBCRSF_MAX_BUFFER_SIZE];
+
+  libUtil_Write8(txBuf, &count, LIBCRSF_UART_SYNC); /* device address */
+  libUtil_Write8(txBuf, &count, 0);                 /* frame length */
+  libUtil_Write8(txBuf, &count, LIBCRSF_CMD_FRAME); /* cmd type */
+  libUtil_Write8(txBuf, &count, LIBCRSF_RC_TX);     /* Destination Address */
+  libUtil_Write8(txBuf, &count, LIBCRSF_REMOTE_ADD);/* Origin Address */
+  libUtil_Write8(txBuf, &count, 0x10);              /* sub command */
+  libUtil_Write8(txBuf, &count, 0x06);              /* command of set model/receiver id */
+  libUtil_Write8(txBuf, &count, 0);                 /* the dummy byte of model ID */
+
+  uint8_t crc2 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_2);
+  libUtil_Write8(txBuf, &count, crc2);
+  uint8_t crc1 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_1);
+  libUtil_Write8(txBuf, &count, crc1);
+
+  txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
+
+  CRSF_to_Shared_FIFO(txBuf);
+}
+
 
 void crsfEspHandler( void )
 {
@@ -867,85 +984,3 @@ void crsfSdHandler() {
 }
 
 #endif // CRSF_OPENTX && CRSF_SD
-
-/* ****************************************************************************************************************** */
-/* TODO: perna remove the code below since we will strictly use CRSF  */
-static uint8_t ToSendDataBuffer[64];
-static uint8_t AgentCrc;
-
-
-void WR_TO_USB_Writebuff ( uint8_t Position, uint8_t Data_In )
-{
-  ToSendDataBuffer[Position] = Data_In;
-  libCRC8_Calc(Data_In, &AgentCrc, POLYNOM_1);
-}
-
-
-void USB_WRITE_SIMPLE_CMD( uint8_t COMMAND )
-{
-  libCRC8_Reset( &AgentCrc );
-  WR_TO_USB_Writebuff(0, '\n');
-  WR_TO_USB_Writebuff(1, COMMAND);
-  ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-  usbAgentWrite(ToSendDataBuffer);
-}
-
-
-void USB_Send_Serial_Number()
-{
-  libCRC8_Reset( &AgentCrc );
-  WR_TO_USB_Writebuff(0, '\n');
-  WR_TO_USB_Writebuff(1, 30);
-
-  WR_TO_USB_Writebuff(2, 0);
-  WR_TO_USB_Writebuff(3, 0);
-  WR_TO_USB_Writebuff(4, 0);
-  WR_TO_USB_Writebuff(5, 1);
-
-  ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-  usbAgentWrite(ToSendDataBuffer);
-}
-
-
-void AgentLegacyCalls( uint8_t *pArr )
-{
-  pArr++;
-  switch( *pArr )
-  {
-    case 2: //USB_DEVICE_INFO_REQUEST:$
-      libCRC8_Reset( &AgentCrc );
-      WR_TO_USB_Writebuff(0, '\n');
-      WR_TO_USB_Writebuff(1, 3);
-      WR_TO_USB_Writebuff(2, 2);
-
-      WR_TO_USB_Writebuff(3, 0x00);
-      WR_TO_USB_Writebuff(4, 0x04);
-      WR_TO_USB_Writebuff(5, 0x00);
-      WR_TO_USB_Writebuff(6, 0x00);
-      WR_TO_USB_Writebuff(7, 0x01);
-      WR_TO_USB_Writebuff(8, 0x00);
-
-      WR_TO_USB_Writebuff(9, 8);
-      WR_TO_USB_Writebuff(10, 'T');
-      WR_TO_USB_Writebuff(11, 'a');
-      WR_TO_USB_Writebuff(12, 'n');
-      WR_TO_USB_Writebuff(13, 'g');
-      WR_TO_USB_Writebuff(14, 'o');
-      WR_TO_USB_Writebuff(15, ' ');
-      WR_TO_USB_Writebuff(16, 'I');
-      WR_TO_USB_Writebuff(17, 'I');
-
-      ToSendDataBuffer[2] = Get_libCRC8( &AgentCrc, POLYNOM_1 );
-      usbAgentWrite(ToSendDataBuffer);
-      break;
-
-    case 6:  // USB_MUX_CMDS_TO_SUB_CPU:
-      USB_WRITE_SIMPLE_CMD( 7 );
-      break;
-
-    case 18: //USB_SERIAL_NUMBER_REQUEST:
-      USB_Send_Serial_Number();
-      break;
-
-  }
-}

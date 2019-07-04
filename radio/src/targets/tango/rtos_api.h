@@ -7,6 +7,7 @@
 
     
 #ifdef DEF_API_CMD
+#if !defined(SIMU)
     //          id,   function                          ,  return_type, 	params
     DEF_API_CMD( 1, RTOS_WAIT_TICKS                     , uint8_t       	, const TickType_t xTicksToDelay)
     DEF_API_CMD( 2, CoWaitForSingleFlag                 , StatusType  		, OS_FlagID id, U32 timeout)
@@ -17,6 +18,7 @@
     DEF_API_CMD( 7, CoCreateFlag                        , BOOL bAutoReset	, BOOL bInitialState)
     DEF_API_CMD( 8, CoClearFlag             			, StatusType  		, OS_FlagID id)
     DEF_API_CMD( 9, Crossfire_Get_Func_Addr             , void        		, uint8_t type, uint32_t addr)
+#endif
 #undef DEF_API_CMD
 #else
             

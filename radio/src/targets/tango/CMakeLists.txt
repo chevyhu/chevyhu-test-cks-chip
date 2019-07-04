@@ -43,11 +43,11 @@ elseif(PCB STREQUAL TANGO)
   set(HAPTIC YES)
   set(LUA_EXPORT lua_export_tango)
   set(FLAVOUR tango)
+  set(RAMBACKUP YES)
   add_definitions(-DSTM32F40_41xxx -DPCBTANGO)
   add_definitions(-DEEPROM_VARIANT=0x8000)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   add_definitions(-DSOFTWARE_VOLUME)
-  add_definitions(-DAGENT )
 
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
@@ -66,7 +66,7 @@ elseif(PCB STREQUAL TANGO)
   endif()
 
   add_definitions(-DCROSSFIRE)
-  add_definitions(-DCRSF_OPENTX -DCRSF_SD)
+  add_definitions(-DCRSF_OPENTX -DCRSF_SD -DLIBCRSF_ENABLE_COMMAND)
 
   set(GUI_DIR 128x96)
   set(NAVIGATION_TYPE tango)
@@ -144,6 +144,7 @@ elseif(PCB STREQUAL XLITE)
   set(GVAR_SCREEN model_gvars.cpp)
 endif()
 
+
 if(PCB STREQUAL XLITE)
   if(PXX_FREQUENCY STREQUAL HIGH)
     add_definitions(-DPXX_FREQUENCY_HIGH)
@@ -168,6 +169,13 @@ else()
     )
 endif()
 
+if(PCB STREQUAL X9E OR PCB STREQUAL TANGO OR (PCB STREQUAL X7 AND NOT (PCBREV STREQUAL T12)) OR PCB STREQUAL X9LITE)
+  set(TARGET_SRC
+          ${TARGET_SRC}
+          ../common/arm/stm32/rotary_encoder_driver.cpp
+          )
+endif()
+
 if(PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL XLITE OR PCB STREQUAL TANGO)
   add_definitions(-DBLUETOOTH)
   set(TARGET_SRC
@@ -185,6 +193,11 @@ if(PCB STREQUAL TANGO)
   set(TARGET_SRC
     ${TARGET_SRC}
     ../tango/esp_driver.cpp
+    )
+  add_definitions(-DAGENT)
+  set(TARGET_SRC
+    ${TARGET_SRC}
+    ../tango/usbd_hid_agent.c
     )
   set(SRC
     ${SRC}

@@ -20,33 +20,6 @@
 
 #include "opentx.h"
 
-const char * warningText = NULL;
-const char * warningInfoText;
-uint8_t         warningInfoLength;
-uint8_t         warningType;
-uint8_t         warningResult = 0;
-
-uint8_t         warningInfoFlags = ZCHAR;
-int16_t         warningInputValue;
-int16_t         warningInputValueMin;
-int16_t         warningInputValueMax;
-
-void drawMessageBox()
-{
-  lcdDrawFilledRect(10, 16, LCD_W-20, 40, SOLID, ERASE);
-  lcdDrawRect(10, 16, LCD_W-20, 40);
-  lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y, warningText, WARNING_LINE_LEN);
-  // could be a place for a warningInfoText
-}
-
-void showMessageBox(const char * str)
-{
-  warningText = str;
-  drawMessageBox();
-  warningText = NULL;
-  lcdRefresh();
-}
-
 const unsigned char ASTERISK_BITMAP[]  = {
 #include "asterisk.lbm"
 };
@@ -65,54 +38,72 @@ void drawAlertBox(const char * title, const char * text, const char * action)
   lcdDrawText(MESSAGE_LCD_OFFSET, 0, title, DBLSIZE);
   lcdDrawText(MESSAGE_LCD_OFFSET, 2*FH, STR_WARNING, DBLSIZE);
 #endif
-  
+
   lcdDrawSolidFilledRect(0, 0, LCD_W, 32);
+
   if (text) {
     lcdDrawTextAlignedLeft(5*FH, text);
   }
+
   if (action) {
     lcdDrawTextAlignedLeft(7*FH, action);
   }
-  
-#undef MESSAGE_LCD_OFFSET
-}
 
-void showAlertBox(const char * title, const char * text, const char * action , uint8_t sound)
-{
-  drawAlertBox(title, text, action);
-  
-  AUDIO_ERROR_MESSAGE(sound);
-  
-  lcdRefresh();
-  lcdSetContrast();
-  clearKeyEvents();
-  backlightOn();
-  checkBacklight();
+#undef MESSAGE_LCD_OFFSET
 }
 
 void runPopupWarning(event_t event)
 {
   warningResult = false;
-  drawMessageBox();
+
+  drawMessageBox(warningText);
+
   if (warningInfoText) {
-    lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, WARNING_INFO_FLAGS);
+	lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, warningInfoFlags);
   }
-  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH, warningType == WARNING_TYPE_ASTERISK ? STR_EXIT : STR_POPUPS);
+
+  switch (warningType) {
+	case WARNING_TYPE_WAIT:
+	  return;
+
+	case WARNING_TYPE_INFO:
+	  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, STR_OK);
+	  break;
+
+	case WARNING_TYPE_ASTERISK:
+	  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, STR_EXIT);
+	  break;
+
+	default:
+	  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, STR_POPUPS_ENTER_EXIT);
+	  break;
+  }
+
+
   switch (event) {
-    case EVT_KEY_BREAK(KEY_ENTER):
-      if (warningType == WARNING_TYPE_ASTERISK)
-        break;
-      warningResult = true;
-      // no break
-    case EVT_KEY_BREAK(KEY_EXIT):
-      warningText = NULL;
-      warningType = WARNING_TYPE_ASTERISK;
-      break;
-    default:
-      if (warningType != WARNING_TYPE_INPUT) break;
-      s_editMode = EDIT_MODIFY_FIELD;
-      warningInputValue = checkIncDec(event, warningInputValue, warningInputValueMin, warningInputValueMax);
-      s_editMode = EDIT_SELECT_FIELD;
-      break;
+	case EVT_KEY_BREAK(KEY_ENTER):
+	  if (warningType == WARNING_TYPE_ASTERISK)
+		// key ignored, the user has to press [EXIT]
+		break;
+
+	  if (warningType == WARNING_TYPE_CONFIRM) {
+		warningType = WARNING_TYPE_ASTERISK;
+		warningText = nullptr;
+		if (popupMenuHandler){
+		  popupMenuHandler(STR_OK);
+		}
+	    warningResult = true;
+		break;
+	  }
+	  // no break
+
+	case EVT_KEY_BREAK(KEY_EXIT):
+	  if (warningType == WARNING_TYPE_CONFIRM) {
+		if (popupMenuHandler)
+		  popupMenuHandler(STR_EXIT);
+	  }
+	  warningText = nullptr;
+	  warningType = WARNING_TYPE_ASTERISK;
+	  break;
   }
 }

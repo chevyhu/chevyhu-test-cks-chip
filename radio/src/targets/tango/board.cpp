@@ -21,6 +21,10 @@
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
 
+bool set_model_id_needed = false;
+
+HardwareOptions hardwareOptions;
+
 RTOS_TASK_HANDLE crossfireTaskId;
 RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
 
@@ -45,6 +49,8 @@ void KernelApiInit( void ){
 #include "rtos_api.h"
 }
 
+uint8_t isDisableBoardOff();
+
 void watchdogInit(unsigned int duration)
 {
   IWDG->KR = 0x5555;      // Unlock registers
@@ -53,6 +59,7 @@ void watchdogInit(unsigned int duration)
   IWDG->RLR = duration;       // 1.5 seconds nominal
   IWDG->KR = 0xAAAA;      // reload
   IWDG->KR = 0xCCCC;      // start
+  TRACE("watchdog init\r\n");
 }
 
 // Starts TIMER at 2MHz
@@ -94,19 +101,23 @@ void interrupt5ms()
 #if defined(HAPTIC)
   HAPTIC_HEARTBEAT();
 #endif
-
+#if defined(PCBTANGO)
+  if (++pre_scale % 2 == 0) {
+#else
   if (++pre_scale >= 2) {
     pre_scale = 0 ;
+#endif
     DEBUG_TIMER_START(debugTimerPer10ms);
     DEBUG_TIMER_SAMPLE(debugTimerPer10msPeriod);
     per10ms();
     DEBUG_TIMER_STOP(debugTimerPer10ms);
-#if !defined(PCBTANGO)
   }
-#endif
 
+#if defined(PCBTANGO)
+  if(pre_scale % ROTARY_ENCODER_PRESCALER == 0) {
+#endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  checkRotaryEncoder();
+	checkRotaryEncoder();
 #endif
 
 #if defined(PCBTANGO)
@@ -260,7 +271,6 @@ void boardInit()
     sticks_pwm_disabled = true;
   }
 #endif
-
   adcInit();
   lcdInit(); // delaysInit() must be called before
   audioInit();
@@ -286,13 +296,14 @@ void boardInit()
 #endif
 
 #if defined(BLUETOOTH)
-  bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE);
+  bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE, true);
 #endif
 
 #if defined(DEBUG)
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP|DBGMCU_TIM1_STOP|DBGMCU_TIM2_STOP|DBGMCU_TIM3_STOP|DBGMCU_TIM6_STOP|DBGMCU_TIM8_STOP|DBGMCU_TIM10_STOP|DBGMCU_TIM13_STOP|DBGMCU_TIM14_STOP, ENABLE);
 #endif
 
+  pwrInit();
 #if defined(PWR_BUTTON_PRESS)
 #if defined(PCBTANGO)
   if (!WAS_RESET_BY_WATCHDOG()) {
@@ -345,7 +356,9 @@ void boardInit()
       lcdRefreshWait();
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
-//      boardOff();
+    	if(!isDisableBoardOff()){
+    		boardOff();
+    	}
     }
   }
   else {
@@ -397,7 +410,7 @@ uint8_t currentTrainerMode = 0xff;
 
 void checkTrainerSettings()
 {
-  uint8_t requiredTrainerMode = g_model.trainerMode;
+  uint8_t requiredTrainerMode = g_model.trainerData.mode;
   if (requiredTrainerMode != currentTrainerMode) {
     switch (currentTrainerMode) {
       case TRAINER_MODE_MASTER_TRAINER_JACK:
@@ -453,6 +466,48 @@ uint16_t getBatteryVoltage()
   return (uint16_t)instant_vbat;
 }
 
+#if !defined(SIMU)
+uint32_t readBackupReg(uint8_t index){
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+    PWR_BackupRegulatorCmd(ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
+    PWR_BackupAccessCmd(ENABLE);
+    while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
+    return *(__IO uint32_t *) (BKPSRAM_BASE + index*4);
+}
+
+void writeBackupReg(uint8_t index, uint32_t data){
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+	PWR_BackupRegulatorCmd(ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
+	PWR_BackupAccessCmd(ENABLE);
+	while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
+	*(__IO uint32_t *) (BKPSRAM_BASE + index*4) = data;
+}
+
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn){
+	usbStop();
+	writeBackupReg(BOOTLOADER_IS_NEED_FLASH_ADDR, isNeedFlash);
+	writeBackupReg(BOOTLOADER_HW_ID_ADDR, HwId);
+	writeBackupReg(BOOTLOADER_SERIAL_NO_ADDR, sn);
+	NVIC_SystemReset();
+}
+
+uint8_t isDisableBoardOff(){
+	uint8_t value = (uint8_t)readBackupReg(BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR);
+	writeBackupReg(BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR, 0);
+	return value;
+}
+#endif
+
+void PrintData(char* header, uint8_t* data){
+	TRACE_NOCRLF("\r\n%s: ", header);
+	for(int i = 0; i < data[1] + 2; i++){
+		TRACE_NOCRLF("%x ", data[i]);
+	}
+	TRACE_NOCRLF("\r\n");
+}
+
 RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
 {
   return crossfireTaskId;
@@ -470,12 +525,33 @@ void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr ){
 #if !defined(SIMU)
 TASK_FUNCTION(systemTask)
 {
+  static uint32_t get_modelid_delay = 0;
+  set_model_id_needed = true;
+
   while(1) {
-      crsfSharedFifoHandler();
-      crsfEspHandler();
+    crsfSharedFifoHandler();
+    crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)
-      AgentHandler();
+    AgentHandler();
 #endif
+    if (set_model_id_needed && g_model.header.modelId[EXTERNAL_MODULE] != 0) {
+      crsfSetModelID();
+      set_model_id_needed = false;
+      crsfGetModelID();
+      get_modelid_delay = get_tmr10ms();
+    }
+    if (get_modelid_delay && (get_tmr10ms() - get_modelid_delay) > 100) {
+      if (current_crsf_model_id == g_model.header.modelId[EXTERNAL_MODULE]) {
+        /* Set model id successfully */
+        TRACE("Set model id for crossfire success, current id = %d\r\n", current_crsf_model_id);
+      }
+      else {
+        /* Set model id failed */
+        TRACE("Set model id for crossfire failed, current id = %d\r\n", current_crsf_model_id);
+        /* do something else here? */
+      }
+      get_modelid_delay = 0;
+    }
   }
   TASK_RETURN();
 }
@@ -542,6 +618,7 @@ extern "C" void SERIAL_USART_IRQHandler(void)
 
 extern "C" {
 
+#if !defined(SIMU)
 void EXTI15_10_IRQHandler(void)
 {
 	CoEnterISR();
@@ -551,6 +628,7 @@ void EXTI15_10_IRQHandler(void)
 	Crossfire_Task();
 	CoExitISR();
 }
+#endif
 
 #include <stdio.h>
 #include <stdarg.h>

@@ -21,8 +21,9 @@
 #include "opentx.h"
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-uint32_t rotencPosition;
+uint32_t rotencPositionValue;
 #endif
+
 
 #if defined(PCBTANGO)
 uint8_t  g_trimState = 0;
@@ -89,7 +90,7 @@ uint32_t readTrims()
   // the trim state from the events of per10ms()
   result = g_trimState;
   g_trimState = 0;
- #else
+#else
   if (~TRIMS_GPIO_REG_LHL & TRIMS_GPIO_PIN_LHL)
     result |= 0x01;
   if (~TRIMS_GPIO_REG_LHR & TRIMS_GPIO_PIN_LHR)
@@ -140,11 +141,10 @@ void readKeysAndTrims()
   for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
     keys[index++].input(trims_input & i);
   }
-
 #if defined(PWR_BUTTON_PRESS)
   if ((keys_input || trims_input || pwrPressed()) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
 #else
-  if ((keys_input || trims_input) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
+    if ((keys_input || trims_input) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
 #endif
     // on keypress turn the light on
     backlightOn();
@@ -241,18 +241,18 @@ uint32_t switchState(uint8_t index)
 }
 #endif
 
-#if defined(ROTARY_ENCODER_NAVIGATION)
+#if defined(ROTARY_ENCODER_NAVIGATION) && !defined(BOOT)
 void checkRotaryEncoder()
 {
   uint32_t newpos = ROTARY_ENCODER_POSITION();
-  if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
-    if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
-      --rotencValue[0];
+  if (newpos != rotencPositionValue && !keyState(KEY_ENTER)) {
+    if ((rotencPositionValue & 0x01) ^ ((newpos & 0x02) >> 1)) {
+      --rotencValue;
     }
     else {
-      ++rotencValue[0];
+      ++rotencValue;
     }
-    rotencPosition = newpos;
+    rotencPositionValue = newpos;
 #if !defined(BOOT)
     if (g_eeGeneral.backlightMode & e_backlight_mode_keys) {
       backlightOn();
@@ -306,6 +306,6 @@ void keysInit()
 #endif
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  rotencPosition = ROTARY_ENCODER_POSITION();
+  rotencPositionValue = ROTARY_ENCODER_POSITION();
 #endif
 }

@@ -96,8 +96,10 @@ const int Boards::getEEpromSize(Board::Type board)
     case BOARD_9XRPRO:
     case BOARD_AR9X:
       return EESIZE_9XRPRO;
+    case BOARD_TARANIS_XLITES:
     case BOARD_TARANIS_XLITE:
     case BOARD_TARANIS_X7:
+    case BOARD_TARANIS_X3:
     case BOARD_TARANIS_X9D:
     case BOARD_TARANIS_X9DP:
     case BOARD_TARANIS_X9E:
@@ -124,8 +126,10 @@ const int Boards::getFlashSize(Type board)
     case BOARD_9XRPRO:
     case BOARD_AR9X:
       return FSIZE_9XRPRO;
+    case BOARD_TARANIS_XLITES:
     case BOARD_TARANIS_XLITE:
     case BOARD_TARANIS_X7:
+    case BOARD_TARANIS_X3:
     case BOARD_TARANIS_X9D:
     case BOARD_TARANIS_X9DP:
     case BOARD_TARANIS_X9E:
@@ -145,7 +149,19 @@ const SwitchInfo Boards::getSwitchInfo(Board::Type board, int index)
   if (index < 0)
     return {SWITCH_NOT_AVAILABLE, CPN_STR_UNKNOWN_ITEM};
 
-  if (IS_TARANIS_XLITE(board)) {
+  if (IS_TARANIS_XLITES(board)) {
+    const Board::SwitchInfo switches[] = {
+      {SWITCH_3POS,   "SA"},
+      {SWITCH_3POS,   "SB"},
+      {SWITCH_2POS,   "SC"},
+      {SWITCH_2POS,   "SD"},
+      {SWITCH_TOGGLE, "SE"},
+      {SWITCH_TOGGLE, "SF"}
+    };
+    if (index < DIM(switches))
+      return switches[index];
+  }
+  else if (IS_TARANIS_XLITE(board)) {
     const Board::SwitchInfo switches[] = {
       {SWITCH_3POS,   "SA"},
       {SWITCH_3POS,   "SB"},
@@ -155,7 +171,7 @@ const SwitchInfo Boards::getSwitchInfo(Board::Type board, int index)
     if (index < DIM(switches))
       return switches[index];
   }
-  if (IS_TARANIS_X7(board)) {
+  else if (IS_TARANIS_X7(board)) {
     const Board::SwitchInfo switches[] = {
       {SWITCH_3POS,   "SA"},
       {SWITCH_3POS,   "SB"},
@@ -215,7 +231,9 @@ const int Boards::getCapability(Board::Type board, Board::Capability capability)
       return 4;
 
     case Pots:
-      if (IS_TARANIS_SMALL(board))
+      if (IS_TARANIS_X3(board))
+        return 1;
+      else if (IS_TARANIS_SMALL(board))
         return 2;
       else if (IS_TARANIS_X9E(board))
         return 4;
@@ -242,11 +260,17 @@ const int Boards::getCapability(Board::Type board, Board::Capability capability)
       else
         return 0;
 
+    case GyroAnalogs:
+      if (IS_HORUS_X12S(board) || IS_TARANIS_XLITES(board))
+        return 2;
+      else
+        return 0;
+
     case MaxAnalogs:
-      return getCapability(board, Board::Sticks) + getCapability(board, Board::Pots) + getCapability(board, Board::Sliders) +  getCapability(board, Board::MouseAnalogs);
+      return getCapability(board, Board::Sticks) + getCapability(board, Board::Pots) + getCapability(board, Board::Sliders) + getCapability(board, Board::MouseAnalogs) + getCapability(board, Board::GyroAnalogs);
 
     case MultiposPots:
-      return IS_HORUS_OR_TARANIS(board) ? 3 : 0;
+      return IS_HORUS_OR_TARANIS(board) ? getCapability(board, Board::Pots) : 0;
 
     case MultiposPotsPositions:
       return IS_HORUS_OR_TARANIS(board) ? 6 : 0;
@@ -254,7 +278,11 @@ const int Boards::getCapability(Board::Type board, Board::Capability capability)
     case Switches:
       if (IS_TARANIS_X9E(board))
         return 18;
+      else if (IS_TARANIS_X3(board))
+        return 5;
       else if (IS_TARANIS_X7(board))
+        return 6;
+      else if (IS_TARANIS_XLITES(board))
         return 6;
       else if (IS_TARANIS_XLITE(board))
         return 4;
@@ -344,6 +372,16 @@ const QString Boards::getAnalogInputName(Board::Type board, int index)
     if (index < DIM(pots))
       return pots[index];
   }
+  else if (IS_TARANIS_XLITE(board)) {
+    const QString pots[] = {
+      "S1",
+      "S2",
+      "GyrX",
+      "GyrY"
+    };
+    if (index < DIM(pots))
+      return pots[index];
+  }
   else if (IS_TARANIS(board)) {
     const QString pots[] = {
       "S1",
@@ -405,12 +443,16 @@ const QString Boards::getBoardName(Board::Type board)
       return "Taranis X7/X7S";
      case BOARD_TARANIS_XLITE:
       return "Taranis X-Lite";
+    case BOARD_TARANIS_XLITES:
+      return "Taranis X-Lite S/PRO";
     case BOARD_TARANIS_X9D:
       return "Taranis X9D";
     case BOARD_TARANIS_X9DP:
       return "Taranis X9D+";
     case BOARD_TARANIS_X9E:
       return "Taranis X9E";
+    case BOARD_TARANIS_X3:
+      return "Taranis X3";
     case BOARD_SKY9X:
       return "Sky9x";
     case BOARD_9XRPRO:

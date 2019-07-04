@@ -111,7 +111,6 @@ void libCrsf_CRSF_Routing( uint8_t Input_Port, uint8_t *pArr ) {
     /* distribute frame */
     if( Device_Found ) {
         if( libCrsf_CRSF_Ports[ Route_To_Port ].Gateway != NULL ) {
-            *pArr = *( pArr + LIBCRSF_EXT_HEAD_DST_ADD );
             libCrsf_CRSF_Ports[ Route_To_Port ].Gateway( pArr );
         }
     } else {

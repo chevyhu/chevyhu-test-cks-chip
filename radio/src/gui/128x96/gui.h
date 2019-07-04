@@ -93,6 +93,7 @@ void drawAlertBox(const char * title, const char * text, const char * action);
 void showAlertBox(const char * title, const char * text, const char * action, uint8_t sound);
 
 void doMainScreenGraphics();
+void drawProgressScreen(const char * title, const char * message, int num, int den);
 void drawSleepBitmap();
 
 typedef uint16_t FlightModesType;
@@ -122,8 +123,9 @@ extern int8_t s_editMode; // global editmode
 #define CHECK_INCDEC_PARAM(event, var, min, max) checkIncDec(event, var, min, max, incdecFlag, isValueAvailable)
 
 // mawrow special values
-#define TITLE_ROW                      ((uint8_t)-1)
-#define HIDDEN_ROW                     ((uint8_t)-2)
+#define READONLY_ROW   ((uint8_t)-1)
+#define TITLE_ROW      READONLY_ROW
+#define HIDDEN_ROW     ((uint8_t)-2)
 
 
 #if defined(ROTARY_ENCODERS)
@@ -276,11 +278,7 @@ void editName(coord_t x, coord_t y, char * name, uint8_t size, event_t event, ui
 void editSingleName(coord_t x, coord_t y, const char * label, char * name, uint8_t size, event_t event, uint8_t active);
 
 uint8_t editDelay(coord_t y, event_t event, uint8_t attr, const char * str, uint8_t delay);
-#define EDIT_DELAY(y, event, attr, str, delay) editDelay(y, event, attr, str, delay)
-
-#define WARNING_TYPE_ASTERISK          0
-#define WARNING_TYPE_CONFIRM           1
-#define WARNING_TYPE_INPUT             2
+#define EDIT_DELAY(x, y, event, attr, str, delay) editDelay(y, event, attr, str, delay)
 
 void copySelection(char * dst, const char * src, uint8_t size);
 

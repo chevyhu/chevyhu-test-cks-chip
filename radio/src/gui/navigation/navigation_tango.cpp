@@ -133,10 +133,9 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
       event = 0;
     }
   }
-#endif
 
-#if defined(ROTARY_ENCODER_NAVIGATION)
-  if (s_editMode>0 && event==EVT_ROTARY_RIGHT) {
+#if defined(ROTARY_ENCODER_NAVIGATION) && !defined(SIMU)
+  if (s_editMode>0 && event==EVT_ROTARY_LEFT) {
     newval += min<int>(rotencSpeed, i_max-val);
     while (isValueAvailable && !isValueAvailable(newval) && newval<=i_max) {
       newval++;
@@ -146,7 +145,7 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
       AUDIO_KEY_ERROR();
     }
   }
-  else if (s_editMode>0 && event==EVT_ROTARY_LEFT) {
+  else if (s_editMode>0 && event==EVT_ROTARY_RIGHT) {
     newval -= min<int>(rotencSpeed, val-i_min);
     while (isValueAvailable && !isValueAvailable(newval) && newval>=i_min) {
       newval--;
@@ -314,6 +313,7 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
   }
   return newval;
 }
+#endif
 
 #define CURSOR_NOT_ALLOWED_IN_ROW(row) ((int8_t)MAXCOL(row) < 0)
 #define MAXCOL_RAW(row)                (horTab ? *(horTab+min(row, (vertpos_t)horTabMax)) : (const uint8_t)0)
@@ -453,7 +453,7 @@ void check(const char * name, event_t event, uint8_t curr, const MenuHandlerFunc
       }
       break;
 
-      CASE_EVT_ROTARY_RIGHT
+    CASE_EVT_ROTARY_RIGHT
     case EVT_KEY_FIRST(KEY_RIGHT):
       AUDIO_KEY_PRESS();
       // no break
@@ -484,7 +484,7 @@ void check(const char * name, event_t event, uint8_t curr, const MenuHandlerFunc
       l_posHorz = POS_HORZ_INIT(l_posVert);
       break;
 
-      CASE_EVT_ROTARY_LEFT
+    CASE_EVT_ROTARY_LEFT
     case EVT_KEY_FIRST(KEY_LEFT):
       AUDIO_KEY_PRESS();
       // no break
@@ -586,7 +586,6 @@ void check(const char * name, event_t event, uint8_t curr, const MenuHandlerFunc
   menuVerticalPosition = l_posVert;
   menuHorizontalPosition = l_posHorz;
 }
-
 
 void check_simple(const char * name, event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t menuTabSize, vertpos_t rowcount)
 {
