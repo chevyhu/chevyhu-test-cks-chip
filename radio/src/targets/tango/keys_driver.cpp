@@ -90,7 +90,7 @@ uint32_t readTrims()
   // the trim state from the events of per10ms()
   result = g_trimState;
   g_trimState = 0;
- #else
+#else
   if (~TRIMS_GPIO_REG_LHL & TRIMS_GPIO_PIN_LHL)
     result |= 0x01;
   if (~TRIMS_GPIO_REG_LHR & TRIMS_GPIO_PIN_LHR)
@@ -144,7 +144,7 @@ void readKeysAndTrims()
 #if defined(PWR_BUTTON_PRESS)
   if ((keys_input || trims_input || pwrPressed()) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
 #else
-  if ((keys_input || trims_input) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
+    if ((keys_input || trims_input) && (g_eeGeneral.backlightMode & e_backlight_mode_keys)) {
 #endif
     // on keypress turn the light on
     backlightOn();
