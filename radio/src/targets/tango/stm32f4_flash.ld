@@ -36,7 +36,7 @@ _main_stack_start = _estack - _Main_Stack_Size;
 MEMORY
 {
   FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 384K
-  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 77K
+  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 76K
   SHAREDRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 1K 
   CCM (xrw)       : ORIGIN = 0x10000400, LENGTH = 63K  
   MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
