@@ -38,7 +38,7 @@ const char * createModel();
 
 PACK(struct RamBackup {
   uint16_t size;
-  uint8_t data[4094];
+  uint8_t data[2044];
 });
 
 extern RamBackup * ramBackup;

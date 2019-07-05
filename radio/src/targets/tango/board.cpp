@@ -356,7 +356,7 @@ void boardOff()
   toplcdOff();
 #endif
 
-#if defined(PWR_BUTTON_PRESS)
+#if defined(PWR_BUTTON_PRESS) && !defined(PCBTANGO)
   while (pwrPressed()) {
     wdt_reset();
   }
