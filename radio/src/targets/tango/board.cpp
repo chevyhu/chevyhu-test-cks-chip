@@ -325,7 +325,7 @@ void boardInit()
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
     	if(!isDisableBoardOff()){
-    		boardOff();
+//    		boardOff();
     	}
     }
   }
@@ -488,6 +488,7 @@ TASK_FUNCTION(systemTask)
   set_model_id_needed = true;
 
   while(1) {
+	wdt_reset();
     crsfSharedFifoHandler();
     crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)

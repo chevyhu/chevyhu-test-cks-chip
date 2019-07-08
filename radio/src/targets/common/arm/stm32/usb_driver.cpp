@@ -189,6 +189,8 @@ void usbJoystickUpdate()
 #if defined(AGENT)
 #include "../../io/crsf/crsf.h"
 
+#define USB_HID_FIFO_SIZE		256
+
 void usbAgentWrite( uint8_t *pData )
 {
   static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
@@ -198,14 +200,42 @@ void usbAgentWrite( uint8_t *pData )
 
 void CRSF_To_USB_HID( uint8_t *p_arr )
 {
-  static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
-  *p_arr = LIBCRSF_UART_SYNC;
-  // block sending telemetry to usb
-  if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14){
-	  memcpy(HID_Buffer, p_arr, HID_AGENT_IN_PACKET);
-//      PrintData("USB tx:", HID_Buffer);
-	  USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
-  }
+	static uint8_t readyToSend = 0;
+	static uint8_t pending = 0;
+	static uint8_t sendData[HID_AGENT_IN_PACKET];
+
+	static Fifo<uint8_t, USB_HID_FIFO_SIZE> hidTxFifo;
+
+    *p_arr = LIBCRSF_UART_SYNC;
+
+	// block sending telemetry to usb
+	if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14){
+		for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
+			hidTxFifo.push(p_arr[i]);
+		}
+	}
+
+	for(uint8_t j = 0; j < 10; j++){
+		if(!readyToSend){
+			if(hidTxFifo.size() > 0){
+				for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
+					hidTxFifo.pop(sendData[i]);
+				}
+//				PrintData("USB tx:", sendData);
+				pending = 1;
+			}
+			else{
+				pending = 0;
+			}
+		}
+		else{
+			pending = 1;
+		}
+
+		if(pending){
+			readyToSend = USBD_AGENT_SendReport(&USB_OTG_dev, sendData, HID_AGENT_IN_PACKET);
+		}
+	}
 }
 
 void AgentHandler(){
@@ -214,9 +244,32 @@ void AgentHandler(){
   extern uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
   if(ReportReceived){
 	ReportReceived = 0;
+#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
+	uint8_t isToXf = 0;
+	uint8_t crc1Backup = 0;
+	uint8_t crc2Backup = 0;
+	if (*(uint32_t *)CROSSFIRE_TASK_ADDRESS == 0xFFFFFFFF ) {
+		if(HID_Buffer[LIBCRSF_TYPE_ADD] == LIBCRSF_CMD_FRAME && HID_Buffer[LIBCRSF_EXT_HEAD_DST_ADD] == LIBCRSF_RC_TX){
+			HID_Buffer[LIBCRSF_EXT_HEAD_DST_ADD] = LIBCRSF_REMOTE_ADD;
+			crc2Backup = HID_Buffer[HID_Buffer[LIBCRSF_LENGTH_ADD]];
+			crc1Backup = HID_Buffer[HID_Buffer[LIBCRSF_LENGTH_ADD] + LIBCRSF_CRC_SIZE];
+			HID_Buffer[HID_Buffer[LIBCRSF_LENGTH_ADD]] = libCRC8_Get_CRC_Arr(&HID_Buffer[LIBCRSF_TYPE_ADD], HID_Buffer[LIBCRSF_LENGTH_ADD]-2, POLYNOM_2);
+			HID_Buffer[HID_Buffer[LIBCRSF_LENGTH_ADD] + LIBCRSF_CRC_SIZE] = libCRC8_Get_CRC_Arr(&HID_Buffer[LIBCRSF_TYPE_ADD], HID_Buffer[LIBCRSF_LENGTH_ADD]-1, POLYNOM_1);
+			isToXf = 1;
+		}
+	}
+#endif
 	static _libCrsf_CRSF_PARSE_DATA HID_CRSF_Data;
 	for( uint8_t i = 0; i < HID_AGENT_OUT_PACKET; i++ ){
 	  if ( libCrsf_CRSF_Parse( &HID_CRSF_Data, HID_Buffer[i] )) {
+#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
+	if ((*(uint32_t *)CROSSFIRE_TASK_ADDRESS == 0xFFFFFFFF) && isToXf) {
+	    HID_CRSF_Data.Payload[LIBCRSF_EXT_HEAD_DST_ADD] = LIBCRSF_RC_TX;
+	    HID_CRSF_Data.Payload[HID_Buffer[LIBCRSF_LENGTH_ADD]] = crc2Backup;
+	    HID_CRSF_Data.Payload[HID_Buffer[LIBCRSF_LENGTH_ADD] + LIBCRSF_CRC_SIZE] = crc1Backup;
+	    CRSF_This_Device(HID_CRSF_Data.Payload);
+	}
+#endif
 //		PrintData("USB rx:", HID_CRSF_Data.Payload);
 		libCrsf_CRSF_Routing( USB_HID, HID_CRSF_Data.Payload );
 		break;
