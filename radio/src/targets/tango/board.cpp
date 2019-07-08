@@ -480,6 +480,11 @@ TASK_FUNCTION(systemTask)
 #warning "remove when merge to chevy's branch"
 	wdt_reset();
 
+	if(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON){
+		drawDownload();
+		crossfireSharedData.crsfFlag &= ~CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON;
+	}
+
     crsfSharedFifoHandler();
     crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)

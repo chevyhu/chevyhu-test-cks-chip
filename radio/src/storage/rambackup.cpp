@@ -38,7 +38,7 @@ Backup::RamBackupUncompressed ramBackupUncompressed; //__DMA;
 RamBackup _ramBackup;
 RamBackup * ramBackup = &_ramBackup;
 #elif defined(PCBTANGO)
-RamBackup * ramBackup = (RamBackup *)BKPSRAM_BASE + 0x2000;
+RamBackup * ramBackup = (RamBackup *)(BKPSRAM_BASE + 2000);
 #else
 RamBackup * ramBackup = (RamBackup *)BKPSRAM_BASE;
 #endif

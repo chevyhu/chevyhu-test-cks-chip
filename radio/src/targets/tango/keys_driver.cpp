@@ -278,9 +278,9 @@ void checkRotaryEncoder()
   prev_value = value;
   speedCount += vel;
 
-  if(++delayCount > 8){
+  if(++delayCount > 4){
 	delayCount = 0;
-	dir_lock = speedCount >> 3;
+	dir_lock = speedCount >> 2;
 	speedCount = 0;
   }
 }
