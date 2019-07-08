@@ -27,6 +27,7 @@
 #include "board.h"
 #include "debug.h"
 #include "crossfire.h"
+#include "rtos_api.h"
 
 extern void CRSF_To_USB_HID( uint8_t *p_arr );
 extern void usbAgentWrite( uint8_t *p_arr );
@@ -46,11 +47,6 @@ static char *libCrsf_MyDeviceName = "TBS TANGO II";
 static uint32_t libCrsf_MySerialNo = 1;
 static uint32_t libCrsf_MyHwID = 0x040001;
 static uint32_t libCrsf_MyFwID = 0x0100;
-
-#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
-static uint32_t libCrsf_MyHwIDXf;
-static uint32_t libCrsf_MySerialNoXf;
-#endif
 
 Fifo<uint8_t, TELEMETRY_BUFFER_SIZE> crsf_telemetry_buffer;
 
@@ -75,7 +71,7 @@ static void SetOpentxBuf(uint8_t* p_arr){
 #endif
 
 #define LIBCRSF_EX_PARAM_SETTING_READ	0x2c
-#define LIBCRSF_EX_PARAM_SETTING_ENTRY 0x2b
+#define LIBCRSF_EX_PARAM_SETTING_ENTRY 	0x2b
 
 void crsfPackParam( uint8_t *p_arr )
 {
@@ -105,21 +101,13 @@ void CRSF_Init( void )
   writeBackupReg(BOOTLOADER_HW_ID_ADDR_OPENTX, 0);
   writeBackupReg(BOOTLOADER_SERIAL_NO_ADDR_OPENTX, 0);
 
-#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
-	if (*(uint32_t *)CROSSFIRE_TASK_ADDRESS == 0xFFFFFFFF ) {
-	  libCrsf_MyHwIDXf = readBackupReg(BOOTLOADER_HW_ID_ADDR_XF);
-	  libCrsf_MySerialNoXf = readBackupReg(BOOTLOADER_SERIAL_NO_ADDR_XF);
-	  writeBackupReg(BOOTLOADER_HW_ID_ADDR_XF, 0);
-	  writeBackupReg(BOOTLOADER_SERIAL_NO_ADDR_XF, 0);
-	}
-#endif
-
   libCrsf_Init( libCrsf_MySlaveAddress, libCrsf_MyDeviceName, libCrsf_MySerialNo, libCrsf_MyHwID, libCrsf_MyFwID );
 
   libCrsf_CRSF_Add_Device_Function_List( &CRSF_Ports[0], ARRAY_SIZE(CRSF_Ports));
 
   crossfireSharedData.crsfHandlerAddress = (uint32_t)crsfSdHandler;
-
+  crossfireSharedData.crsfFlag = 0;
+  crossfireSharedData.rtosApiVersion = RTOS_API_VERSION;
 }
 
 void CRSF_This_Device( uint8_t *p_arr )
@@ -138,64 +126,6 @@ void CRSF_This_Device( uint8_t *p_arr )
         // Parameter_Pack_Device_Information( &arr[LIBCRSF_LENGTH_ADD] );
         libCrsf_crsfwrite( LIBCRSF_EX_PARAM_DEVICE_INFO, &arr[ LIBCRSF_LENGTH_ADD ] );
         libCrsf_CRSF_Routing( DEVICE_INTERNAL, &arr[0] );
-
-#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
-        if (*(uint32_t *)CROSSFIRE_TASK_ADDRESS == 0xFFFFFFFF ) {
-		  uint32_t count = 0;
-		  BYTE txBuf[LIBCRSF_MAX_BUFFER_SIZE];
-
-		  libUtil_Write8(txBuf, &count, LIBCRSF_UART_SYNC); /* device address */
-		  libUtil_Write8(txBuf, &count, 0);                 /* frame length */
-		  libUtil_Write8(txBuf, &count, LIBCRSF_EX_PARAM_DEVICE_INFO); /* cmd type */
-		  libUtil_Write8(txBuf, &count, LIBCRSF_USB_HOST_ADD);     /* Destination Address */
-		  libUtil_Write8(txBuf, &count, LIBCRSF_RC_TX);/* Origin Address */
-
-		  // Device name
-		  libUtil_Write8(txBuf, &count, 0x54);
-		  libUtil_Write8(txBuf, &count, 0x42);
-		  libUtil_Write8(txBuf, &count, 0x53);
-		  libUtil_Write8(txBuf, &count, 0x20);
-		  libUtil_Write8(txBuf, &count, 0x42);
-		  libUtil_Write8(txBuf, &count, 0x4f);
-		  libUtil_Write8(txBuf, &count, 0x4f);
-		  libUtil_Write8(txBuf, &count, 0x54);
-		  libUtil_Write8(txBuf, &count, 0x4c);
-		  libUtil_Write8(txBuf, &count, 0x4f);
-		  libUtil_Write8(txBuf, &count, 0x41);
-		  libUtil_Write8(txBuf, &count, 0x44);
-		  libUtil_Write8(txBuf, &count, 0x45);
-		  libUtil_Write8(txBuf, &count, 0x52);
-		  libUtil_Write8(txBuf, &count, 0x00);
-
-		  // Serial no
-		  libUtil_Write8(txBuf, &count, (libCrsf_MySerialNoXf & 0xff000000) >> 24);
-		  libUtil_Write8(txBuf, &count, (libCrsf_MySerialNoXf & 0x00ff0000) >> 16);
-		  libUtil_Write8(txBuf, &count, (libCrsf_MySerialNoXf & 0x0000ff00) >> 8);
-		  libUtil_Write8(txBuf, &count, (libCrsf_MySerialNoXf & 0x000000ff) >> 0);
-
-		  // Hw id
-		  libUtil_Write8(txBuf, &count, (libCrsf_MyHwIDXf & 0xff000000) >> 24);
-		  libUtil_Write8(txBuf, &count, (libCrsf_MyHwIDXf & 0x00ff0000) >> 16);
-		  libUtil_Write8(txBuf, &count, (libCrsf_MyHwIDXf & 0x0000ff00) >> 8);
-		  libUtil_Write8(txBuf, &count, (libCrsf_MyHwIDXf & 0x000000ff) >> 0);
-
-		  // Fw id
-		  libUtil_Write8(txBuf, &count, 0x00);
-		  libUtil_Write8(txBuf, &count, 0x00);
-		  libUtil_Write8(txBuf, &count, 0x00);
-		  libUtil_Write8(txBuf, &count, 0x00);
-
-		  // Params count
-		  libUtil_Write8(txBuf, &count, 0x00);
-
-		  uint8_t crc1 = libCRC8_Get_CRC_Arr(&txBuf[2], count-2, POLYNOM_1);
-		  libUtil_Write8(txBuf, &count, crc1);
-
-		  txBuf[LIBCRSF_LENGTH_ADD] = count - 2;
-
-		  CRSF_To_USB_HID(txBuf);
-        }
-#endif
       }
       break;
 
@@ -222,14 +152,6 @@ void CRSF_This_Device( uint8_t *p_arr )
 				//     , ( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 4 ) );
 				if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 2 ) == LIBCRSF_GENERAL_CMD){
 					if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 3 ) == LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD){
-
-#if defined(PCBTANGO) && defined(CROSSFIRE_TASK) && !defined(SIMU)
-						if (*(uint32_t *)CROSSFIRE_TASK_ADDRESS == 0xFFFFFFFF ) {
-							if( p_arr[LIBCRSF_EXT_HEAD_DST_ADD] == LIBCRSF_RC_TX ){
-								boot2bootloader(1, libCrsf_MyHwIDXf, libCrsf_MySerialNoXf);
-							}
-						}
-#endif
 						boot2bootloader(1, libCrsf_MyHwID, libCrsf_MySerialNo);
 					}
 				}

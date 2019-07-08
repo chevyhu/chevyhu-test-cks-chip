@@ -101,27 +101,16 @@ void interrupt5ms()
 #if defined(HAPTIC)
   HAPTIC_HEARTBEAT();
 #endif
-#if defined(PCBTANGO)
-  if (++pre_scale % 2 == 0) {
-#else
   if (++pre_scale >= 2) {
     pre_scale = 0 ;
-#endif
     DEBUG_TIMER_START(debugTimerPer10ms);
     DEBUG_TIMER_SAMPLE(debugTimerPer10msPeriod);
     per10ms();
     DEBUG_TIMER_STOP(debugTimerPer10ms);
   }
 
-#if defined(PCBTANGO)
-  if(pre_scale % ROTARY_ENCODER_PRESCALER == 0) {
-#endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
 	checkRotaryEncoder();
-#endif
-
-#if defined(PCBTANGO)
-  }
 #endif
 }
 
@@ -488,7 +477,9 @@ TASK_FUNCTION(systemTask)
   set_model_id_needed = true;
 
   while(1) {
+#warning "remove when merge to chevy's branch"
 	wdt_reset();
+
     crsfSharedFifoHandler();
     crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)

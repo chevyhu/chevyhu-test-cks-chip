@@ -466,7 +466,6 @@ extern uint8_t g_trimState;
 #if defined(PCBX9E) || defined(PCBX7) || defined(PCBX3) || defined(PCBTANGO)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
-#define ROTARY_ENCODER_PRESCALER		3
 void rotaryEncoderInit(void);
 void rotaryEncoderCheck(void);
 void checkRotaryEncoder(void);
