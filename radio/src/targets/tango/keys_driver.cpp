@@ -266,22 +266,22 @@ void checkRotaryEncoder()
 		++value;
 	}
 
+	vel = value - prev_value;
+	prev_value = value;
+	speedCount += vel;
+
+	if(++delayCount > 4){
+		delayCount = 0;
+		dir_lock = speedCount >> 2;
+		speedCount = 0;
+	}
+
     rotencPositionValue = newpos;
 #if !defined(BOOT)
     if (g_eeGeneral.backlightMode & e_backlight_mode_keys) {
       backlightOn();
     }
 #endif
-  }
-
-  vel = value - prev_value;
-  prev_value = value;
-  speedCount += vel;
-
-  if(++delayCount > 4){
-	delayCount = 0;
-	dir_lock = speedCount >> 2;
-	speedCount = 0;
   }
 }
 #endif
