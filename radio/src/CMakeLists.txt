@@ -11,6 +11,10 @@ endif()
 set(GUI_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL)
 set(TTS_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL RU)
 
+set(OS_TYPES COOS FREE_RTOS)
+
+set(OS_TYPE "COOS" CACHE STRING "Radio type, one of: ${OS_TYPES}")
+set_property(CACHE OS_TYPE PROPERTY STRINGS ${OS_TYPES})
 set(PCB "X9D+" CACHE STRING "Radio type, one of: ${PCB_TYPES}")
 set_property(CACHE PCB PROPERTY STRINGS ${PCB_TYPES})
 set(TRANSLATIONS "EN" CACHE STRING "Radio language, one of: ${GUI_LANGUAGES}")
@@ -69,6 +73,7 @@ option(NIGHTLY_BUILD_WARNING "Warn this is a nightly build" OFF)
 option(MODULE_R9M_FLEX_FW "Add R9M options for non certified firmwwares" OFF)
 option(FRSKY_RELEASE "Used to build FrSky released firmware" OFF)
 
+
 # since we reset all default CMAKE compiler flags for firmware builds, provide an alternate way for user to specify additional flags.
 set(FIRMWARE_C_FLAGS "" CACHE STRING "Additional flags for firmware target c compiler (note: all CMAKE_C_FLAGS[_*] are ignored for firmware/bootloader).")
 set(FIRMWARE_C_FLAGS_DEBUG "-g" CACHE STRING "Additional flags for firmware target (Debug config) c compiler (note: CMAKE_C_FLAGS_DEBUG is ignored for firmware/bootloader).")
@@ -78,10 +83,10 @@ set(FIRMWARE_CXX_FLAGS_DEBUG "-g" CACHE STRING "Additional flags for firmware ta
 set(THIRDPARTY_DIR thirdparty)
 set(LUA_DIR ${THIRDPARTY_DIR}/Lua/src)
 set(COOS_DIR ${THIRDPARTY_DIR}/CoOS)
-if (PCB STREQUAL TANGO)
-  set(FREERTOS_DIR ${THIRDPARTY_DIR}/FreeRTOS)
-  set(HARMONY_DIR ${THIRDPARTY_DIR}/harmony/v2_05_01)
-endif()
+
+set(FREERTOS_DIR ${THIRDPARTY_DIR}/FreeRTOS)
+#set(HARMONY_DIR ${THIRDPARTY_DIR}/harmony/v2_05_01)
+
 set(FATFS_DIR ${THIRDPARTY_DIR}/FatFs)
 set(RADIO_BIN_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -539,7 +544,14 @@ if(NOT MSVC)
       endif()
     endif()
 
-    add_definitions(-DRTOS_COOS)
+    if(OS_TYPE STREQUAL FREE_RTOS)
+      message(STATUS "freeRTOS detected")
+      add_definitions(-DRTOS_FREERTOS)
+    else()
+      message(STATUS "COOS detected")
+      add_definitions(-DRTOS_COOS)
+    endif()
+
 
     add_executable(firmware ${SRC} ${FIRMWARE_HEADERS})
     link_libraries(firmware -lstdc++)

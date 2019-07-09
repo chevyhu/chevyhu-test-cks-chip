@@ -24,6 +24,8 @@
 #include "usbd_req.h"
 #include "debug.h"
 
+#if !defined(SIMU)
+
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
   */
@@ -462,6 +464,8 @@ static uint8_t  USBD_HID_DataOut (void  *pdev,
 
 /**
   * @}
-  */ 
+  */
+
+#endif
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

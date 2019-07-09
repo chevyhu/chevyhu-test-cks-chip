@@ -20,6 +20,7 @@
 
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
+#include "rtos.h"
 
 bool set_model_id_needed = false;
 
@@ -265,7 +266,6 @@ void boardInit()
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP|DBGMCU_TIM1_STOP|DBGMCU_TIM2_STOP|DBGMCU_TIM3_STOP|DBGMCU_TIM6_STOP|DBGMCU_TIM8_STOP|DBGMCU_TIM10_STOP|DBGMCU_TIM13_STOP|DBGMCU_TIM14_STOP, ENABLE);
 #endif
 
-  pwrInit();
 #if defined(PWR_BUTTON_PRESS)
 #if defined(PCBTANGO)
   if (!WAS_RESET_BY_WATCHDOG()) {
@@ -329,6 +329,7 @@ void boardInit()
   toplcdInit();
 #endif
 #else // defined(PWR_BUTTON_PRESS)
+  pwrInit();
   backlightInit();
 #endif
 

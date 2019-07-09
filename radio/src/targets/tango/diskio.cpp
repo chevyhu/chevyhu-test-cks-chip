@@ -384,12 +384,19 @@ void sdInit(void)
 void sdInit()
 {
   TRACE("sdInit");
-
+#ifdef RTOS_FREERTOS
+  RTOS_CREATE_MUTEX(ioMutex);
+  if (ioMutex == NULL) {
+    // sd error
+    return;
+  }
+#else
   ioMutex = CoCreateMutex();
   if (ioMutex >= CFG_MAX_MUTEX) {
     // sd error
     return;
   }
+#endif
   sdMount();
 }
 
