@@ -57,6 +57,7 @@ void stackPaint()
 #endif
 }
 
+#ifdef RTOS_FREERTOS
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -136,6 +137,7 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer, StackT
 }
 #ifdef __cplusplus
 }
+#endif
 #endif
 
 volatile uint16_t timeForcePowerOffPressed = 0;

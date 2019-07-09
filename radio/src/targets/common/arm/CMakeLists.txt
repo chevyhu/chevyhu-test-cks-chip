@@ -188,20 +188,20 @@ if (OS_TYPE STREQUAL FREE_RTOS)
           ${FREERTOS_DIR}/tasks.c
           )
 else()
-  #set(FIRMWARE_SRC
-   #       ${FIRMWARE_SRC}
-    #      ${COOS_DIR}/kernel/core.c
-     #     ${COOS_DIR}/kernel/hook.c
-      #    ${COOS_DIR}/kernel/task.c
-       #   ${COOS_DIR}/kernel/event.c
-        #  ${COOS_DIR}/kernel/time.c
-         # ${COOS_DIR}/kernel/timer.c
-         # ${COOS_DIR}/kernel/flag.c
-         # ${COOS_DIR}/kernel/mutex.c
-         # ${COOS_DIR}/kernel/serviceReq.c
-         # ${COOS_DIR}/portable/GCC/port.c
-         # ${COOS_DIR}/portable/arch.c
-         # )
+  set(FIRMWARE_SRC
+          ${FIRMWARE_SRC}
+          ${COOS_DIR}/kernel/core.c
+          ${COOS_DIR}/kernel/hook.c
+          ${COOS_DIR}/kernel/task.c
+          ${COOS_DIR}/kernel/event.c
+          ${COOS_DIR}/kernel/time.c
+          ${COOS_DIR}/kernel/timer.c
+          ${COOS_DIR}/kernel/flag.c
+          ${COOS_DIR}/kernel/mutex.c
+          ${COOS_DIR}/kernel/serviceReq.c
+          ${COOS_DIR}/portable/GCC/port.c
+          ${COOS_DIR}/portable/arch.c
+          )
 endif()
 
 set(PULSES_SRC
