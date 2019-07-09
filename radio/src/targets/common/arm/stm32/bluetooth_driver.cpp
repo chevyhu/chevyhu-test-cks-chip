@@ -108,6 +108,7 @@ void bluetoothDisable()
 
 extern "C" void BT_USART_IRQHandler(void)
 {
+  CoEnterISR();
   DEBUG_INTERRUPT(INT_BLUETOOTH);
   if (USART_GetITStatus(BT_USART, USART_IT_RXNE) != RESET) {
     USART_ClearITPendingBit(BT_USART, USART_IT_RXNE);
@@ -134,6 +135,7 @@ extern "C" void BT_USART_IRQHandler(void)
       bluetoothWriteState = BLUETOOTH_WRITE_DONE;
     }
   }
+  CoExitISR();
 }
 
 void bluetoothWriteWakeup()

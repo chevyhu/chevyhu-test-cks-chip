@@ -92,6 +92,7 @@ extern "C" void INTMODULE_USART_IRQHandler(void)
 {
   uint32_t status = INTMODULE_USART->SR;
 
+  CoEnterISR();
   while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
     uint8_t data = INTMODULE_USART->DR;
     if (status & USART_FLAG_ERRORS) {
@@ -103,6 +104,7 @@ extern "C" void INTMODULE_USART_IRQHandler(void)
     }
     status = INTMODULE_USART->SR;
   }
+  CoExitISR();
 }
 
 void intmoduleSendBuffer(const uint8_t * data, uint8_t size)

@@ -128,9 +128,11 @@ void interrupt5ms()
 #if !defined(SIMU)
 extern "C" void INTERRUPT_xMS_IRQHandler()
 {
+   CoEnterISR();
   INTERRUPT_xMS_TIMER->SR &= ~TIM_SR_UIF ;
   interrupt5ms() ;
   DEBUG_INTERRUPT(INT_5MS);
+  CoExitISR();
 }
 #endif
 
@@ -159,9 +161,11 @@ uint32_t ulPortSetTickCB( uint32_t cb )
 #if !defined(SIMU)
 extern "C" void INTERRUPT_1MS_IRQHandler()
 {
+  CoEnterISR();
   INTERRUPT_1MS_TIMER->SR &= ~TIM_SR_UIF ;
   if( RTOS_Tick_CB )
       RTOS_Tick_CB();
+  CoExitISR();
 }
 #endif
 
@@ -571,6 +575,7 @@ void tangoUpdateChannel( void )
 extern Fifo<uint8_t, 512> serial2TxFifo;
 extern "C" void SERIAL_USART_IRQHandler(void)
 {
+  CoEnterISR();
   DEBUG_INTERRUPT(INT_SER2);
   bool xf_active = false;
   bool xf_valid = crossfire_uart_irq_handler ? true : false;
@@ -613,6 +618,7 @@ extern "C" void SERIAL_USART_IRQHandler(void)
     }
   }
 #endif
+  CoExitISR();
 }
 #endif
 
@@ -626,7 +632,7 @@ void EXTI15_10_IRQHandler(void)
 	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
 	/* call DIOCN handler of crossfire */
 	Crossfire_Task();
-	CoExitISR();
+    CoExitISR();
 }
 #endif
 

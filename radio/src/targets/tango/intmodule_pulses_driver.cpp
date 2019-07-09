@@ -143,20 +143,26 @@ void intmodulePpmStart()
 
 extern "C" void INTMODULE_DMA_STREAM_IRQHandler()
 {
-  if (!DMA_GetITStatus(INTMODULE_DMA_STREAM, INTMODULE_DMA_FLAG_TC))
-    return;
+  CoEnterISR();
+  if (!DMA_GetITStatus(INTMODULE_DMA_STREAM, INTMODULE_DMA_FLAG_TC)){
+      CoExitISR();
+      return;
+  }
 
   DMA_ClearITPendingBit(INTMODULE_DMA_STREAM, INTMODULE_DMA_FLAG_TC);
 
   INTMODULE_TIMER->SR &= ~TIM_SR_CC2IF; // Clear flag
   INTMODULE_TIMER->DIER |= TIM_DIER_CC2IE; // Enable this interrupt
+  CoExitISR();
 }
 
 extern "C" void INTMODULE_TIMER_CC_IRQHandler()
 {
+  CoEnterISR();
   INTMODULE_TIMER->DIER &= ~TIM_DIER_CC2IE; // Stop this interrupt
   INTMODULE_TIMER->SR &= ~TIM_SR_CC2IF;
   if (setupPulses(INTERNAL_MODULE)) {
     intmoduleSendNextFrame();
   }
+  CoExitISR();
 }

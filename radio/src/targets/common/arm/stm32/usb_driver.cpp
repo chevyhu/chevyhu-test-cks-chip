@@ -89,8 +89,14 @@ USB_OTG_CORE_HANDLE USB_OTG_dev;
 
 extern "C" void OTG_FS_IRQHandler()
 {
+#ifndef BOOT
+  CoEnterISR();
+#endif
   DEBUG_INTERRUPT(INT_OTG_FS);
   USBD_OTG_ISR_Handler(&USB_OTG_dev);
+#ifndef BOOT
+  CoExitISR();
+#endif
 }
 
 void usbInit()

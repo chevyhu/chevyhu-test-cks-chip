@@ -122,10 +122,11 @@ void ESP_WriteHandler(void){
 }
 
 extern "C" void ESP_USART_IRQHandler(void){
-
+  CoEnterISR();
   if(USART_GetITStatus(ESP_USART, USART_IT_RXNE)!=RESET){
     USART_ClearITPendingBit(ESP_USART, USART_IT_RXNE);
     uint8_t data = USART_ReceiveData(ESP_USART);
     espRxFifo.push(data);
   } 
+  CoExitISR();
 }

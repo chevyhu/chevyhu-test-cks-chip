@@ -92,6 +92,7 @@ inline uint32_t diff_with_16bits_overflow(uint32_t a, uint32_t b)
 
 extern "C" void PWM_IRQHandler(void)
 {
+  CoEnterISR();
   static uint8_t  timer_capture_states[NUM_PWMSTICKS];
   static uint32_t timer_capture_rising_time[NUM_PWMSTICKS];
 
@@ -115,6 +116,7 @@ extern "C" void PWM_IRQHandler(void)
       TIM_ClearITPendingBit(i);
     }
   }
+    CoExitISR();
 }
 
 void sticksPwmRead(uint16_t * values)
