@@ -245,13 +245,37 @@ uint32_t switchState(uint8_t index)
 void checkRotaryEncoder()
 {
   uint32_t newpos = ROTARY_ENCODER_POSITION();
+  static uint32_t delayCount = 0;
+  static int32_t prev_value = 0;
+  static int32_t vel = 0;
+  static int32_t value = 0;
+  static int16_t dir_lock = 0;
+  static int16_t speedCount = 0;
+
   if (newpos != rotencPositionValue && !keyState(KEY_ENTER)) {
-    if ((rotencPositionValue & 0x01) ^ ((newpos & 0x02) >> 1)) {
-      --rotencValue;
-    }
-    else {
-      ++rotencValue;
-    }
+	if ((rotencPositionValue & 0x01) ^ ((newpos & 0x02) >> 1)) {
+		if((dir_lock == 0 && vel < 0) || (dir_lock < 0)){
+			--rotencValue;
+		}
+		--value;
+	}
+	else {
+		if((dir_lock == 0 && vel > 0) || (dir_lock > 0)){
+			++rotencValue;
+		}
+		++value;
+	}
+
+	vel = value - prev_value;
+	prev_value = value;
+	speedCount += vel;
+
+	if(++delayCount > 4){
+		delayCount = 0;
+		dir_lock = speedCount >> 2;
+		speedCount = 0;
+	}
+
     rotencPositionValue = newpos;
 #if !defined(BOOT)
     if (g_eeGeneral.backlightMode & e_backlight_mode_keys) {

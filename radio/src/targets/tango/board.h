@@ -861,9 +861,17 @@ void ESP_WriteHandler(void);
 uint8_t espReadBuffer(uint8_t* buf);
 #endif
 
-#define BOOTLOADER_IS_NEED_FLASH_ADDR	0x0
-#define BOOTLOADER_HW_ID_ADDR			0x1
-void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId);
+#define BOOTLOADER_IS_NEED_FLASH_ADDR				0x0
+#define BOOTLOADER_HW_ID_ADDR						0x1
+#define BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR			0x2
+#define BOOTLOADER_SERIAL_NO_ADDR					0x3
+#define BOOTLOADER_HW_ID_ADDR_OPENTX				0x4
+#define BOOTLOADER_HW_ID_ADDR_XF					0x5
+#define BOOTLOADER_SERIAL_NO_ADDR_OPENTX			0x6
+#define BOOTLOADER_SERIAL_NO_ADDR_XF				0x7
+uint32_t readBackupReg(uint8_t index);
+void writeBackupReg(uint8_t index, uint32_t data);
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn);
 
 void getDefaultSwConfig();
 

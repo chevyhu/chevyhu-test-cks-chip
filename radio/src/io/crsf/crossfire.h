@@ -69,11 +69,20 @@ struct CrossfireSharedData {
   int32_t channels[CROSSFIRE_CHANNELS_COUNT];
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_tx;   //from XF to OpenTX
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_rx;   //from OpenTX to XF
-#if defined(CRSF_OPENTX) && defined(CRSF_SD)
+#if defined(CRSF_OPENTX)
   uint32_t crsfHandlerAddress;
-  uint8_t crsfEEPROMSaveFlag;
+  uint32_t crsfFlag;
+  uint32_t rtosApiVersion;
 #endif
 };
+
+
+#if defined(CRSF_OPENTX)
+#define CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON				0x01
+#if defined(CRSF_SD)
+#define CRSF_OPENTX_FLAG_EEPROM_SAVE						0x02
+#endif
+#endif
 
 #if defined(CRSF_OPENTX) && defined(CRSF_SD)
 //#define DEBUG_CRSF_SD_READ_COMPARE

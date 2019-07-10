@@ -189,6 +189,9 @@ void usbJoystickUpdate()
 #if defined(AGENT)
 #include "../../io/crsf/crsf.h"
 
+#define USB_HID_FIFO_SIZE		256
+#define USB_HID_RETRY_TIMES		100
+
 void usbAgentWrite( uint8_t *pData )
 {
   static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
@@ -198,14 +201,43 @@ void usbAgentWrite( uint8_t *pData )
 
 void CRSF_To_USB_HID( uint8_t *p_arr )
 {
-  static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
-  *p_arr = LIBCRSF_UART_SYNC;
-  // block sending telemetry to usb
-  if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14){
-	  memcpy(HID_Buffer, p_arr, HID_AGENT_IN_PACKET);
-//      PrintData("USB tx:", HID_Buffer);
-	  USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
-  }
+	static uint8_t readyToSend = 0;
+	static uint8_t pending = 0;
+	static uint8_t sendData[HID_AGENT_IN_PACKET];
+
+	static Fifo<uint8_t, USB_HID_FIFO_SIZE> hidTxFifo;
+
+    *p_arr = LIBCRSF_UART_SYNC;
+
+	// block sending telemetry to usb
+	if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14 ){
+		for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
+			hidTxFifo.push(p_arr[i]);
+		}
+	}
+
+	for(uint8_t j = 0; j < USB_HID_RETRY_TIMES; j++){
+		if(!readyToSend){
+			if(hidTxFifo.size() > 0){
+				for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
+					hidTxFifo.pop(sendData[i]);
+				}
+//				PrintData("USB tx:", sendData);
+				pending = 1;
+			}
+			else{
+				pending = 0;
+				break;
+			}
+		}
+		else{
+			pending = 1;
+		}
+
+		if(pending){
+			readyToSend = USBD_AGENT_SendReport(&USB_OTG_dev, sendData, HID_AGENT_IN_PACKET);
+		}
+	}
 }
 
 void AgentHandler(){

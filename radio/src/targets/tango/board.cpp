@@ -50,6 +50,8 @@ void KernelApiInit( void ){
 #include "rtos_api.h"
 }
 
+uint8_t isDisableBoardOff();
+
 void watchdogInit(unsigned int duration)
 {
   IWDG->KR = 0x5555;      // Unlock registers
@@ -100,23 +102,16 @@ void interrupt5ms()
 #if defined(HAPTIC)
   HAPTIC_HEARTBEAT();
 #endif
-
   if (++pre_scale >= 2) {
     pre_scale = 0 ;
     DEBUG_TIMER_START(debugTimerPer10ms);
     DEBUG_TIMER_SAMPLE(debugTimerPer10msPeriod);
     per10ms();
     DEBUG_TIMER_STOP(debugTimerPer10ms);
-#if !defined(PCBTANGO)
   }
-#endif
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  checkRotaryEncoder();
-#endif
-
-#if defined(PCBTANGO)
-  }
+	checkRotaryEncoder();
 #endif
 }
 
@@ -318,7 +313,9 @@ void boardInit()
       lcdRefreshWait();
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
-      boardOff();
+    	if(!isDisableBoardOff()){
+//    		boardOff();
+    	}
     }
   }
   else {
@@ -428,7 +425,7 @@ uint16_t getBatteryVoltage()
 }
 
 #if !defined(SIMU)
-uint32_t ReadBackupReg(uint8_t index){
+uint32_t readBackupReg(uint8_t index){
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
     PWR_BackupRegulatorCmd(ENABLE);
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
@@ -446,11 +443,18 @@ void writeBackupReg(uint8_t index, uint32_t data){
 	*(__IO uint32_t *) (BKPSRAM_BASE + index*4) = data;
 }
 
-void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId){
+void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn){
 	usbStop();
 	writeBackupReg(BOOTLOADER_IS_NEED_FLASH_ADDR, isNeedFlash);
 	writeBackupReg(BOOTLOADER_HW_ID_ADDR, HwId);
+	writeBackupReg(BOOTLOADER_SERIAL_NO_ADDR, sn);
 	NVIC_SystemReset();
+}
+
+uint8_t isDisableBoardOff(){
+	uint8_t value = (uint8_t)readBackupReg(BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR);
+	writeBackupReg(BOOTLOADER_IS_SKIP_BOARD_OFF_ADDR, 0);
+	return value;
 }
 #endif
 
@@ -474,6 +478,14 @@ TASK_FUNCTION(systemTask)
   set_model_id_needed = true;
 
   while(1) {
+#warning "remove when merge to chevy's branch"
+	wdt_reset();
+
+	if(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON){
+		drawDownload();
+		crossfireSharedData.crsfFlag &= ~CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON;
+	}
+
     crsfSharedFifoHandler();
     crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)
