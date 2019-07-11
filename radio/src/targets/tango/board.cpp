@@ -235,7 +235,7 @@ void boardInit()
   audioInit();
   init2MhzTimer();
   init5msTimer();
-  CRSF_Init();
+  //CRSF_Init();
   __enable_irq();
   i2cInit();
   usbInit();

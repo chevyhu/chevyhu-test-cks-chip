@@ -1044,6 +1044,12 @@ extern const char STR_ABOUT_OPENTX_3[];
 extern const char STR_ABOUT_OPENTX_4[];
 extern const char STR_ABOUT_OPENTX_5[];
 
+extern const char STR_ABOUT_FREEDOMTX_1[];
+extern const char STR_ABOUT_FREEDOMTX_2[];
+extern const char STR_ABOUT_FREEDOMTX_3[];
+extern const char STR_ABOUT_FREEDOMTX_4[];
+extern const char STR_ABOUT_FREEDOMTX_5[];
+
 extern const char STR_ABOUT_BERTRAND_1[];
 extern const char STR_ABOUT_BERTRAND_2[];
 extern const char STR_ABOUT_BERTRAND_3[];

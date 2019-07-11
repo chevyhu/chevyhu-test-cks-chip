@@ -27,7 +27,7 @@
 #define	RTOS_API_H
 
 /* from ProjDefs.h */
-typedef void * TaskHandle_t;
+//typedef void * TaskHandle_t;
 #define pdFALSE			( ( BaseType_t ) 0 )
 #define pdTRUE			( ( BaseType_t ) 1 )
 #define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 )    

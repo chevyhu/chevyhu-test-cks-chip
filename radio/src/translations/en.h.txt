@@ -1182,6 +1182,12 @@
 #define TR_ABOUT_OPENTX_4              TR("Support through donations", "for free. Support through")
 #define TR_ABOUT_OPENTX_5              TR("is welcome!", "donations is welcome!")
 
+#define TR_ABOUT_FREEDOMTX_1           TR("FreedomTX is a fork of Open", "FreedomTX is a fork of Open")
+#define TR_ABOUT_FREEDOMTX_2           TR("TX. Both projects are open", "TX. Both projects are open")
+#define TR_ABOUT_FREEDOMTX_3           TR("source, non commercial, no", "source, non commercial, no")
+#define TR_ABOUT_FREEDOMTX_4           TR("warranties. Support OpenTX", "warranties. Support OpenTX")
+#define TR_ABOUT_FREEDOMTX_5           TR("through donations!", "through donations!")
+
 #define TR_ABOUT_BERTRAND_1            "Bertrand Songis"
 #define TR_ABOUT_BERTRAND_2            "OpenTX main author"
 #define TR_ABOUT_BERTRAND_3            "Companion co-author"

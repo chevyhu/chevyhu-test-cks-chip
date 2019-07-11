@@ -162,8 +162,8 @@ void menuModelTemplates(event_t event);
 void menuModelGVarOne(event_t event);
 
 static const MenuHandlerFunc menuTabModel[]  = {
-  //menuModelSelect,
-  //menuModelSetup,
+  menuModelSelect,
+  menuModelSetup,
   CASE_HELI(menuModelHeli)
   CASE_FLIGHT_MODES(menuModelFlightModesAll)
   menuModelExposAll,
