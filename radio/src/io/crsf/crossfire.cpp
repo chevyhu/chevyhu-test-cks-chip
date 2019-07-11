@@ -28,6 +28,7 @@
 #include "debug.h"
 #include "crossfire.h"
 #include "rtos_api.h"
+#include "stamp.h"
 
 extern void CRSF_To_USB_HID( uint8_t *p_arr );
 extern void usbAgentWrite( uint8_t *p_arr );
@@ -46,7 +47,7 @@ static uint8_t libCrsf_MySlaveAddress = LIBCRSF_REMOTE_ADD;
 static char *libCrsf_MyDeviceName = "TBS TANGO II";
 static uint32_t libCrsf_MySerialNo = 1;
 static uint32_t libCrsf_MyHwID = 0x040001;
-static uint32_t libCrsf_MyFwID = 0x0100;
+static uint32_t libCrsf_MyFwID = VERSION_MAJOR << 8 | (VERSION_MINOR * 10) + VERSION_REVISION;
 
 Fifo<uint8_t, TELEMETRY_BUFFER_SIZE> crsf_telemetry_buffer;
 

@@ -877,4 +877,6 @@ void getDefaultSwConfig();
 
 void PrintData(char* header, uint8_t* data);
 
+#define USB_DEBUG
+
 #endif // _BOARD_H_

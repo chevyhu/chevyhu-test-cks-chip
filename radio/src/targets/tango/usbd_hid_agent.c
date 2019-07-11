@@ -241,7 +241,7 @@ __ALIGN_BEGIN static const uint8_t USBD_HID_CfgDesc[USB_AGENT_CONFIG_DESC_SIZ] _
 
 
 
-static uint8_t ReportSent;
+uint8_t ReportSent;
 uint8_t ReportReceived;
 uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
 

@@ -255,24 +255,34 @@ void checkRotaryEncoder()
   if (newpos != rotencPositionValue && !keyState(KEY_ENTER)) {
 	if ((rotencPositionValue & 0x01) ^ ((newpos & 0x02) >> 1)) {
 		if((dir_lock == 0 && vel < 0) || (dir_lock < 0)){
-			--rotencValue;
+			static uint8_t count = 0;
+			if(++count > 1){
+				count = 0;
+				--rotencValue;
+			}
 		}
 		--value;
 	}
 	else {
 		if((dir_lock == 0 && vel > 0) || (dir_lock > 0)){
-			++rotencValue;
+			static uint8_t count = 0;
+			if(++count > 1){
+				count = 0;
+				++rotencValue;
+			}
 		}
 		++value;
 	}
 
-	vel = value - prev_value;
-	prev_value = value;
-	speedCount += vel;
+	if(++delayCount % 2 == 0){
+		vel = value - prev_value;
+		prev_value = value;
+		speedCount += vel;
+	}
 
-	if(++delayCount > 4){
+	if(delayCount % 4 == 0){
 		delayCount = 0;
-		dir_lock = speedCount >> 2;
+		dir_lock = speedCount >> 1;
 		speedCount = 0;
 	}
 
