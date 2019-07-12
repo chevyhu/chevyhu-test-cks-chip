@@ -638,7 +638,8 @@ void menuModelSetup(event_t event)
   }
 #endif
 
-  TITLE(STR_MENUSETUP);
+  //TITLE(STR_MENUSETUP);
+  TITLE("MODEL SETUP");
 
   if (event == EVT_ENTRY) {
     reusableBuffer.moduleSetup.r9mPower = g_model.moduleData[EXTERNAL_MODULE].pxx.power;

@@ -116,7 +116,7 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
 };
 
 enum MenuModelIndexes {
-  //MENU_MODEL_SELECT,
+  MENU_MODEL_CROSSFIRE,
   MENU_MODEL_SETUP,
   CASE_HELI(MENU_MODEL_HELI)
   CASE_FLIGHT_MODES(MENU_MODEL_FLIGHT_MODES)
@@ -135,6 +135,7 @@ enum MenuModelIndexes {
 };
 
 void menuModelSelect(event_t event);
+void menuCrossfireSetup(event_t event);
 void menuModelSetup(event_t event);
 void menuModelFailsafe(event_t event);
 void menuModelHeli(event_t event);
@@ -157,6 +158,7 @@ void menuModelTemplates(event_t event);
 void menuModelGVarOne(event_t event);
 
 static const MenuHandlerFunc menuTabModel[]  = {
+  menuCrossfireSetup,
   menuModelSetup,
   CASE_HELI(menuModelHeli)
   CASE_FLIGHT_MODES(menuModelFlightModesAll)

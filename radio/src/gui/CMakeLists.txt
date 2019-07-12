@@ -31,6 +31,13 @@ if (NOT PCB STREQUAL TANGO)
      )
 endif()
 
+if (PCB STREQUAL TANGO)
+  set(GUI_SRC
+     ${GUI_SRC}
+     model_crossfire_setup.cpp
+     )
+endif()
+
 if(GUI_DIR STREQUAL 128x64 OR GUI_DIR STREQUAL 128x96)
    set(GUI_SRC
       ${GUI_SRC}

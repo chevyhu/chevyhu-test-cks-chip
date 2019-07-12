@@ -355,7 +355,12 @@ void menuMainView(event_t event)
 #if MENUS_LOCK != 2/*no menus*/
     case EVT_KEY_BREAK(KEY_MENU):
       if (g_trimEditMode == EDIT_TRIM_DISABLED) {
-        pushMenu(menuModelSetup);
+#if defined(LUA)
+        // Start crossfire for TANGO
+        //luaExec("/CROSSFIRE/crossfire.lua");
+#endif
+        pushMenu(menuCrossfireSetup);
+        //pushMenu(menuModelSetup);
       }
       break;
 

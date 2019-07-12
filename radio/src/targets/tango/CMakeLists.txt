@@ -179,14 +179,14 @@ if(PCB STREQUAL X9E OR PCB STREQUAL TANGO OR (PCB STREQUAL X7 AND NOT (PCBREV ST
 endif()
 
 if(PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL XLITE OR PCB STREQUAL TANGO)
-  add_definitions(-DBLUETOOTH)
+  #add_definitions(-DBLUETOOTH)
   set(TARGET_SRC
     ${TARGET_SRC}
     ../common/arm/stm32/bluetooth_driver.cpp
     )
   set(SRC
     ${SRC}
-    bluetooth.cpp
+    #bluetooth.cpp
     )
 endif()
 
@@ -203,7 +203,7 @@ if(PCB STREQUAL TANGO)
     )
   set(SRC
     ${SRC}
-    bluetooth.cpp
+    #bluetooth.cpp
     )
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
