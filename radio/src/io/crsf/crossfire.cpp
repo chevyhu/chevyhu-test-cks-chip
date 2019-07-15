@@ -154,6 +154,8 @@ void CRSF_This_Device( uint8_t *p_arr )
 				if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 2 ) == LIBCRSF_GENERAL_CMD){
 					if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 3 ) == LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD){
 						drawDownload();
+						uint32_t delayCount = 0;
+						while(++delayCount < 1000000UL);
 						boot2bootloader(1, libCrsf_MyHwID, libCrsf_MySerialNo);
 					}
 				}

@@ -200,27 +200,12 @@ void usbAgentWrite( uint8_t *pData )
   USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
 }
 
-void CRSF_To_USB_HID( uint8_t *p_arr )
-{
-    *p_arr = LIBCRSF_UART_SYNC;
-
-	// block sending telemetry to usb
-	if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14 ){
-		for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
-			hidTxFifo.push(p_arr[i]);
-		}
-	}
-}
-
 static uint8_t isUsbIdle(){
 	extern uint8_t ReportSent;
 	return ReportSent;
 }
 
-void AgentHandler(){
-  /* handle TBS Agent requests */
-  extern uint8_t ReportReceived;
-  extern uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
+void usb_tx(){
   uint8_t sendData[HID_AGENT_IN_PACKET];
   if(isUsbIdle()){
 		if(hidTxFifo.size() > 0){
@@ -233,6 +218,27 @@ void AgentHandler(){
 #endif
 		}
   }
+}
+
+void CRSF_To_USB_HID( uint8_t *p_arr )
+{
+    *p_arr = LIBCRSF_UART_SYNC;
+
+	// block sending telemetry to usb
+	if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14 ){
+		for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
+			hidTxFifo.push(p_arr[i]);
+		}
+	}
+	usb_tx();
+}
+
+void AgentHandler(){
+  /* handle TBS Agent requests */
+  extern uint8_t ReportReceived;
+  extern uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
+
+  usb_tx();
 
   if(ReportReceived){
 	ReportReceived = 0;
