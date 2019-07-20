@@ -132,9 +132,6 @@ void lcdHardwareInit()
 
 extern "C" void LCD_DMA_Stream_IRQHandler()
 {
-#ifndef BOOT
-  CoEnterISR();
-#endif
   DEBUG_INTERRUPT(INT_LCD);
 
   LCD_DMA_Stream->CR &= ~DMA_SxCR_TCIE; // Stop interrupt
@@ -154,9 +151,6 @@ extern "C" void LCD_DMA_Stream_IRQHandler()
   LCD_CS_HIGH();
 
   lcd_busy = false;
-#ifndef BOOT
-  CoExitISR();
-#endif
 }
 
 /*

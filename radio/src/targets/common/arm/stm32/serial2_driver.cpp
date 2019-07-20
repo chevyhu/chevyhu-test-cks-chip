@@ -143,7 +143,6 @@ uint8_t serial2TracesEnabled()
 #if !defined(PCBTANGO)
 extern "C" void SERIAL_USART_IRQHandler(void)
 {
-  CoEnterISR();
   DEBUG_INTERRUPT(INT_SER2);
   // Send
   if (USART_GetITStatus(SERIAL_USART, USART_IT_TXE) != RESET) {
@@ -174,6 +173,5 @@ extern "C" void SERIAL_USART_IRQHandler(void)
     }
   }
 #endif
-    CoExitISR();
 }
 #endif

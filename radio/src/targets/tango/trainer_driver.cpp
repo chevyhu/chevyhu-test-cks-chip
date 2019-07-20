@@ -119,23 +119,18 @@ void trainerSendNextFrame()
 
 extern "C" void TRAINER_DMA_IRQHandler()
 {
-  CoEnterISR();
-  if (!DMA_GetITStatus(TRAINER_DMA_STREAM, TRAINER_DMA_FLAG_TC)){
-      CoExitISR();
-      return;
-  }
+  if (!DMA_GetITStatus(TRAINER_DMA_STREAM, TRAINER_DMA_FLAG_TC))
+    return;
 
   DMA_ClearITPendingBit(TRAINER_DMA_STREAM, TRAINER_DMA_FLAG_TC);
 
   TRAINER_TIMER->SR &= ~TIM_SR_CC1IF; // Clear flag
   TRAINER_TIMER->DIER |= TIM_DIER_CC1IE; // Enable this interrupt
 
-  CoExitISR();
 }
 
 extern "C" void TRAINER_TIMER_IRQHandler()
 {
-  CoEnterISR();
   DEBUG_INTERRUPT(INT_TRAINER);
 
   uint16_t capture = 0;
@@ -170,7 +165,6 @@ extern "C" void TRAINER_TIMER_IRQHandler()
     setupPulsesPPMTrainer();
     trainerSendNextFrame();
   }
-  CoExitISR();
 }
 
 void init_cppm_on_heartbeat_capture(void)

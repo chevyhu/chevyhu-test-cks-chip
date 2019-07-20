@@ -146,19 +146,16 @@ void audioEnd()
 
 extern "C" void AUDIO_TIM_IRQHandler()
 {
-  CoEnterISR();
   DEBUG_INTERRUPT(INT_AUDIO);
   DAC->CR &= ~DAC_CR_DMAEN1 ;     // Stop DMA requests
 #if defined(STM32F2)
   DAC->CR &= ~DAC_CR_DMAUDRIE1 ;  // Stop underrun interrupt
 #endif
   DAC->SR = DAC_SR_DMAUDR1 ;      // Write 1 to clear flag
-  CoExitISR();
 }
 
 extern "C" void AUDIO_DMA_Stream_IRQHandler()
 {
-  CoEnterISR();
   AUDIO_DMA_Stream->CR &= ~DMA_SxCR_TCIE ;            // Stop interrupt
   AUDIO_DMA->HIFCR = DMA_HIFCR_CTCIF5 | DMA_HIFCR_CHTIF5 | DMA_HIFCR_CTEIF5 | DMA_HIFCR_CDMEIF5 | DMA_HIFCR_CFEIF5 ; // Write ones to clear flags
   AUDIO_DMA_Stream->CR &= ~DMA_SxCR_EN ;                              // Disable DMA channel
@@ -173,6 +170,5 @@ extern "C" void AUDIO_DMA_Stream_IRQHandler()
     AUDIO_DMA_Stream->CR |= DMA_SxCR_EN | DMA_SxCR_TCIE ;       // Enable DMA channel
     DAC->SR = DAC_SR_DMAUDR1;                      // Write 1 to clear flag
   }
-  CoExitISR();
 }
 #endif  // #if !defined(SIMU)

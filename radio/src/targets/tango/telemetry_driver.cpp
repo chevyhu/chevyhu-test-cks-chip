@@ -123,7 +123,6 @@ void sportSendBuffer(const uint8_t * buffer, uint32_t count)
 
 extern "C" void TELEMETRY_DMA_TX_IRQHandler(void)
 {
-  CoEnterISR();
   DEBUG_INTERRUPT(INT_TELEM_DMA);
   if (DMA_GetITStatus(TELEMETRY_DMA_Stream_TX, TELEMETRY_DMA_TX_FLAG_TC)) {
     DMA_ClearITPendingBit(TELEMETRY_DMA_Stream_TX, TELEMETRY_DMA_TX_FLAG_TC);
@@ -133,13 +132,11 @@ extern "C" void TELEMETRY_DMA_TX_IRQHandler(void)
       outputTelemetryBufferTrigger = 0x7E;
     }
   }
-  CoExitISR();
 }
 
 #define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_NE | USART_FLAG_FE | USART_FLAG_PE)
 extern "C" void TELEMETRY_USART_IRQHandler(void)
 {
-  CoEnterISR();
   DEBUG_INTERRUPT(INT_TELEM_USART);
   uint32_t status = TELEMETRY_USART->SR;
 
@@ -171,7 +168,6 @@ extern "C" void TELEMETRY_USART_IRQHandler(void)
     }
     status = TELEMETRY_USART->SR;
   }
-  CoExitISR();
 }
 
 // TODO we should have telemetry in an higher layer, functions above should move to a sport_driver.cpp

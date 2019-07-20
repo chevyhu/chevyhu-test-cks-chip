@@ -2002,26 +2002,14 @@ OPTIMIZE("O0") static SD_Error FindSCR(uint16_t rca, uint32_t *pscr)
 #include "rtos.h"
 void SDIO_IRQHandler(void)
 {
-#ifndef BOOT
-  CoEnterISR();
-#endif
   DEBUG_INTERRUPT(INT_SDIO);
   SD_ProcessIRQ();
-#ifndef BOOT
-  CoExitISR();
-#endif
 }
 
 void SD_SDIO_DMA_IRQHANDLER(void)
 {
-#ifndef BOOT
-  CoEnterISR();
-#endif
   DEBUG_INTERRUPT(INT_SDIO_DMA);
   SD_ProcessDMAIRQ();
-#ifndef BOOT
-  CoExitISR();
-#endif
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
