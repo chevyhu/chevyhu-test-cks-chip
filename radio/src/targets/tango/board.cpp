@@ -622,21 +622,23 @@ extern "C" {
 void EXTI15_10_IRQHandler(void)
 {
 	CoEnterISR();
-	void (*Crossfire_Task)(void);
-	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
+	void (*exti_cb)(void);
+	exti_cb = (void (*)(void))DIO_INT_TRAMPOLINE;
 	/* call DIOCN handler of crossfire */
-	Crossfire_Task();
-    CoExitISR();
+	exti_cb();
+  CoExitISR();
 }
 
-extern "C" void TIM8_UP_TIM13_IRQHandler()
+void TIM8_UP_TIM13_IRQHandler()
 {
   CoEnterISR();
   if( TIM13->SR & TIM_SR_UIF )
   {
     TIM13->SR &= ~TIM_SR_UIF;
-    TIM_ITConfig(TIM13, TIM_IT_Update, DISABLE);
-    TIM_Cmd(TIM13, DISABLE);
+    void (*timer_cb)(void);
+    timer_cb = (void (*)(void))NT_INT_TRAMPOLINE;
+	  /* call notification timer handler of crossfire */
+	  timer_cb();
   }
   CoExitISR();
 }
