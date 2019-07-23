@@ -31,7 +31,9 @@ RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
 RTOS_TASK_HANDLE systemTaskId;
 RTOS_DEFINE_STACK(systemStack, SYSTEM_STACK_SIZE);
 
-RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void);
+static uint32_t DIO_INT_TRAMPOLINE;
+static uint32_t NT_INT_TRAMPOLINE;
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(uint32_t *ptr);
 
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
@@ -508,8 +510,10 @@ void PrintData(char* header, uint8_t* data){
 	TRACE_NOCRLF("\r\n");
 }
 
-RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(uint32_t *ptr)
 {
+  DIO_INT_TRAMPOLINE = ptr[0];
+  NT_INT_TRAMPOLINE = ptr[1];
   return crossfireTaskId;
 };
 

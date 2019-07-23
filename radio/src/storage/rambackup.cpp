@@ -32,7 +32,7 @@ PACK(struct RamBackupUncompressed {
 
 #include "datacopy.cpp"
 
-Backup::RamBackupUncompressed ramBackupUncompressed __DMA;
+Backup::RamBackupUncompressed ramBackupUncompressed;
 
 #if defined(SIMU)
 RamBackup _ramBackup;
