@@ -134,7 +134,15 @@ add_definitions(-DTELEMETRY_FRSKY -DTELEMETRY_FRSKY_SPORT -DGPS)
 
 add_definitions(-DBOLD_FONT -DBATTGRAPH -DTHRTRACE)
 add_definitions(-DREQUIRED_SDCARD_VERSION="${SDCARD_VERSION}")
-include_directories(${COOS_DIR} ${COOS_DIR}/kernel ${COOS_DIR}/portable)
+if (OS_TYPE STREQUAL FREE_RTOS)
+  include_directories(
+          ${FREERTOS_DIR}/config
+          ${FREERTOS_DIR}/include
+          ${FREERTOS_DIR}/portable/GCC/ARM_CM4F
+  )
+else()
+  include_directories(${COOS_DIR} ${COOS_DIR}/kernel ${COOS_DIR}/portable)
+endif()
 foreach(LANGUAGE ${TTS_LANGUAGES})
   string(TOLOWER ${LANGUAGE} lang_lower)
   set(SRC ${SRC} translations/tts_${lang_lower}.cpp)
@@ -167,20 +175,34 @@ set(TARGET_SRC
   telemetry_driver.cpp
   )
 
-set(FIRMWARE_SRC
-  ${FIRMWARE_SRC}
-  ${COOS_DIR}/kernel/core.c
-  ${COOS_DIR}/kernel/hook.c
-  ${COOS_DIR}/kernel/task.c
-  ${COOS_DIR}/kernel/event.c
-  ${COOS_DIR}/kernel/time.c
-  ${COOS_DIR}/kernel/timer.c
-  ${COOS_DIR}/kernel/flag.c
-  ${COOS_DIR}/kernel/mutex.c
-  ${COOS_DIR}/kernel/serviceReq.c
-  ${COOS_DIR}/portable/GCC/port.c
-  ${COOS_DIR}/portable/arch.c
-  )
+if (OS_TYPE STREQUAL FREE_RTOS)
+  set(FIRMWARE_SRC
+          ${FIRMWARE_SRC}
+          ${FREERTOS_DIR}/event_groups.c
+          ${FREERTOS_DIR}/portable/GCC/ARM_CM4F/port.c
+          ${FREERTOS_DIR}/list.c
+          ${FREERTOS_DIR}/timers.c
+          ${FREERTOS_DIR}/portable/MemMang/heap_4.c
+          ${FREERTOS_DIR}/queue.c
+          ${FREERTOS_DIR}/croutine.c
+          ${FREERTOS_DIR}/tasks.c
+          )
+else()
+  set(FIRMWARE_SRC
+          ${FIRMWARE_SRC}
+          ${COOS_DIR}/kernel/core.c
+          ${COOS_DIR}/kernel/hook.c
+          ${COOS_DIR}/kernel/task.c
+          ${COOS_DIR}/kernel/event.c
+          ${COOS_DIR}/kernel/time.c
+          ${COOS_DIR}/kernel/timer.c
+          ${COOS_DIR}/kernel/flag.c
+          ${COOS_DIR}/kernel/mutex.c
+          ${COOS_DIR}/kernel/serviceReq.c
+          ${COOS_DIR}/portable/GCC/port.c
+          ${COOS_DIR}/portable/arch.c
+          )
+endif()
 
 set(PULSES_SRC
   ${PULSES_SRC}

@@ -28,7 +28,6 @@ extern "C++" {
 #endif
 
 #if defined(SIMU)
-
   #include <pthread.h>
   #include <semaphore.h>
 
@@ -139,14 +138,13 @@ extern "C++" {
   }
 
 #elif defined(RTOS_COOS)
-
-#ifdef __cplusplus
+  #ifdef __cplusplus
   extern "C" {
-#endif
-    #include <CoOS.h>
-#ifdef __cplusplus
+  #endif
+  #include <CoOS.h>
+  #ifdef __cplusplus
   }
-#endif
+  #endif
 
   #define RTOS_MS_PER_TICK              ((CFG_CPU_FREQ / CFG_SYSTICK_FREQ) / (CFG_CPU_FREQ / 1000))  // RTOS timer tick length in ms (currently 2)
 
@@ -180,9 +178,9 @@ extern "C++" {
   }
 
   #define RTOS_CREATE_TASK(taskId, task, name, stackStruct, stackSize, priority)   \
-                                        taskId = CoCreateTask(task, NULL, priority, &stackStruct.stack[stackSize-1], stackSize)
+                                          taskId = CoCreateTask(task, NULL, priority, &stackStruct.stack[stackSize-1], stackSize)
 
-#ifdef __cplusplus
+  #ifdef __cplusplus
   static inline void RTOS_CREATE_MUTEX(OS_MutexID &mutex)
   {
     mutex = CoCreateMutex();
@@ -197,7 +195,7 @@ extern "C++" {
   {
     CoLeaveMutexSection(mutex);
   }
-#endif  // __cplusplus
+  #endif  // __cplusplus
 
   static inline uint16_t getStackAvailable(void * address, uint16_t size)
   {
@@ -224,35 +222,35 @@ extern "C++" {
   #define RTOS_CREATE_FLAG(flag)        flag = CoCreateFlag(false, false)
   #define RTOS_SET_FLAG(flag)           (void)CoSetFlag(flag)
 
-#ifdef __cplusplus
+  #ifdef __cplusplus
   template<int SIZE>
   class TaskStack
   {
-    public:
-      TaskStack()
-      {
-      }
+  public:
+    TaskStack()
+    {
+    }
 
-      void paint()
-      {
-        for (uint32_t i=0; i<SIZE; i++) {
-          stack[i] = 0x55555555;
-        }
+    void paint()
+    {
+      for (uint32_t i=0; i<SIZE; i++) {
+        stack[i] = 0x55555555;
       }
+    }
 
-      uint16_t size()
-      {
-        return SIZE * 4;
-      }
+    uint16_t size()
+    {
+      return SIZE * 4;
+    }
 
-      uint16_t available()
-      {
-        return getStackAvailable(stack, SIZE);
-      }
+    uint16_t available()
+    {
+      return getStackAvailable(stack, SIZE);
+    }
 
-      OS_STK stack[SIZE];
+    OS_STK stack[SIZE];
   };
-#endif // __cplusplus
+  #endif // __cplusplus
 
   static inline uint32_t RTOS_GET_TIME(void)
   {
@@ -269,6 +267,70 @@ extern "C++" {
   #define TASK_FUNCTION(task)           void task(void * pdata)
   #define TASK_RETURN()                 return
 
+#elif defined(RTOS_FREERTOS)
+  #include "FreeRTOS.h"
+  #include "task.h"
+  #include "semphr.h"
+
+  #if defined(STM32F4)
+  #define CFG_CPU_FREQ            (168000000)
+  #elif defined(STM32)
+  #define CFG_CPU_FREQ            (120000000)
+  #else
+  #define CFG_CPU_FREQ            (36000000)  // TODO check if really correct for sky9x?
+  #endif
+
+
+  //#define RTOS_MS_PER_TICK              ((CFG_CPU_FREQ / CFG_SYSTICK_FREQ) / (CFG_CPU_FREQ / 1000))  // RTOS timer tick length in ms (currently 2)
+  #define RTOS_MS_PER_TICK              ((CFG_CPU_FREQ / configTICK_RATE_HZ) / (CFG_CPU_FREQ / 1000))  // RTOS timer tick length in ms (currently 2)
+
+
+  static inline void RTOS_INIT()
+  {
+  }
+
+  static inline void RTOS_START()
+  {
+    vTaskStartScheduler();
+  }
+
+  static inline void RTOS_WAIT_MS(uint32_t x)
+  {
+    vTaskDelay((x)/2);
+  }
+
+  static inline void RTOS_WAIT_TICKS(uint32_t x)
+  {
+    vTaskDelay(x);
+  }
+
+  // return 2ms resolution to match CoOS settings
+  static inline uint32_t RTOS_GET_TIME(void)
+  {
+    return xTaskGetTickCount() / 2;
+  }
+
+  static inline uint32_t RTOS_GET_MS(void)
+  {
+    return xTaskGetTickCount();
+  }
+
+  #define RTOS_CREATE_TASK(taskId, task, name, stack, stackSize, priority) \
+                                          { \
+                                            static StaticTask_t xTaskBuffer; \
+                                            xTaskCreateStatic(task, name, stackSize, NULL, priority, stack, &xTaskBuffer); \
+                                          }
+  #define RTOS_DEFINE_STACK(name, size) StackType_t name[size]
+  #define RTOS_TASK_HANDLE              TaskHandle_t
+  #define RTOS_MUTEX_HANDLE             SemaphoreHandle_t
+  #define RTOS_CREATE_MUTEX(mutex)      { \
+                                            static StaticSemaphore_t xSemaphoreBuffer; \
+                                            mutex = xSemaphoreCreateMutexStatic(&xSemaphoreBuffer); \
+                                          }
+  #define RTOS_LOCK_MUTEX(mutex)        xSemaphoreTake(mutex, portMAX_DELAY)
+  #define RTOS_UNLOCK_MUTEX(mutex)      xSemaphoreGive(mutex)
+  #define TASK_FUNCTION(task)           void task(void * pdata)
+  #define TASK_RETURN()                 return
 #else // no RTOS
   static inline void RTOS_START()
   {

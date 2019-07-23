@@ -38,7 +38,7 @@ uint32_t readKeys()
 
 #if defined(KEYS_GPIO_PIN_MENU)
   if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU) {
-    TRACE("menu event\r\n");
+    //TRACE("menu event\r\n");
     result |= 1 << KEY_MENU;
   }
 #endif

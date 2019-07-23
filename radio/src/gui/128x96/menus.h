@@ -85,10 +85,10 @@ enum MenuRadioIndexes
   CASE_SDCARD(MENU_RADIO_SD_MANAGER)
   MENU_RADIO_SPECIAL_FUNCTIONS,
   //MENU_RADIO_TRAINER,
-  MENU_RADIO_VERSION,
-  MENU_RADIO_SWITCHES_TEST,
-  MENU_RADIO_ANALOGS_TEST,
   MENU_RADIO_HARDWARE,
+  MENU_RADIO_VERSION,
+  //MENU_RADIO_SWITCHES_TEST,
+  //MENU_RADIO_ANALOGS_TEST,
   MENU_RADIO_CALIBRATION,
   MENU_RADIO_PAGES_COUNT
 };
@@ -108,15 +108,15 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
   CASE_SDCARD(menuRadioSdManager)
   menuRadioSpecialFunctions,
   //menuRadioTrainer,
-  menuRadioVersion,
-  menuRadioDiagKeys,
-  menuRadioDiagAnalogs,
   menuRadioHardware,
+  menuRadioVersion,
+  //menuRadioDiagKeys,
+  //menuRadioDiagAnalogs,
   menuRadioCalibration
 };
 
 enum MenuModelIndexes {
-  //MENU_MODEL_SELECT,
+  MENU_MODEL_CROSSFIRE,
   MENU_MODEL_SETUP,
   CASE_HELI(MENU_MODEL_HELI)
   CASE_FLIGHT_MODES(MENU_MODEL_FLIGHT_MODES)
@@ -135,6 +135,7 @@ enum MenuModelIndexes {
 };
 
 void menuModelSelect(event_t event);
+void menuCrossfireSetup(event_t event);
 void menuModelSetup(event_t event);
 void menuModelFailsafe(event_t event);
 void menuModelHeli(event_t event);
@@ -157,6 +158,7 @@ void menuModelTemplates(event_t event);
 void menuModelGVarOne(event_t event);
 
 static const MenuHandlerFunc menuTabModel[]  = {
+  menuCrossfireSetup,
   menuModelSetup,
   CASE_HELI(menuModelHeli)
   CASE_FLIGHT_MODES(menuModelFlightModesAll)

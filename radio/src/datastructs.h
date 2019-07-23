@@ -679,7 +679,7 @@ PACK(struct TrainerData {
   #if defined(BLUETOOTH)
     #define BLUETOOTH_FIELDS \
       uint8_t spare; \
-      char bluetoothName[LEN_BLUETOOTH_NAME];
+      char bluetoothName[LEN_BLUETOOTH_NAME];ls
   #else
     #define BLUETOOTH_FIELDS
   #endif
@@ -920,7 +920,7 @@ static inline void check_struct()
   CHKSIZE(TimerData, 11);
 
   CHKSIZE(FlightModeData, 36);
-  CHKSIZE(RadioData, 731);
+  CHKSIZE(RadioData, 720);
 
 #endif /* board specific ifdefs*/
 

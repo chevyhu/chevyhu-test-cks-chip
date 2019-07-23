@@ -75,6 +75,8 @@ elseif(PCB STREQUAL TANGO)
   set(FONTS_TARGET tango_fonts_1bit)
   set(LCD_DRIVER lcd_driver_spi.cpp)
   set(GVAR_SCREEN model_gvars.cpp)
+  #set(OS_TYPE FREE_RTOS)
+  #set(OS_TYPE COOS)
 elseif(PCB STREQUAL X9D+)
   set(CPU_TYPE STM32F2)
   set(CPU_TYPE_FULL STM32F205xE)  # for size report
@@ -177,14 +179,14 @@ if(PCB STREQUAL X9E OR PCB STREQUAL TANGO OR (PCB STREQUAL X7 AND NOT (PCBREV ST
 endif()
 
 if(PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL XLITE OR PCB STREQUAL TANGO)
-  add_definitions(-DBLUETOOTH)
+  #add_definitions(-DBLUETOOTH)
   set(TARGET_SRC
     ${TARGET_SRC}
     ../common/arm/stm32/bluetooth_driver.cpp
     )
   set(SRC
     ${SRC}
-    bluetooth.cpp
+    #bluetooth.cpp
     )
 endif()
 
@@ -201,7 +203,7 @@ if(PCB STREQUAL TANGO)
     )
   set(SRC
     ${SRC}
-    bluetooth.cpp
+    #bluetooth.cpp
     )
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
