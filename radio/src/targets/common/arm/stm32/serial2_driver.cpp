@@ -140,6 +140,7 @@ uint8_t serial2TracesEnabled()
 #endif
 }
 
+#if !defined(PCBTANGO)
 extern "C" void SERIAL_USART_IRQHandler(void)
 {
   DEBUG_INTERRUPT(INT_SER2);
@@ -173,3 +174,4 @@ extern "C" void SERIAL_USART_IRQHandler(void)
   }
 #endif
 }
+#endif

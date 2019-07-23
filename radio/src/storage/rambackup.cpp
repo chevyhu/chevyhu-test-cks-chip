@@ -32,13 +32,13 @@ PACK(struct RamBackupUncompressed {
 
 #include "datacopy.cpp"
 
-Backup::RamBackupUncompressed ramBackupUncompressed; //__DMA;
+Backup::RamBackupUncompressed ramBackupUncompressed;;
 
 #if defined(SIMU)
 RamBackup _ramBackup;
 RamBackup * ramBackup = &_ramBackup;
 #elif defined(PCBTANGO)
-RamBackup * ramBackup = (RamBackup *)(BKPSRAM_BASE + 2000);
+RamBackup * ramBackup = (RamBackup *)(BKPSRAM_BASE + 0x800);
 #else
 RamBackup * ramBackup = (RamBackup *)BKPSRAM_BASE;
 #endif
