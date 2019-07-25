@@ -20,6 +20,7 @@
 
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
+#include "rtos.h"
 
 bool set_model_id_needed = false;
 
@@ -31,7 +32,9 @@ RTOS_DEFINE_STACK(crossfireStack, CROSSFIRE_STACK_SIZE);
 RTOS_TASK_HANDLE systemTaskId;
 RTOS_DEFINE_STACK(systemStack, SYSTEM_STACK_SIZE);
 
-RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void);
+static uint32_t DIO_INT_TRAMPOLINE;
+static uint32_t NT_INT_TRAMPOLINE;
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(uint32_t *ptr);
 
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
@@ -101,27 +104,16 @@ void interrupt5ms()
 #if defined(HAPTIC)
   HAPTIC_HEARTBEAT();
 #endif
-#if defined(PCBTANGO)
-  if (++pre_scale % 2 == 0) {
-#else
   if (++pre_scale >= 2) {
     pre_scale = 0 ;
-#endif
     DEBUG_TIMER_START(debugTimerPer10ms);
     DEBUG_TIMER_SAMPLE(debugTimerPer10msPeriod);
     per10ms();
     DEBUG_TIMER_STOP(debugTimerPer10ms);
   }
 
-#if defined(PCBTANGO)
-  if(pre_scale % ROTARY_ENCODER_PRESCALER == 0) {
-#endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
 	checkRotaryEncoder();
-#endif
-
-#if defined(PCBTANGO)
-  }
 #endif
 }
 
@@ -160,8 +152,8 @@ uint32_t ulPortSetTickCB( uint32_t cb )
 extern "C" void INTERRUPT_1MS_IRQHandler()
 {
   INTERRUPT_1MS_TIMER->SR &= ~TIM_SR_UIF ;
-  if( RTOS_Tick_CB )
-      RTOS_Tick_CB();
+  // if( RTOS_Tick_CB )
+  //     RTOS_Tick_CB();
 }
 #endif
 
@@ -303,7 +295,6 @@ void boardInit()
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP|DBGMCU_TIM1_STOP|DBGMCU_TIM2_STOP|DBGMCU_TIM3_STOP|DBGMCU_TIM6_STOP|DBGMCU_TIM8_STOP|DBGMCU_TIM10_STOP|DBGMCU_TIM13_STOP|DBGMCU_TIM14_STOP, ENABLE);
 #endif
 
-  pwrInit();
 #if defined(PWR_BUTTON_PRESS)
 #if defined(PCBTANGO)
   if (!WAS_RESET_BY_WATCHDOG()) {
@@ -357,7 +348,7 @@ void boardInit()
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
     	if(!isDisableBoardOff()){
-    		boardOff();
+//    		boardOff();
     	}
     }
   }
@@ -369,6 +360,7 @@ void boardInit()
   toplcdInit();
 #endif
 #else // defined(PWR_BUTTON_PRESS)
+  pwrInit();
   backlightInit();
 #endif
 
@@ -396,7 +388,7 @@ void boardOff()
   toplcdOff();
 #endif
 
-#if defined(PWR_BUTTON_PRESS)
+#if defined(PWR_BUTTON_PRESS) && !defined(PCBTANGO)
   while (pwrPressed()) {
     wdt_reset();
   }
@@ -508,8 +500,10 @@ void PrintData(char* header, uint8_t* data){
 	TRACE_NOCRLF("\r\n");
 }
 
-RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(void)
+RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(uint32_t *ptr)
 {
+  DIO_INT_TRAMPOLINE = ptr[0];
+  NT_INT_TRAMPOLINE = ptr[1];
   return crossfireTaskId;
 };
 
@@ -529,6 +523,14 @@ TASK_FUNCTION(systemTask)
   set_model_id_needed = true;
 
   while(1) {
+#warning "remove when merge to chevy's branch"
+	wdt_reset();
+
+	if(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON){
+		drawDownload();
+		crossfireSharedData.crsfFlag &= ~CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON;
+	}
+
     crsfSharedFifoHandler();
     crsfEspHandler();
 #if defined(AGENT) && !defined(SIMU)
@@ -622,11 +624,25 @@ extern "C" {
 void EXTI15_10_IRQHandler(void)
 {
 	CoEnterISR();
-	void (*Crossfire_Task)(void);
-	Crossfire_Task = (void (*)(void))DIO_INT_TRAMPOLINE;
+	void (*exti_cb)(void);
+	exti_cb = (void (*)(void))DIO_INT_TRAMPOLINE;
 	/* call DIOCN handler of crossfire */
-	Crossfire_Task();
-	CoExitISR();
+	exti_cb();
+  CoExitISR();
+}
+
+void TIM8_UP_TIM13_IRQHandler()
+{
+  CoEnterISR();
+  if( TIM13->SR & TIM_SR_UIF )
+  {
+    TIM13->SR &= ~TIM_SR_UIF;
+    void (*timer_cb)(void);
+    timer_cb = (void (*)(void))NT_INT_TRAMPOLINE;
+	  /* call notification timer handler of crossfire */
+	  timer_cb();
+  }
+  CoExitISR();
 }
 #endif
 

@@ -1999,6 +1999,7 @@ OPTIMIZE("O0") static SD_Error FindSCR(uint16_t rca, uint32_t *pscr)
   return errorstatus;
 }
 
+#include "rtos.h"
 void SDIO_IRQHandler(void)
 {
   DEBUG_INTERRUPT(INT_SDIO);

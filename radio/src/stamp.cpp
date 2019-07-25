@@ -39,6 +39,8 @@
   const char vers_stamp[]  = "FW\037\033: " "opentx-" BOARD_NAME "\036VERS\037\033: " VERSION " (" GIT_STR ")" "\036DATE\037\033: " DATE " " TIME "\036EEPR\037\033: " EEPROM_STR;
 #elif defined(PCBTARANIS)
   const char vers_stamp[]  = "FW\037\033: " "opentx-" FLAVOUR "\036VERS\037\033: " VERSION " (" GIT_STR ")" "\036DATE\037\033: " DATE " " TIME "\036EEPR\037\033: " EEPROM_STR;
+#elif defined(PCBTANGO)
+  const char vers_stamp[]  = "FW\037\033: " "fdtx-" FLAVOUR "\036VERS\037\033: " VERSION "\036DATE\037\033: " DATE "\036TIME\037\033: " TIME "\036EEPR\037\033: " EEPROM_STR;
 #else
   const char vers_stamp[]  = "FW\037\033: " "opentx-" FLAVOUR "\036VERS\037\033: " VERSION "\036DATE\037\033: " DATE "\036TIME\037\033: " TIME "\036EEPR\037\033: " EEPROM_STR;
 #endif

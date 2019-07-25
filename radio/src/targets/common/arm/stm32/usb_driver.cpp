@@ -189,6 +189,10 @@ void usbJoystickUpdate()
 #if defined(AGENT)
 #include "../../io/crsf/crsf.h"
 
+#define USB_HID_FIFO_SIZE		256
+
+static Fifo<uint8_t, USB_HID_FIFO_SIZE> hidTxFifo;
+
 void usbAgentWrite( uint8_t *pData )
 {
   static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
@@ -196,28 +200,54 @@ void usbAgentWrite( uint8_t *pData )
   USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
 }
 
+static uint8_t isUsbIdle(){
+	extern uint8_t ReportSent;
+	return ReportSent;
+}
+
+void usb_tx(){
+  uint8_t sendData[HID_AGENT_IN_PACKET];
+  if(isUsbIdle()){
+		if(hidTxFifo.size() > 0){
+			for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
+				hidTxFifo.pop(sendData[i]);
+			}
+			USBD_AGENT_SendReport(&USB_OTG_dev, sendData, HID_AGENT_IN_PACKET);
+#if defined(PCBTANGO) && defined(USB_DEBUG)
+			PrintData("USB tx:", sendData);
+#endif
+		}
+  }
+}
+
 void CRSF_To_USB_HID( uint8_t *p_arr )
 {
-  static uint8_t HID_Buffer[HID_AGENT_IN_PACKET];
-  *p_arr = LIBCRSF_UART_SYNC;
-  // block sending telemetry to usb
-  if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14){
-	  memcpy(HID_Buffer, p_arr, HID_AGENT_IN_PACKET);
-//      PrintData("USB tx:", HID_Buffer);
-	  USBD_AGENT_SendReport(&USB_OTG_dev, HID_Buffer, HID_AGENT_IN_PACKET);
-  }
+    *p_arr = LIBCRSF_UART_SYNC;
+
+	// block sending telemetry to usb
+	if( *(p_arr + LIBCRSF_TYPE_ADD) != 0x14 ){
+		for(uint16_t i = 0; i < HID_AGENT_IN_PACKET; i++){
+			hidTxFifo.push(p_arr[i]);
+		}
+	}
+	usb_tx();
 }
 
 void AgentHandler(){
   /* handle TBS Agent requests */
   extern uint8_t ReportReceived;
   extern uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
+
+  usb_tx();
+
   if(ReportReceived){
 	ReportReceived = 0;
 	static _libCrsf_CRSF_PARSE_DATA HID_CRSF_Data;
 	for( uint8_t i = 0; i < HID_AGENT_OUT_PACKET; i++ ){
 	  if ( libCrsf_CRSF_Parse( &HID_CRSF_Data, HID_Buffer[i] )) {
-//		PrintData("USB rx:", HID_CRSF_Data.Payload);
+#if defined(PCBTANGO) && defined(USB_DEBUG)
+		PrintData("USB rx:", HID_CRSF_Data.Payload);
+#endif
 		libCrsf_CRSF_Routing( USB_HID, HID_CRSF_Data.Payload );
 		break;
 	  }

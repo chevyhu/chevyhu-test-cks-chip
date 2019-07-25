@@ -126,6 +126,7 @@ extern "C" void TRAINER_DMA_IRQHandler()
 
   TRAINER_TIMER->SR &= ~TIM_SR_CC1IF; // Clear flag
   TRAINER_TIMER->DIER |= TIM_DIER_CC1IE; // Enable this interrupt
+
 }
 
 extern "C" void TRAINER_TIMER_IRQHandler()

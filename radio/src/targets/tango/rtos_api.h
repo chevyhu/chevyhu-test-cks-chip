@@ -7,12 +7,13 @@
 
     
 #ifdef DEF_API_CMD
+
 #if !defined(SIMU)
     //          id,   function                          ,  return_type, 	params
     DEF_API_CMD( 1, RTOS_WAIT_TICKS                     , uint8_t       	, const TickType_t xTicksToDelay)
     DEF_API_CMD( 2, CoWaitForSingleFlag                 , StatusType  		, OS_FlagID id, U32 timeout)
     DEF_API_CMD( 3, isr_SetFlag              			, StatusType    	, OS_FlagID id)
-    DEF_API_CMD( 4, Crossfire_Get_Firmware_Task_Handle  , RTOS_TASK_HANDLE	, void)
+    DEF_API_CMD( 4, Crossfire_Get_Firmware_Task_Handle  , RTOS_TASK_HANDLE	, uint32_t *ptr)
 //    DEF_API_CMD( 5, vTaskGetRunTimeStats                , void        		, char *pcWriteBuffer)
     DEF_API_CMD( 6, ulPortSetTickCB                     , uint32_t      	, void* cb)
     DEF_API_CMD( 7, CoCreateFlag                        , BOOL bAutoReset	, BOOL bInitialState)
@@ -28,7 +29,7 @@
 #define	RTOS_API_H
 
 /* from ProjDefs.h */
-typedef void * TaskHandle_t;
+//typedef void * TaskHandle_t;
 #define pdFALSE			( ( BaseType_t ) 0 )
 #define pdTRUE			( ( BaseType_t ) 1 )
 #define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 )    

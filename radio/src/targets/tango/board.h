@@ -466,7 +466,6 @@ extern uint8_t g_trimState;
 #if defined(PCBX9E) || defined(PCBX7) || defined(PCBX3) || defined(PCBTANGO)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
-#define ROTARY_ENCODER_PRESCALER		3
 void rotaryEncoderInit(void);
 void rotaryEncoderCheck(void);
 void checkRotaryEncoder(void);
@@ -838,7 +837,6 @@ void checkTrainerSettings(void);
 #define CROSSFIRE_STACK_SIZE   			700
 #define CROSSFIRE_TASK_PRIORITY  		0
 #define CROSSFIRE_TASK_ADDRESS 			0x8060010
-#define DIO_INT_TRAMPOLINE      		0x8060061
 #define SYSTEM_STACK_SIZE      			500
 #define RTOS_SYS_TASK_PRIORITY  		10
 
@@ -880,5 +878,7 @@ void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn);
 void getDefaultSwConfig();
 
 void PrintData(char* header, uint8_t* data);
+
+#define USB_DEBUG
 
 #endif // _BOARD_H_

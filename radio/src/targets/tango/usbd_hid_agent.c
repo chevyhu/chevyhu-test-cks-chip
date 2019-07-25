@@ -24,6 +24,8 @@
 #include "usbd_req.h"
 #include "debug.h"
 
+#if !defined(SIMU)
+
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
   */
@@ -241,7 +243,7 @@ __ALIGN_BEGIN static const uint8_t USBD_HID_CfgDesc[USB_AGENT_CONFIG_DESC_SIZ] _
 
 
 
-static uint8_t ReportSent;
+uint8_t ReportSent;
 uint8_t ReportReceived;
 uint8_t HID_Buffer[HID_AGENT_OUT_PACKET];
 
@@ -462,6 +464,8 @@ static uint8_t  USBD_HID_DataOut (void  *pdev,
 
 /**
   * @}
-  */ 
+  */
+
+#endif
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

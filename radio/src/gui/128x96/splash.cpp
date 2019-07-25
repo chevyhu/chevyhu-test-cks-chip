@@ -59,6 +59,21 @@ void drawSecondSplash()
   lcdDraw1bitBitmap(0, 0, splash2_lbm, 0, 0);
   lcdRefresh();
 }
+
+const unsigned char downloaddata[]  = {
+  'S','F','S',0,
+  #include "bitmaps/128x96/download.lbm"
+  'S','F','E',0 };
+
+const unsigned char * const download_lbm = downloaddata+4;
+
+void drawDownload()
+{
+  lcdClear();
+  lcdDraw1bitBitmap(0, 0, download_lbm, 0, 0);
+  lcdRefresh();
+}
+
 #endif
 
 #if defined(SPLASH_FRSKY)

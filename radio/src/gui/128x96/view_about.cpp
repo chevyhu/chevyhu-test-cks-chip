@@ -87,11 +87,11 @@ void menuAboutView(event_t event)
   switch (screenIndex) {
     case ABOUT_OPENTX:
     case ABOUT_END:
-      lcdDrawText(ABOUT_X, 22, STR_ABOUT_OPENTX_1, SMLSIZE);
-      lcdDrawText(ABOUT_X, 30, STR_ABOUT_OPENTX_2, SMLSIZE);
-      lcdDrawText(ABOUT_X, 38, STR_ABOUT_OPENTX_3, SMLSIZE);
-      lcdDrawText(ABOUT_X, 46, STR_ABOUT_OPENTX_4, SMLSIZE);
-      lcdDrawText(ABOUT_X, 54, STR_ABOUT_OPENTX_5, SMLSIZE);
+      lcdDrawText(ABOUT_X, 22+16, STR_ABOUT_FREEDOMTX_1, SMLSIZE);
+      lcdDrawText(ABOUT_X, 30+16, STR_ABOUT_FREEDOMTX_2, SMLSIZE);
+      lcdDrawText(ABOUT_X, 38+16, STR_ABOUT_FREEDOMTX_3, SMLSIZE);
+      lcdDrawText(ABOUT_X, 46+16, STR_ABOUT_FREEDOMTX_4, SMLSIZE);
+      lcdDrawText(ABOUT_X, 54+16, STR_ABOUT_FREEDOMTX_5, SMLSIZE);
       screenDuration = 255;
       break;
 
