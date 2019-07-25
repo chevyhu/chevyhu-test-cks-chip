@@ -561,10 +561,11 @@ TASK_FUNCTION(systemTask)
 
 void tangoUpdateChannel( void )
 {
-  for (int i = 0; i < 12; ++i) {
+  uint8_t i;
+  for ( i = 0; i < NUM_STICKS; ++i)
     crossfireSharedData.channels[i] = channelOutputs[i];
-  }
-//  TRACE("%d %d %d %d\n", crossfireSharedData.channels[0], crossfireSharedData.channels[1], crossfireSharedData.channels[2],crossfireSharedData.channels[3]);
+  for ( i=0; i<NUM_SWITCHES; ++i)
+    crossfireSharedData.channels[i + 4] = getValue(MIXSRC_FIRST_SWITCH+i);
 }
 
 #if 1
