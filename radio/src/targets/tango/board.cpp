@@ -34,7 +34,7 @@ RTOS_DEFINE_STACK(systemStack, SYSTEM_STACK_SIZE);
 
 static uint32_t DIO_INT_TRAMPOLINE;
 static uint32_t NT_INT_TRAMPOLINE;
-RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(uint32_t *ptr);
+RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr);
 
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
@@ -140,13 +140,13 @@ void init1msTimer()
   NVIC_EnableIRQ(INTERRUPT_1MS_IRQn) ;
 }
 
-typedef void (*RTOS_Tick_CB_FuncPtr) (void);
-RTOS_Tick_CB_FuncPtr RTOS_Tick_CB = 0;
-uint32_t ulPortSetTickCB( uint32_t cb )
-{
-    RTOS_Tick_CB = (RTOS_Tick_CB_FuncPtr)cb;
-    return 1;
-}
+// typedef void (*RTOS_Tick_CB_FuncPtr) (void);
+// RTOS_Tick_CB_FuncPtr RTOS_Tick_CB = 0;
+// uint32_t ulPortSetTickCB( uint32_t cb )
+// {
+//     RTOS_Tick_CB = (RTOS_Tick_CB_FuncPtr)cb;
+//     return 1;
+// }
 
 #if !defined(SIMU)
 extern "C" void INTERRUPT_1MS_IRQHandler()
@@ -500,21 +500,22 @@ void PrintData(char* header, uint8_t* data){
 	TRACE_NOCRLF("\r\n");
 }
 
-RTOS_TASK_HANDLE Crossfire_Get_Firmware_Task_Handle(uint32_t *ptr)
+typedef bool ( *XF_UART_IRQ_HANDLER_TYPE )( uint8_t, uint8_t );
+XF_UART_IRQ_HANDLER_TYPE crossfire_uart_irq_handler;
+RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr)
 {
   DIO_INT_TRAMPOLINE = ptr[0];
   NT_INT_TRAMPOLINE = ptr[1];
+  crossfire_uart_irq_handler = (XF_UART_IRQ_HANDLER_TYPE)ptr[2];
   return crossfireTaskId;
 };
 
-typedef bool ( *XF_UART_IRQ_HANDLER_TYPE )( uint8_t, uint8_t );
-XF_UART_IRQ_HANDLER_TYPE crossfire_uart_irq_handler;
-#define CROSSFIRE_API_UART_IRQ_HANLDER	1
-void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr ){
-	if( type == CROSSFIRE_API_UART_IRQ_HANLDER ){
-		crossfire_uart_irq_handler = (XF_UART_IRQ_HANDLER_TYPE)addr;
-	}
-}
+// #define CROSSFIRE_API_UART_IRQ_HANLDER	1
+// void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr ){
+// 	if( type == CROSSFIRE_API_UART_IRQ_HANLDER ){
+// 		crossfire_uart_irq_handler = (XF_UART_IRQ_HANDLER_TYPE)addr;
+// 	}
+// }
 
 #if !defined(SIMU)
 TASK_FUNCTION(systemTask)

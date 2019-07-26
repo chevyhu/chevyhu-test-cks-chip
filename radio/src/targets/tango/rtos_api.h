@@ -13,12 +13,9 @@
     DEF_API_CMD( 1, RTOS_WAIT_TICKS                     , uint8_t       	, const TickType_t xTicksToDelay)
     DEF_API_CMD( 2, CoWaitForSingleFlag                 , StatusType  		, OS_FlagID id, U32 timeout)
     DEF_API_CMD( 3, isr_SetFlag              			, StatusType    	, OS_FlagID id)
-    DEF_API_CMD( 4, Crossfire_Get_Firmware_Task_Handle  , RTOS_TASK_HANDLE	, uint32_t *ptr)
-//    DEF_API_CMD( 5, vTaskGetRunTimeStats                , void        		, char *pcWriteBuffer)
-    DEF_API_CMD( 6, ulPortSetTickCB                     , uint32_t      	, void* cb)
-    DEF_API_CMD( 7, CoCreateFlag                        , BOOL bAutoReset	, BOOL bInitialState)
-    DEF_API_CMD( 8, CoClearFlag             			, StatusType  		, OS_FlagID id)
-    DEF_API_CMD( 9, Crossfire_Get_Func_Addr             , void        		, uint8_t type, uint32_t addr)
+    DEF_API_CMD( 4, CoCreateFlag                        , BOOL bAutoReset	, BOOL bInitialState)
+    DEF_API_CMD( 5, CoClearFlag             			, StatusType  		, OS_FlagID id)
+    DEF_API_CMD( 6, Crossfire_Sync_Func_Addr            , RTOS_TASK_HANDLE	, uint32_t *ptr)
 #endif
 #undef DEF_API_CMD
 #else
