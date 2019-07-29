@@ -850,8 +850,8 @@ extern DMAFifo<32> serial2RxFifo;
 
 void CRSF_Init( void );
 void tangoUpdateChannel( void );
-uint32_t ulPortSetTickCB(uint32_t cb);
-void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr );
+// uint32_t ulPortSetTickCB(uint32_t cb);
+// void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr );
 
 #if defined(ESP_SERIAL)
 #define ESP_TX_BUFFER_SIZE            256
