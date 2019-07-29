@@ -112,7 +112,7 @@ void interrupt5ms()
     DEBUG_TIMER_STOP(debugTimerPer10ms);
   }
 
-#if defined(ROTARY_ENCODER_NAVIGATION)
+#if defined(ROTARY_ENCODER_NAVIGATION) && !defined(ROTARY_ENCODER_EXTI_IRQHandler1)
 	checkRotaryEncoder();
 #endif
 }
@@ -291,6 +291,10 @@ void boardInit()
   bluetoothInit(BLUETOOTH_DEFAULT_BAUDRATE, true);
 #endif
 
+#if defined(ROTARY_ENCODER_NAVIGATION) && defined(ROTARY_ENCODER_EXTI_IRQHandler1)
+  rotaryEncoderInit();
+#endif
+
 #if defined(DEBUG)
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP|DBGMCU_TIM1_STOP|DBGMCU_TIM2_STOP|DBGMCU_TIM3_STOP|DBGMCU_TIM6_STOP|DBGMCU_TIM8_STOP|DBGMCU_TIM10_STOP|DBGMCU_TIM13_STOP|DBGMCU_TIM14_STOP, ENABLE);
 #endif
@@ -348,7 +352,7 @@ void boardInit()
     }
     if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX) {
     	if(!isDisableBoardOff()){
-//    		boardOff();
+    		boardOff();
     	}
     }
   }
