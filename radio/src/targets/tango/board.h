@@ -601,7 +601,7 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
 #elif defined(PCBX7)
   #define BATT_SCALE                    123
 #elif defined(PCBTANGO)
-  #define BATT_SCALE                    150
+  #define BATT_SCALE                    108
 #else
   #define BATT_SCALE                    150
 #endif
@@ -879,6 +879,6 @@ void getDefaultSwConfig();
 
 void PrintData(char* header, uint8_t* data);
 
-#define USB_DEBUG
+//#define USB_DEBUG
 
 #endif // _BOARD_H_
