@@ -23,7 +23,7 @@ ENTRY(Reset_Handler)
 /*_estack = 0x10010000;*/    /* end of 64K CCM */
 /*_heap_end = 0x20020000;*/  /* end of 128K SRAM */
 _estack = 0x10010000;    /* end of 64K CCM */
-_heap_end = 0x20013400;  /* end of first 77KB of 128K SRAM */
+_heap_end = 0x20013000;  /* end of first 76KB of 128K SRAM */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
