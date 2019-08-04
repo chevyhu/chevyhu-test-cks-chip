@@ -213,7 +213,9 @@ void adcSingleRead()
 void adcRead()
 {
   uint16_t temp[NUM_ANALOGS] = { 0 };
-
+#if defined(PCBTANGO)
+  adcSingleRead();      // drop the first reading
+#endif
   for (int i=0; i<4; i++) {
     adcSingleRead();
     for (uint8_t x=FIRST_ANALOG_ADC; x<NUM_ANALOGS; x++) {
