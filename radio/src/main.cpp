@@ -230,6 +230,10 @@ void checkBattery()
       // TRACE("checkBattery(): g_vbat100mV = %d", g_vbat100mV);
     }
   }
+#if  defined(PCBTANGO) && !defined(SIMU)
+  // limit the display voltage
+  g_vbat100mV = limit<int8_t>(g_eeGeneral.vBatMin + 90, g_vbat100mV, g_eeGeneral.vBatMax +120);
+#endif
 }
 
 void periodicTick_1s()
