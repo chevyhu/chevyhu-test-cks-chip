@@ -65,7 +65,7 @@ void rotaryEncoderCheck()
     if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
 #if defined(PCBTANGO)
         static uint32_t count = 0;
-        if(++count > 2){
+        if(++count > 1){
             count = 0;
 #endif
             --rotencValue;
@@ -76,7 +76,7 @@ void rotaryEncoderCheck()
     else {
 #if defined(PCBTANGO)
         static uint32_t count = 0;
-        if(++count > 2){
+        if(++count > 1){
             count = 0;
 #endif
             ++rotencValue;

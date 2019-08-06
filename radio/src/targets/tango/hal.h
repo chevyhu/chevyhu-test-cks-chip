@@ -498,6 +498,10 @@
 #define ADC_SAMPTIME                    2   // sample time = 28 cycles
 #define ADC_CHANNEL_RTC                 ADC_Channel_18 // ADC1_IN18
 #if defined(PCBTANGO)
+  #if defined(ADC_SAMPTIME)
+      #undef ADC_SAMPTIME
+      #define ADC_SAMPTIME              4   // sample time = 84 cycles
+  #endif
   #define ADC_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_DMA2)
   #define ADC_RCC_APB1Periph            0
   #define ADC_RCC_APB2Periph            (RCC_APB2Periph_ADC1 | RCC_APB2Periph_ADC3)

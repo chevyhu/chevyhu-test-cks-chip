@@ -575,7 +575,7 @@ if(NOT MSVC)
     	add_custom_command(
            	TARGET firmware POST_BUILD
 			COMMAND srec_cat ${CMAKE_BINARY_DIR}/combine.bin -binary -crop 0x0009000 0x000fffff -offset -0x0009000 -o ${CMAKE_BINARY_DIR}/fw.bin -binary;
-			COMMAND srec_cat ${CMAKE_BINARY_DIR}/tango2.bin -binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/fw.bin -binary -offset 0x9000 -o combine.bin -binary;
+			COMMAND srec_cat ${CMAKE_BINARY_DIR}/tango2.bin -binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/fw.bin -binary -offset 0x9000 -o ${CMAKE_BINARY_DIR}/combine.bin -binary;
 			COMMAND rm ${CMAKE_BINARY_DIR}/fw.bin
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		)

@@ -455,7 +455,9 @@ void guiMain(event_t evt)
   }
   else {
     handleGui(evt);
+#if !defined(PCBTANGO)
     evt = 0;
+#endif
   }
 
   if (warningText) {
@@ -470,6 +472,10 @@ void guiMain(event_t evt)
       popupMenuHandler(result);
     }
   }
+
+#if defined(PCBTANGO)
+    evt = 0;
+#endif
 
   lcdRefresh();
 }

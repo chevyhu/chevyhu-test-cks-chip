@@ -601,7 +601,8 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
 #elif defined(PCBX7)
   #define BATT_SCALE                    123
 #elif defined(PCBTANGO)
-  #define BATT_SCALE                    108
+  #define BATT_SCALE                    99 // 4.1V
+// BATT_SCALE = 410 (max battery reading) * 26214 (fix scale) * 4 (filter scale) / 128 (user scale) / ((4.1 (battery voltage) * 2 / 3 (divider)) * 4096 / 3.3))
 #else
   #define BATT_SCALE                    150
 #endif

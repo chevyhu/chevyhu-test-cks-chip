@@ -1805,7 +1805,13 @@ void opentxInit()
 #if defined(SDCARD) && !defined(PCBMEGA2560)
 // SDCARD related stuff, only done if not unexpectedShutdown
 if (!unexpectedShutdown) {
-  sdInit();
+#if defined(PCBTANGO)
+    if(!sdMounted()){
+#endif
+       sdInit();
+#if defined(PCBTANGO)
+    }
+#endif
   logsInit();
 }
 #endif
