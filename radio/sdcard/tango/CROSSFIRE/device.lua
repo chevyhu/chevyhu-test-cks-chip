@@ -91,7 +91,8 @@ end
 local function selectField(step)
   local newLineIndex = lineIndex
   local field
-  repeat
+ 
+  repeat 
     newLineIndex = newLineIndex + step
     if newLineIndex == 0 then
       newLineIndex = #fields
@@ -99,8 +100,9 @@ local function selectField(step)
       newLineIndex = 1
       pageOffset = 0
     end
-    field = getField(newLineIndex)
+    field = getField(newLineIndex) 
   until newLineIndex == lineIndex or (field and field.type ~= 11 and field.name)
+
   lineIndex = newLineIndex
   if lineIndex > 7 + pageOffset then
     pageOffset = lineIndex - 7
@@ -432,7 +434,7 @@ local function runDevicePage(event)
       fieldData = {}
       functions[field.type+1].save(field)
     else
-      return "crossfire.lua"
+      return "/CROSSFIRE/crossfire.lua"
     end
   elseif event == EVT_ROT_BREAK or event == EVT_RIGHT_BREAK then        -- toggle editing/selecting current field
     local field = getField(lineIndex)
@@ -521,6 +523,7 @@ local function run(event)
   if fieldPopup ~= nil then
     result = runPopupPage(event)
   else
+    --delay_ms(800)
     result = runDevicePage(event)
   end
 

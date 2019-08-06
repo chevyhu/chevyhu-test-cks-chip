@@ -86,6 +86,7 @@ local function run(event)
     error("Cannot be run as a model script!")
     return 2
   elseif event == EVT_EXIT_BREAK then
+    collectgarbage()
     return 2
   elseif event == EVT_ROT_LEFT or event == EVT_DOWN_BREAK then
     selectDevice(1)
@@ -103,7 +104,7 @@ local function run(event)
       if (event == EVT_ROT_BREAK or event == EVT_RIGHT_BREAK) and attr == INVERS then
           crossfireTelemetryPush(0x28, { devices[i].id, 0xEA })
 		  SetDevId(devices[i].id)
-          return "device.lua"
+          return "/CROSSFIRE/device.lua"
       end
       lcd.drawText(0, i*8+9, devices[i].name, attr)
     end
