@@ -82,6 +82,7 @@ struct CrossfireSharedData {
 #if defined(CRSF_SD)
 #define CRSF_OPENTX_FLAG_EEPROM_SAVE						0x02
 #endif
+#define CRSF_OPENTX_FLAG_BOOTUP                             0x04
 #endif
 
 #if defined(CRSF_OPENTX) && defined(CRSF_SD)
