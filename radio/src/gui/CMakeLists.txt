@@ -22,7 +22,7 @@ set(GUI_SRC
   view_statistics.cpp
   )
 
-if (NOT PCB STREQUAL TANGO)
+if (NOT PCB STREQUAL TANGO AND NOT PCB STREQUAL MAMBO)
   set(GUI_SRC
      ${GUI_SRC}
      model_module_options.cpp
