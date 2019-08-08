@@ -215,8 +215,10 @@ void adcRead()
   uint16_t temp[NUM_ANALOGS] = { 0 };
 #if defined(PCBTANGO)
   adcSingleRead();      // drop the first reading
-#endif
+  for (int i=0; i<16; i++) {
+#else
   for (int i=0; i<4; i++) {
+#endif
     adcSingleRead();
     for (uint8_t x=FIRST_ANALOG_ADC; x<NUM_ANALOGS; x++) {
       uint16_t val = adcValues[x];
@@ -230,7 +232,11 @@ void adcRead()
   }
 
   for (uint8_t x=FIRST_ANALOG_ADC; x<NUM_ANALOGS; x++) {
+#if defined(PCBTANGO)
+    adcValues[x] = temp[x] >> 4;
+#else
     adcValues[x] = temp[x] >> 2;
+#endif
   }
 
 #if NUM_PWMSTICKS > 0

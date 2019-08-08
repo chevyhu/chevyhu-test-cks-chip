@@ -116,6 +116,12 @@ void interrupt5ms()
 #if defined(ROTARY_ENCODER_NAVIGATION) && !defined(ROTARY_ENCODER_EXTI_IRQHandler1)
 	checkRotaryEncoder();
 #endif
+
+    if(!(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_BOOTUP) &&
+            (crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON)){
+        drawDownload();
+        crossfireSharedData.crsfFlag &= ~CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON;
+    }
 }
 
 #if !defined(SIMU)
@@ -457,6 +463,10 @@ void checkTrainerSettings()
 
 uint16_t getBatteryVoltage()
 {
+  // set the flag when opentx finish bootup
+  if(!(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_BOOTUP)){
+      crossfireSharedData.crsfFlag |= CRSF_OPENTX_FLAG_BOOTUP;
+  }
   int32_t instant_vbat = anaIn(TX_VOLTAGE); // using filtered ADC value on purpose
   instant_vbat = (instant_vbat * BATT_SCALE * (128 + g_eeGeneral.txVoltageCalibration) ) / 26214;
 //  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
