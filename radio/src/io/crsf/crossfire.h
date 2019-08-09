@@ -116,7 +116,8 @@ typedef enum {
 typedef enum {
 	CRSF_SD_SUBCMD_READ = 0x01,
 	CRSF_SD_SUBCMD_WRITE = 0x02,
-	CRSF_SD_SUBCMD_ERASE = 0x03
+	CRSF_SD_SUBCMD_ERASE = 0x03,
+    CRSF_SD_SUBCMD_GETSIZE = 0x04
 } CRSF_SD_SUBCMD;
 
 typedef enum {

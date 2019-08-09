@@ -250,7 +250,7 @@ void boardInit()
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph | INTERRUPT_1MS_RCC_APB1Periph, ENABLE);
   KernelApiInit();
-#if !defined(PCBX9E) || !defined(PCBTANGO)
+#if !defined(PCBX9E)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();
 #endif
@@ -480,7 +480,9 @@ uint32_t readBackupReg(uint8_t index){
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
     PWR_BackupAccessCmd(ENABLE);
     while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
-    return *(__IO uint32_t *) (BKPSRAM_BASE + index*4);
+    uint32_t value = *(__IO uint32_t *) (BKPSRAM_BASE + index*4);
+    PWR_BackupAccessCmd(DISABLE);
+    return value;
 }
 
 void writeBackupReg(uint8_t index, uint32_t data){
@@ -490,6 +492,7 @@ void writeBackupReg(uint8_t index, uint32_t data){
 	PWR_BackupAccessCmd(ENABLE);
 	while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
 	*(__IO uint32_t *) (BKPSRAM_BASE + index*4) = data;
+    PWR_BackupAccessCmd(DISABLE);
 }
 
 void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn){
