@@ -230,7 +230,7 @@ class OutputTelemetryBuffer {
     uint8_t destination;
 };
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 #define TELEMETRY_OUTPUT_FIFO_SIZE 16
 extern uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;
 extern uint8_t outputTelemetryBufferSize;

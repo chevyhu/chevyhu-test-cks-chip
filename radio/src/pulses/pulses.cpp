@@ -319,7 +319,7 @@ void setupPulsesExternalModule(uint8_t protocol)
 
 #if defined(CROSSFIRE)
     case PROTOCOL_CHANNELS_CROSSFIRE:
-#if !defined(PCBTANGO)
+#if !defined(PCBTANGO) && !defined(PCBMAMBO)
       setupPulsesCrossfire();
 #endif
       scheduleNextMixerCalculation(EXTERNAL_MODULE, CROSSFIRE_PERIOD);

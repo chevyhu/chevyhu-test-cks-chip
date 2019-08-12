@@ -50,46 +50,6 @@ elseif(PCB STREQUAL TANGO)
   add_definitions(-DSOFTWARE_VOLUME)
 
   set(FIRMWARE_TARGET_SRC
-    ${FIRMWARE_TARGET_SRC}
-    #top_lcd_driver.cpp
-    startup_stm32f40_41xxx.s
-    )
-
-  set(SERIAL2_DRIVER ../common/arm/stm32/serial2_driver.cpp)
-
-
-  if (CROSSFIRE_TASK)
-  	add_definitions(-DCROSSFIRE_TASK)
-  endif()
-
-  add_definitions(-DCROSSFIRE)
-  add_definitions(-DCRSF_OPENTX -DCRSF_SD -DLIBCRSF_ENABLE_COMMAND)
-
-  set(GUI_DIR 128x96)
-  set(NAVIGATION_TYPE mambo)
-  set(BITMAPS_TARGET mambo_bitmaps)
-  set(BITMAPS_TARGET_DIR mambo)
-  set(FONTS_TARGET tango_fonts_1bit)
-  set(LCD_DRIVER lcd_driver_spi.cpp)
-  set(GVAR_SCREEN model_gvars.cpp)
-elseif(PCB STREQUAL MAMBO)
-  option(CROSSFIRE_TASK "Crossfire task" YES)
-  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
-  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
-  set(STICKS "STANDARD" CACHE STRING "Sticks type (STANDARD/HORUS)")
-  set(CPU_TYPE STM32F4)
-  set(CPU_TYPE_FULL STM32F407xE)  # for size report
-  set(LINKER_SCRIPT targets/tango/stm32f4_flash.ld)
-  set(HAPTIC YES)
-  set(LUA_EXPORT lua_export_mambo)
-  set(FLAVOUR mambo)
-  set(RAMBACKUP YES)
-  add_definitions(-DSTM32F40_41xxx -DPCBTANGO)
-  add_definitions(-DEEPROM_VARIANT=0x8000)
-  add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
-  add_definitions(-DSOFTWARE_VOLUME)
-
-  set(FIRMWARE_TARGET_SRC
           ${FIRMWARE_TARGET_SRC}
           #top_lcd_driver.cpp
           startup_stm32f40_41xxx.s
@@ -97,6 +57,9 @@ elseif(PCB STREQUAL MAMBO)
 
   set(SERIAL2_DRIVER ../common/arm/stm32/serial2_driver.cpp)
 
+  if(STICKS STREQUAL HORUS)
+    add_definitions(-DHORUS_STICKS)
+  endif()
 
   if (CROSSFIRE_TASK)
     add_definitions(-DCROSSFIRE_TASK)
@@ -110,6 +73,45 @@ elseif(PCB STREQUAL MAMBO)
   set(BITMAPS_TARGET tango_bitmaps)
   set(BITMAPS_TARGET_DIR tango)
   set(FONTS_TARGET tango_fonts_1bit)
+  set(LCD_DRIVER lcd_driver_spi.cpp)
+  set(GVAR_SCREEN model_gvars.cpp)
+elseif(PCB STREQUAL MAMBO)
+  option(CROSSFIRE_TASK "Crossfire task" YES)
+  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
+  set(PWR_BUTTON "PRESS" CACHE STRING "Pwr button type (PRESS/SWITCH)")
+  set(STICKS "STANDARD" CACHE STRING "Sticks type (STANDARD/HORUS)")
+  set(CPU_TYPE STM32F4)
+  set(CPU_TYPE_FULL STM32F407xE)  # for size report
+  set(LINKER_SCRIPT targets/mambo/stm32f4_flash.ld)
+  set(HAPTIC YES)
+  set(LUA_EXPORT lua_export_mambo)
+  set(FLAVOUR mambo)
+  set(RAMBACKUP YES)
+  add_definitions(-DSTM32F40_41xxx -DPCBMAMBO)
+  add_definitions(-DEEPROM_VARIANT=0x8000)
+  add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
+  add_definitions(-DSOFTWARE_VOLUME)
+
+  set(FIRMWARE_TARGET_SRC
+          ${FIRMWARE_TARGET_SRC}
+          #top_lcd_driver.cpp
+          startup_stm32f40_41xxx.s
+          )
+  message(STATUS "*** MAMBO TARGET detected")
+  set(SERIAL2_DRIVER ../common/arm/stm32/serial2_driver.cpp)
+
+  if (CROSSFIRE_TASK)
+    add_definitions(-DCROSSFIRE_TASK)
+  endif()
+
+  add_definitions(-DCROSSFIRE)
+  add_definitions(-DCRSF_OPENTX -DCRSF_SD -DLIBCRSF_ENABLE_COMMAND)
+
+  set(GUI_DIR 128x64)
+  set(NAVIGATION_TYPE x7)
+  set(BITMAPS_TARGET 9x_bitmaps)
+  #set(BITMAPS_TARGET_DIR mambo)
+  set(FONTS_TARGET 9x_fonts_1bit)
   set(LCD_DRIVER lcd_driver_spi.cpp)
   set(GVAR_SCREEN model_gvars.cpp)
 elseif(PCB STREQUAL X9D+)
@@ -206,7 +208,7 @@ else()
     )
 endif()
 
-if(PCB STREQUAL X9E OR PCB STREQUAL TANGO OR (PCB STREQUAL X7 AND NOT (PCBREV STREQUAL T12)) OR PCB STREQUAL X9LITE)
+if(PCB STREQUAL X9E OR PCB STREQUAL TANGO OR PCB STREQUAL MAMBO OR (PCB STREQUAL X7 AND NOT (PCBREV STREQUAL T12)) OR PCB STREQUAL X9LITE)
   set(TARGET_SRC
           ${TARGET_SRC}
           ../common/arm/stm32/rotary_encoder_driver.cpp
@@ -225,16 +227,16 @@ if(PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL XLITE OR PCB STREQUAL TAN
     )
 endif()
 
-if(PCB STREQUAL TANGO)
+if(PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   add_definitions(-DESP_SERIAL)
   set(TARGET_SRC
     ${TARGET_SRC}
-    ../tango/esp_driver.cpp
+    ../mambo/esp_driver.cpp
     )
   add_definitions(-DAGENT)
   set(TARGET_SRC
     ${TARGET_SRC}
-    ../tango/usbd_hid_agent.c
+    ../mambo/usbd_hid_agent.c
     )
   set(SRC
     ${SRC}
@@ -254,7 +256,7 @@ set(HSE_VALUE 8000000)
 set(SDCARD YES)
 #set(EEPROM EEPROM_RLC)
 set(EEPROM SDCARD)
-set(TARGET_DIR tango)
+set(TARGET_DIR mambo)
 set(PPM_LIMITS_SYMETRICAL YES)
 
 if(SPLASH STREQUAL OFF)

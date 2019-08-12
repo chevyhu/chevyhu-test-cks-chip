@@ -55,7 +55,7 @@
   #define KEYS_GPIO_PIN_EXIT            GPIO_Pin_2  // PD.02
   #define KEYS_GPIO_REG_ENTER           GPIOE->IDR
   #define KEYS_GPIO_PIN_ENTER           GPIO_Pin_10 // PE.10
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   #define KEYS_GPIO_REG_MENU            GPIOD->IDR
   #define KEYS_GPIO_PIN_MENU            GPIO_Pin_13  // PD.13
   #define KEYS_GPIO_REG_EXIT            GPIOD->IDR
@@ -85,7 +85,7 @@
   #define ENC_GPIO_PIN_A                GPIO_Pin_12 // PD.12
   #define ENC_GPIO_PIN_B                GPIO_Pin_13 // PD.13
   #define ROTARY_ENCODER_POSITION()     (ENC_GPIO->IDR >> 12) & 0x03
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   #define ENC_GPIO                      GPIOA
   #define ENC_GPIO_PIN_A                GPIO_Pin_8    // PA.8
   #define ENC_GPIO_PIN_B                GPIO_Pin_11   // PA.11
@@ -107,7 +107,7 @@
 #endif
 
 // This is for SIMU: reuse rotary encoder pins to map UP and DOWN keyboard keys
-#if defined(SIMU) && (defined(PCBX9E) || defined(PCBTANGO) || defined(PCBX7))
+#if defined(SIMU) && (defined(PCBX9E) || defined(PCBTANGO) || defined(PCBMAMBO) || defined(PCBX7))
   #define KEYS_GPIO_REG_PLUS            ENC_GPIO->IDR
   #define KEYS_GPIO_PIN_PLUS            ENC_GPIO_PIN_A
   #define KEYS_GPIO_REG_MINUS           ENC_GPIO->IDR
@@ -158,7 +158,7 @@
   #define TRIMS_GPIO_PIN_RVU            GPIO_Pin_2  // PC.02
   #define TRIMS_GPIO_REG_RHR            GPIOE->IDR
   #define TRIMS_GPIO_PIN_RHR            GPIO_Pin_4  // PE.04
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
  #if defined(SIMU)
   #define TRIMS_GPIO_REG_LHL            GPIOG->IDR
   #define TRIMS_GPIO_PIN_LHL            GPIO_Pin_0  // PG.00
@@ -215,7 +215,7 @@
 #endif
 
 // Switches
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define SWITCHES_GPIO_REG_A           GPIOC->IDR
   #define SWITCHES_GPIO_PIN_A           GPIO_Pin_4  // PC.04
 #elif defined(PCBX9E)
@@ -240,7 +240,7 @@
   #define SWITCHES_GPIO_PIN_A_L         GPIO_Pin_0  // PE.00
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define SWITCHES_GPIO_REG_B_H         GPIOA->IDR
   #define SWITCHES_GPIO_PIN_B_H         GPIO_Pin_5  // PA.05
   #define SWITCHES_GPIO_REG_B_L         GPIOA->IDR
@@ -267,7 +267,7 @@
   #define SWITCHES_GPIO_PIN_B_L         GPIO_Pin_2  // PE.02
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define SWITCHES_GPIO_REG_C_H         GPIOE->IDR
   #define SWITCHES_GPIO_PIN_C_H         GPIO_Pin_3  // PE.03
   #define SWITCHES_GPIO_REG_C_L         GPIOE->IDR
@@ -294,7 +294,7 @@
   #define SWITCHES_GPIO_PIN_C_L         GPIO_Pin_5  // PA.05
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define SWITCHES_GPIO_REG_D           GPIOE->IDR
   #define SWITCHES_GPIO_PIN_D           GPIO_Pin_0  // PE.00
 #elif defined(PCBX9E)
@@ -324,7 +324,7 @@
   #define SWITCHES_GPIO_PIN_D_L         GPIO_Pin_1  // PB.01
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define SWITCHES_GPIO_REG_E           GPIOE->IDR
   #define SWITCHES_GPIO_PIN_E           GPIO_Pin_1  // PE.01
 #elif defined(PCBX9E)
@@ -341,7 +341,7 @@
   #define SWITCHES_GPIO_PIN_E_L         GPIO_Pin_4  // PB.04
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define SWITCHES_GPIO_REG_F           GPIOA->IDR
   #define SWITCHES_GPIO_PIN_F           GPIO_Pin_7  // PA.07
 #elif defined(PCBX9E)
@@ -357,7 +357,7 @@
   #define SWITCHES_GPIO_PIN_F           GPIO_Pin_14 // PE.14
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   // no SWG
   #define SWITCHES_GPIO_REG_G         	GPIOE->IDR
   #define SWITCHES_GPIO_PIN_G         	0
@@ -375,7 +375,7 @@
   #define SWITCHES_GPIO_PIN_G_L         GPIO_Pin_8  // PE.08
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   // no SWH
   #define SWITCHES_GPIO_REG_H           GPIOD->IDR
   #define SWITCHES_GPIO_PIN_H           0
@@ -395,7 +395,7 @@
   #define SWITCHES_GPIO_PIN_H           GPIO_Pin_13 // PE.13
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   // no SWI
   #define SWITCHES_GPIO_REG_I         	GPIOE->IDR
   #define SWITCHES_GPIO_PIN_I         	0
@@ -442,7 +442,7 @@
   #define SWITCHES_GPIO_PIN_R_L         GPIO_Pin_0  // PE.00
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define KEYS_RCC_AHB1Periph           (RCC_AHB1Periph_GPIOA|RCC_AHB1Periph_GPIOB|RCC_AHB1Periph_GPIOC|RCC_AHB1Periph_GPIOD|RCC_AHB1Periph_GPIOE|RCC_AHB1Periph_GPIOF|RCC_AHB1Periph_GPIOG)
   #define KEYS_GPIOA_PINS               (SWITCHES_GPIO_PIN_F | SWITCHES_GPIO_PIN_B_H | SWITCHES_GPIO_PIN_B_L | ENC_GPIO_PIN_A | ENC_GPIO_PIN_B)
   #define KEYS_GPIOB_PINS               (0)
@@ -497,7 +497,7 @@
 #define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
 #define ADC_SAMPTIME                    2   // sample time = 28 cycles
 #define ADC_CHANNEL_RTC                 ADC_Channel_18 // ADC1_IN18
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #if defined(ADC_SAMPTIME)
       #undef ADC_SAMPTIME
       #define ADC_SAMPTIME              4   // sample time = 84 cycles
@@ -686,7 +686,7 @@
 // PWR and LED driver
 #define PWR_RCC_AHB1Periph              (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOE | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_GPIOE)
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define PWR_SWITCH_GPIO               GPIOB
   #define PWR_SWITCH_GPIO_PIN           GPIO_Pin_14 // PB.14
   #define PWR_ON_GPIO                   GPIOB
@@ -862,7 +862,7 @@
 #define EXTMODULE_TIMER_FREQ                  (PERI2_FREQUENCY * TIMER_MULT_APB2)
 #endif
 // Trainer Port
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 	// no trainer port
   #define TRAINER_RCC_AHB1Periph        0
   #define TRAINER_RCC_APB1Periph        0
@@ -940,7 +940,7 @@
 #endif
 
 // Telemetry
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 #define TELEMETRY_RCC_AHB1Periph        0
 #define TELEMETRY_RCC_APB1Periph        0
 #define TELEMETRY_DIR_GPIO              GPIOD
@@ -1052,7 +1052,7 @@
 #define USB_GPIO_AF                     GPIO_AF_OTG1_FS
 
 // BackLight
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   // use OLED no backlight
   #define BACKLIGHT_RCC_AHB1Periph      RCC_AHB1Periph_GPIOE
   #define BACKLIGHT_RCC_APB1Periph      0
@@ -1131,7 +1131,7 @@
 #endif
 
 // LCD driver
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define LCD_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA1)
   #define LCD_RCC_APB1Periph            RCC_APB1Periph_SPI3
   #define LCD_SPI_GPIO                  GPIOB
@@ -1212,7 +1212,7 @@
 #define I2C_RCC_APB1Periph              RCC_APB1Periph_I2C1
 #define I2C                             I2C1
 #define I2C_GPIO_AF                     GPIO_AF_I2C1
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define I2C_RCC_AHB1Periph            0
   #define I2C_SPI_GPIO                  0
   #define I2C_SDA_GPIO_PIN              0
@@ -1249,7 +1249,7 @@
 #define I2C_ADDRESS_VOLUME              0x5C
 #define I2C_FLASH_PAGESIZE              64
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   // SD
   #define SD_RCC_AHB1Periph               (RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA2)
   #define SD_RCC_APB1Periph               0
@@ -1318,7 +1318,7 @@
 #define AUDIO_MUTE_GPIO_PIN             GPIO_Pin_5  // PD.05
 
 // Haptic
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define HAPTIC_RCC_AHB1Periph         RCC_AHB1Periph_GPIOB
   #define HAPTIC_RCC_APB2Periph         0
   #define HAPTIC_RCC_APB1Periph         0
@@ -1373,7 +1373,7 @@
 #endif
 
 // Bluetooth
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define BT_USART_GPIO                GPIOG
   #define BT_USART                     USART6
   #define BT_GPIO_AF                   GPIO_AF_USART6

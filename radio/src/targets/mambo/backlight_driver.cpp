@@ -59,7 +59,7 @@ uint8_t isBacklightEnabled()
   return (BACKLIGHT_TIMER->CCR1 != 0 || BACKLIGHT_TIMER->CCR2 != 0);
 }
 
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
 void backlightInit()
 {
   return;

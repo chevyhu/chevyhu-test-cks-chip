@@ -264,7 +264,7 @@ int sbusGetByte(uint8_t * byte);
 // Keys driver
 enum EnumKeys
 {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   KEY_MENU,
   KEY_EXIT,
   KEY_ENTER,
@@ -305,7 +305,7 @@ enum EnumKeys
   NUM_KEYS
 };
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 enum EnumTrimMode{
     EDIT_TRIM_DISABLED = 0,
     EDIT_TRIM_1,
@@ -352,7 +352,7 @@ enum EnumSwitches
 
 enum EnumSwitchesPositions
 {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   SW_SA0,
   SW_SA1,
   SW_SA2,
@@ -438,7 +438,7 @@ enum EnumSwitchesPositions
 #endif
 #endif
 };
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   #define NUM_SWITCHES                  6
 #elif defined(PCBXLITE)
   #define NUM_SWITCHES                  4
@@ -454,7 +454,7 @@ uint8_t keyState(uint8_t index);
 uint32_t switchState(uint8_t index);
 uint32_t readKeys(void);
 uint32_t readTrims(void);
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 extern uint8_t g_trimEditMode;
 extern uint8_t g_trimState;
 #endif
@@ -463,7 +463,7 @@ extern uint8_t g_trimState;
 #define KEYS_PRESSED()                  (readKeys())
 
 
-#if defined(PCBX9E) || defined(PCBX7) || defined(PCBX3) || defined(PCBTANGO)
+#if defined(PCBX9E) || defined(PCBX7) || defined(PCBX3) || defined(PCBTANGO) || defined(PCBMAMBO)
 // Rotary Encoder driver
 #define ROTARY_ENCODER_NAVIGATION
 void rotaryEncoderInit(void);
@@ -585,7 +585,7 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
   #define BATTERY_WARN                  66 // 6.6V
   #define BATTERY_MIN                   67 // 6.7V
   #define BATTERY_MAX                   83 // 8.3V
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   // 1 x Li-Ion
   #define BATTERY_WARN                  33 // 3.3V
   #define BATTERY_MIN                   34 // 3.4V
@@ -600,7 +600,7 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
   #define BATT_SCALE                    131
 #elif defined(PCBX7)
   #define BATT_SCALE                    123
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   #define BATT_SCALE                    99 // 4.1V
 // BATT_SCALE = 410 (max battery reading) * 26214 (fix scale) * 4 (filter scale) / 128 (user scale) / ((4.1 (battery voltage) * 2 / 3 (divider)) * 4096 / 3.3))
 #else
@@ -779,7 +779,7 @@ void ledBlue(void);
 #else
 #define LCD_W                           128
 #define LCD_H                           96
-#define LCD_DEPTH                       4
+#define LCD_DEPTH                       1
 //#define IS_LCD_RESET_NEEDED()           (!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE())
 #define IS_LCD_RESET_NEEDED()           true
 #define LCD_CONTRAST_MIN                0

@@ -82,7 +82,7 @@ inline bool isBadAntennaDetected()
 
 void telemetryWakeup()
 {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   uint8_t requiredTelemetryProtocol = PROTOCOL_TELEMETRY_CROSSFIRE;
 #else
   uint8_t requiredTelemetryProtocol = modelTelemetryProtocol();
@@ -283,7 +283,7 @@ void telemetryInit(uint8_t protocol)
   else if (protocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
     telemetryPortInit(CROSSFIRE_BAUDRATE, TELEMETRY_SERIAL_DEFAULT);
 #if defined(LUA)
-  #if defined(PCBTANGO)
+  #if defined(PCBTANGO) || defined(PCBMAMBO)
       outputTelemetryBufferSize = 0;
       outputTelemetryBufferTrigger = 0;
   #else
@@ -304,7 +304,7 @@ void telemetryInit(uint8_t protocol)
   else {
     telemetryPortInit(FRSKY_SPORT_BAUDRATE, TELEMETRY_SERIAL_WITHOUT_DMA);
 #if defined(LUA)
-  #if defined(PCBTANGO)
+  #if defined(PCBTANGO) || defined(PCBMAMBO)
       outputTelemetryBufferSize = 0;
       outputTelemetryBufferTrigger = 0;
   #else
@@ -344,7 +344,7 @@ void logTelemetryWriteByte(uint8_t data)
 }
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;
 uint8_t outputTelemetryBufferSize = 0;
 uint8_t outputTelemetryBufferTrigger = 0;

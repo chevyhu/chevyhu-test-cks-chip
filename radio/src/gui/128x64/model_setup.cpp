@@ -19,6 +19,7 @@
  */
 
 #include <opentx.h>
+#include "storage/modelslist.h"
 
 // TODO find why we need this (for REGISTER at least)
 #if defined(PCBXLITE)
@@ -29,7 +30,7 @@
 
 uint8_t g_moduleIdx;
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBMAMBO)
 uint8_t getSwitchWarningsCount()
 {
   int count = 0;
@@ -154,7 +155,7 @@ enum MenuModelSetupItems {
 #define IF_PXX2_MODULE(module, xxx)      (isModulePXX2(module) ? (uint8_t)(xxx) : HIDDEN_ROW)
 #define IF_NOT_PXX2_MODULE(module, xxx)  (isModulePXX2(module) ? HIDDEN_ROW : (uint8_t)(xxx))
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBMAMBO)
   #define CURRENT_MODULE_EDITED(k)        (k >= ITEM_MODEL_EXTERNAL_MODULE_LABEL ? EXTERNAL_MODULE : INTERNAL_MODULE)
   #define CURRENT_RECEIVER_EDITED(k)      (k - (k >= ITEM_MODEL_EXTERNAL_MODULE_LABEL ? ITEM_MODEL_EXTERNAL_MODULE_PXX2_RECEIVER_1 : ITEM_MODEL_INTERNAL_MODULE_PXX2_RECEIVER_1))
 #elif defined(PCBSKY9X) && !defined(REVA)
@@ -195,7 +196,7 @@ enum MenuModelSetupItems {
   #define EXTRA_MODULE_ROWS
 #endif
 
-#if defined(PCBX7) || defined(PCBX3)
+#if defined(PCBX7) || defined(PCBX3) || defined(PCBMAMBO)
   #define ANTENNA_ROW
   #if defined(BLUETOOTH)
     #define TRAINER_BLUETOOTH_M_ROW      ((bluetooth.distantAddr[0] == '\0' || bluetooth.state == BLUETOOTH_STATE_CONNECTED) ? (uint8_t)0 : (uint8_t)1)
@@ -514,6 +515,23 @@ void onBluetoothConnectMenu(const char * result)
 }
 #endif
 
+void checkModelIdUnique(uint8_t moduleIdx)
+{
+  if(isModulePXX(moduleIdx) && IS_D8_RX(moduleIdx))
+    return;
+
+  char* warn_buf = reusableBuffer.moduleSetup.msg;
+
+  // cannot rely exactly on WARNING_LINE_LEN so using WARNING_LINE_LEN-2
+  size_t warn_buf_len = sizeof(reusableBuffer.moduleSetup.msg) - WARNING_LINE_LEN - 2;
+  if (!modelslist.isModelIdUnique(moduleIdx,warn_buf,warn_buf_len)) {
+    if (warn_buf[0] != 0) {
+      POPUP_WARNING(STR_MODELIDUSED);
+      SET_WARNING_INFO(warn_buf, sizeof(reusableBuffer.moduleSetup.msg), 0);
+    }
+  }
+}
+
 void menuModelSetup(event_t event)
 {
 #if defined(EXTERNAL_ANTENNA)
@@ -526,7 +544,7 @@ void menuModelSetup(event_t event)
 
   int8_t old_editMode = s_editMode;
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBMAMBO)
   MENU_TAB({
     HEADER_LINE_COLUMNS
     0,
@@ -1516,7 +1534,11 @@ void menuModelSetup(event_t event)
                 }
                 else if (event == EVT_KEY_LONG(KEY_ENTER)) {
                   killEvents(event);
+#if defined(PCBMAMBO)
+                  uint8_t newVal = modelslist.findNextUnusedModelId(moduleIdx);
+#else
                   uint8_t newVal = findNextUnusedModelId(g_eeGeneral.currModel, moduleIdx);
+#endif
                   if (newVal != g_model.header.modelId[moduleIdx]) {
                     modelHeaders[g_eeGeneral.currModel].modelId[moduleIdx] = g_model.header.modelId[moduleIdx] = newVal;
                     storageDirty(EE_MODEL);
@@ -1876,7 +1898,11 @@ void menuModelSetup(event_t event)
       case ITEM_MODEL_EXTERNAL_MODULE_NPXX2_BIND:
       case ITEM_MODEL_EXTERNAL_MODULE_PXX2_MODEL_NUM:
         if (menuHorizontalPosition == 0)
+#if defined(PCBMAMBO)
+          checkModelIdUnique(EXTERNAL_MODULE);
+#else
           checkModelIdUnique(g_eeGeneral.currModel, EXTERNAL_MODULE);
+#endif
         break;
     }
   }

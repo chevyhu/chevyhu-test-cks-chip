@@ -162,7 +162,7 @@ extern "C" void INTERRUPT_1MS_IRQHandler()
   #define PWR_PRESS_DURATION_MAX        500 // 5s
 #endif
 
-#if (defined(PCBX9E) || defined(PCBTANGO) && !defined(SIMU))
+#if (defined(PCBX9E) || defined(PCBTANGO) || defined(PCBMAMBO) && !defined(SIMU))
 const unsigned char bmp_startup[]  = {
   #include "startup.lbm"
 };
@@ -243,7 +243,7 @@ void boardInit()
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph | INTERRUPT_1MS_RCC_APB1Periph, ENABLE);
   KernelApiInit();
-#if !defined(PCBX9E) || !defined(PCBTANGO)
+#if !defined(PCBX9E) || !defined(PCBTANGO) || defined(PCBMAMBO)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();
 #endif
@@ -276,7 +276,7 @@ void boardInit()
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
-  TRACE("Tango board started :)\r\n");
+  TRACE("Mambo board started :)\r\n");
 #endif
 
 #if defined(ESP_SERIAL)
@@ -300,7 +300,7 @@ void boardInit()
 #endif
 
 #if defined(PWR_BUTTON_PRESS)
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   if (!WAS_RESET_BY_WATCHDOG()) {
 #else
   if (!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()) {
@@ -342,7 +342,7 @@ void boardInit()
           pwrInit();
           backlightInit();
           haptic.play(15, 3, PLAY_NOW);
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
           break;
 #endif
         }
@@ -392,7 +392,7 @@ void boardOff()
   toplcdOff();
 #endif
 
-#if defined(PWR_BUTTON_PRESS) && !defined(PCBTANGO)
+#if defined(PWR_BUTTON_PRESS) && !defined(PCBTANGO) && !defined(PCBMAMBO)
   while (pwrPressed()) {
     wdt_reset();
   }
@@ -521,7 +521,7 @@ RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr)
 // 	}
 // }
 
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(PCBMAMBO)
 TASK_FUNCTION(systemTask)
 {
   static uint32_t get_modelid_delay = 0;
@@ -573,7 +573,7 @@ void tangoUpdateChannel( void )
     crossfireSharedData.channels[i + 4] = getValue(MIXSRC_FIRST_SWITCH+i);
 }
 
-#if 1
+#if 0
 #define UART_INT_MODE_TX     1
 #define UART_INT_MODE_RX     2
 extern Fifo<uint8_t, 512> serial2TxFifo;

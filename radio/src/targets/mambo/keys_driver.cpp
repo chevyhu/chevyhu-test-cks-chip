@@ -196,7 +196,7 @@ uint32_t switchState(uint8_t index)
   uint32_t xxx = 0;
 
   switch (index) {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
     ADD_2POS_CASE(A);
     ADD_3POS_CASE(B, 1);
     ADD_3POS_CASE(C, 2);

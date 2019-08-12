@@ -95,7 +95,7 @@ const FrSkySportSensor * getFrSkySportSensor(uint16_t id, uint8_t subId=0)
   return result;
 }
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 void sportOutputPushByte(uint8_t byte)
 {
   if (byte == 0x7E || byte == 0x7D) {

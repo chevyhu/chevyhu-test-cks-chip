@@ -36,7 +36,7 @@ PACK(union SportTelemetryPacket
 });
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 void sportProcessPacket(uint8_t * packet);
 bool isSportOutputBufferAvailable();
 void sportOutputPushPacket(SportTelemetryPacket * packet);

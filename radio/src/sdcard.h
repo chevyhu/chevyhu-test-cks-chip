@@ -50,7 +50,7 @@
 
 #define LEN_FILE_PATH_MAX   (sizeof(SCRIPTS_TELEM_PATH)+1)  // longest + "/"
 
-#if defined(COLORLCD) || defined(PCBTANGO)
+#if defined(COLORLCD) || defined(PCBTANGO) || defined(PCBMAMBO)
 const char RADIO_MODELSLIST_PATH[] = RADIO_PATH "/models.txt";
 const char RADIO_SETTINGS_PATH[] = RADIO_PATH "/radio.bin";
 #define    SPLASH_FILE             "splash.png"
@@ -72,7 +72,7 @@ const char RADIO_SETTINGS_PATH[] = RADIO_PATH "/radio.bin";
 
 #define LEN_FILE_EXTENSION_MAX  5  // longest used, including the dot, excluding null term.
 
-#if defined(PCBHORUS) || defined(PCBTANGO)
+#if defined(PCBHORUS) || defined(PCBTANGO) || defined(PCBMAMBO)
 #define BITMAPS_EXT         BMP_EXT JPG_EXT PNG_EXT
 #define LEN_BITMAPS_EXT     4
 #else
@@ -131,7 +131,7 @@ const char * getBasename(const char * path);
 #elif defined(PCBX9E)
   #define OTX_FOURCC 0x3578746F // otx for Taranis X9E
   #define O9X_FOURCC 0x3378396F // o9x for Taranis X9E
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   #define OTX_FOURCC 0x3578746F // otx for Tango
   #define O9X_FOURCC 0x3378396F // o9x for Tango
 #elif defined(PCBXLITES)

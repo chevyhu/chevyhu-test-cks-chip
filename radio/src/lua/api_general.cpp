@@ -45,6 +45,9 @@
 #elif defined(PCBTANGO)
   #include "lua/lua_exports_tango.inc"
   #include "io/crsf/crossfire.h"
+#elif defined(PCBMAMBO)
+#include "lua/lua_exports_mambo.inc"
+  #include "io/crsf/crossfire.h"
 #endif
 
 #if defined(SIMU)
@@ -428,7 +431,7 @@ When called without parameters, it will only return the status of the output buf
 
 static int luaSportTelemetryPush(lua_State * L)
 {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   if (lua_gettop(L) == 0) {
     lua_pushboolean(L, isSportOutputBufferAvailable());
   }
@@ -617,7 +620,7 @@ When called without parameters, it will only return the status of the output buf
 */
 static int luaCrossfireTelemetryPush(lua_State * L)
 {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO)  || defined(PCBMAMBO)
   if (lua_gettop(L) == 0) {
     lua_pushboolean(L, isCrossfireOutputBufferAvailable());
   }
@@ -634,7 +637,7 @@ static int luaCrossfireTelemetryPush(lua_State * L)
     }
     telemetryOutputPushByte(crc8(outputTelemetryBuffer+2, 1 + length));
     telemetryOutputSetTrigger(command);
-#if defined(PCBTANGO) && !defined(SIMU)
+#if (defined(PCBTANGO) || defined(PCBMAMBO)) && !defined(SIMU)
     libCrsf_CRSF_Routing( DEVICE_INTERNAL, outputTelemetryBuffer);
     outputTelemetryBufferTrigger = 0x00;
     outputTelemetryBufferSize = 0;
@@ -1497,15 +1500,15 @@ const luaR_value_entry opentxConstants[] = {
   { "MIXSRC_SB", MIXSRC_SB },
   { "MIXSRC_SC", MIXSRC_SC },
   { "MIXSRC_SD", MIXSRC_SD },
-#if !defined(PCBX7) && !defined(PCBXLITE) && !defined(PCBX3) && !defined(PCBTANGO)
+#if !defined(PCBX7) && !defined(PCBXLITE) && !defined(PCBX3) && !defined(PCBTANGO) && !defined(PCBMAMBO)
   { "MIXSRC_SE", MIXSRC_SE },
   { "MIXSRC_SG", MIXSRC_SG },
 #endif
-#if !defined(PCBXLITE) && !defined(PCBX3) && !defined(PCBTANGO)
+#if !defined(PCBXLITE) && !defined(PCBX3) && !defined(PCBTANGO) && !defined(PCBMAMBO)
   { "MIXSRC_SF", MIXSRC_SF },
   { "MIXSRC_SH", MIXSRC_SH },
 #endif
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   { "MIXSRC_SE", MIXSRC_SE },
   { "MIXSRC_SF", MIXSRC_SF },
 #endif
@@ -1585,7 +1588,7 @@ const luaR_value_entry opentxConstants[] = {
   { "FORCE", FORCE },
   { "ERASE", ERASE },
   { "ROUND", ROUND },
-#elif defined(PCBTARANIS) || defined(PCBTANGO)
+#elif defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO)
   { "EVT_MENU_BREAK", EVT_KEY_BREAK(KEY_MENU) },
   { "EVT_MENU_LONG", EVT_KEY_LONG(KEY_MENU) },
   { "EVT_PAGE_BREAK", EVT_KEY_BREAK(KEY_PAGE) },

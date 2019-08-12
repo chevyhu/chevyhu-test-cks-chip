@@ -68,7 +68,7 @@ void menuRadioDiagKeys(event_t event)
 #endif
     }
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBMAMBO)
     if (i < NUM_SWITCHES) {
       if (SWITCH_EXISTS(i)) {
         getvalue_t val = getValue(MIXSRC_FIRST_SWITCH+i);
