@@ -56,6 +56,7 @@ void menuCommonCalib(event_t event)
 
   uint8_t i;
   static bool isCalValid = false;
+  bool gim_select = crossfireSharedData.gim_select;
 #else
   for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) { // get low and high vals for sticks and trims
     int16_t vt = anaIn(i);
@@ -102,16 +103,10 @@ void menuCommonCalib(event_t event)
 #endif  //#if defined(PCBTANGO)
 
 #if defined(PCBTANGO)
-  if( crossfireSharedData.stick_state == CALIB_FINISHED && reusableBuffer.calib.state == CALIB_SET_P0 ) {
-    // to force starting a new calibration
-    crossfireSharedData.stick_state = CALIB_SET_P0;
-  }
-  else if( reusableBuffer.calib.state > CALIB_START && crossfireSharedData.stick_state > reusableBuffer.calib.state ) {
-    // to update the state for normal calibration fsm
+  if( reusableBuffer.calib.state > CALIB_START && reusableBuffer.calib.state < CALIB_FINISHED && crossfireSharedData.stick_state > reusableBuffer.calib.state ) {
+    // to sync the state from crossfire
     reusableBuffer.calib.state = crossfireSharedData.stick_state;
   }
-  SUBMENU_NOTITLE(1, {1}); 
-
 #endif  //#if defined(PCBTANGO)
 
   menuCalibrationState = reusableBuffer.calib.state; // make sure we don't scroll while calibrating
@@ -125,6 +120,13 @@ void menuCommonCalib(event_t event)
     case EVT_KEY_BREAK(KEY_ENTER):
       reusableBuffer.calib.state++;
       break;
+
+#if defined(PCBTANGO)
+    case EVT_ROTARY_LEFT:
+    case EVT_ROTARY_RIGHT:
+      gim_select = !gim_select;
+      break;
+#endif
   }
 
 #define LLABEL_CENTERX            (32)
@@ -137,14 +139,14 @@ void menuCommonCalib(event_t event)
         for (uint8_t j=0; j<2; j++) {
           switch (j) {
             case 0:
-              lcdDrawTextAtIndex(LLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_LEFT, 0, (menuHorizontalPosition==0 ? INVERS : 0));
+              lcdDrawTextAtIndex(LLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_LEFT, 0, (gim_select==0 ? INVERS : 0));
               break;
             case 1:
-              lcdDrawTextAtIndex(RLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_RIGHT, 0, (menuHorizontalPosition==1 ? INVERS : 0));
+              lcdDrawTextAtIndex(RLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_RIGHT, 0, (gim_select==1 ? INVERS : 0));
               break;
           }
         }
-        crossfireSharedData.gim_select = menuHorizontalPosition;
+        crossfireSharedData.gim_select = gim_select;
       }
       break;
 
@@ -267,7 +269,6 @@ void menuCommonCalib(event_t event)
 #endif
 #if defined(PCBTANGO)
       crossfireSharedData.stick_state = reusableBuffer.calib.state;
-      memset(crossfireSharedData.sticks, 0, sizeof(crossfireSharedData.sticks));
 #endif  //#if defined(PCBTANGO)
       g_eeGeneral.chkSum = evalChkSum();
       storageDirty(EE_GENERAL);
