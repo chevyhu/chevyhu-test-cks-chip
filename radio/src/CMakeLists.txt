@@ -566,7 +566,7 @@ if(NOT MSVC)
     if (CROSSFIRE_COMBINED STREQUAL ON)
       add_custom_command(
               TARGET firmware POST_BUILD
-              COMMAND srec_cat ${CMAKE_BINARY_DIR}/firmware.bin -Binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/crossfire.bin -Binary -offset 0x00060000 -o ${CMAKE_BINARY_DIR}/combine.bin -Binary
+              COMMAND srec_cat ${CMAKE_BINARY_DIR}/firmware.bin -Binary -offset 0x00000000 ${CMAKE_BINARY_DIR}/crossfire.bin -Binary -offset 0x00080000 -o ${CMAKE_BINARY_DIR}/combine.bin -Binary
               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       )
     endif()
