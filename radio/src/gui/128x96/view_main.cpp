@@ -100,17 +100,23 @@ void drawPotsBars()
   }
 }
 
-void doMainScreenGraphics()
+void doMainScreenGraphics( uint32_t ptr )
 {
-  int16_t calibStickVert = calibratedAnalogs[CONVERT_MODE(1)];
+  int16_t *calibStickValPtr = calibratedAnalogs;
+#if defined(PCBTANGO)
+  if( ptr )
+    calibStickValPtr = (int16_t *)ptr;
+#endif
+  int16_t calibStickVert = calibStickValPtr[CONVERT_MODE(1)];
   if (g_model.throttleReversed && CONVERT_MODE(1) == THR_STICK)
     calibStickVert = -calibStickVert;
-  drawStick(LBOX_CENTERX, calibratedAnalogs[CONVERT_MODE(0)], calibStickVert);
 
-  calibStickVert = calibratedAnalogs[CONVERT_MODE(2)];
+  drawStick(LBOX_CENTERX, calibStickValPtr[CONVERT_MODE(0)], calibStickVert);
+
+  calibStickVert = calibStickValPtr[CONVERT_MODE(2)];
   if (g_model.throttleReversed && CONVERT_MODE(2) == THR_STICK)
     calibStickVert = -calibStickVert;
-  drawStick(RBOX_CENTERX, calibratedAnalogs[CONVERT_MODE(3)], calibStickVert);
+  drawStick(RBOX_CENTERX, calibStickValPtr[CONVERT_MODE(3)], calibStickVert);
 
   drawPotsBars();
 }
@@ -543,7 +549,7 @@ void menuMainView(event_t event)
   else if (view_base == VIEW_INPUTS) {
     if (view == VIEW_INPUTS) {
       // Sticks + Pots
-      doMainScreenGraphics();
+      doMainScreenGraphics( 0 );
 
       // Switches
 #if defined(PCBTARANIS) || defined(PCBTANGO)

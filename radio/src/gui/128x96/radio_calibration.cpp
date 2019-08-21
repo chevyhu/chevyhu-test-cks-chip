@@ -45,6 +45,11 @@ enum CalibrationState {
   CALIB_FINISHED
 };
 
+#if defined(PCBTANGO)
+#define CALIB_POINT_COUNT   (CALIB_SET_P8 - CALIB_SET_P0 + 1)
+const int16_t point_pos[CALIB_POINT_COUNT][2] = {{0,0}, {1024,0}, {1024,1024}, {0,1024}, {-1024,1024}, {-1024,0}, {-1024,-1024}, {0,-1024}, {1024,-1024}};
+#endif
+
 void menuCommonCalib(event_t event)
 {
 
@@ -57,6 +62,7 @@ void menuCommonCalib(event_t event)
   uint8_t i;
   static bool isCalValid = false;
   bool gim_select = crossfireSharedData.gim_select;
+  int16_t force_point_pos[4];
 #else
   for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) { // get low and high vals for sticks and trims
     int16_t vt = anaIn(i);
@@ -124,7 +130,8 @@ void menuCommonCalib(event_t event)
 #if defined(PCBTANGO)
     case EVT_ROTARY_LEFT:
     case EVT_ROTARY_RIGHT:
-      gim_select = !gim_select;
+      if( reusableBuffer.calib.state == CALIB_START )
+        gim_select = !gim_select;
       break;
 #endif
   }
@@ -153,6 +160,14 @@ void menuCommonCalib(event_t event)
 #if defined(PCBTANGO)
     case CALIB_SET_P0 ... CALIB_SET_P8:
       crossfireSharedData.stick_state = reusableBuffer.calib.state;
+      if( gim_select == 0 ){
+        force_point_pos[0] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][0];
+        force_point_pos[1] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][1];
+      }
+      else{
+        force_point_pos[2] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][1];
+        force_point_pos[3] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][0];
+      }
       if( reusableBuffer.calib.state == CALIB_SET_P0 )
         lcdDrawText(0*FW, MENU_HEADER_HEIGHT+FH, STR_MOVESTICK_P0, INVERS);
       else if( reusableBuffer.calib.state == CALIB_SET_P1 )
@@ -280,7 +295,12 @@ void menuCommonCalib(event_t event)
       break;
   }
 
-  doMainScreenGraphics();
+#if defined(PCBTANGO)
+  if( reusableBuffer.calib.state >= CALIB_SET_P0 && reusableBuffer.calib.state <= CALIB_SET_P8 )
+    doMainScreenGraphics( (uint32_t)force_point_pos );
+  else
+#endif
+    doMainScreenGraphics( 0 );
 }
 
 void menuRadioCalibration(event_t event)
