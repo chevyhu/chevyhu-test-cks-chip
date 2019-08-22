@@ -430,9 +430,9 @@ void evalInputs(uint8_t mode)
     }
 #if !defined(SIMU)
     else {
-//      CalibData * calib = &g_eeGeneral.calib[i];
-//      v -= calib->mid;
-//      v = v * (int32_t) RESX / (max((int16_t) 100, (v > 0 ? calib->spanPos : calib->spanNeg)));
+     CalibData * calib = &g_eeGeneral.calib[i];
+     v -= calib->mid;
+     v = v * (int32_t) RESX / (max((int16_t) 100, (v > 0 ? calib->spanPos : calib->spanNeg)));
     }
 #endif
 

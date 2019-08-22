@@ -837,7 +837,7 @@ void checkTrainerSettings(void);
 
 #define CROSSFIRE_STACK_SIZE   			700
 #define CROSSFIRE_TASK_PRIORITY  		0
-#define CROSSFIRE_TASK_ADDRESS 			0x8060010
+#define CROSSFIRE_TASK_ADDRESS 			0x08080010
 #define SYSTEM_STACK_SIZE      			500
 #define RTOS_SYS_TASK_PRIORITY  		10
 

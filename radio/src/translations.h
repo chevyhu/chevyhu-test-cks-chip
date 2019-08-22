@@ -475,8 +475,21 @@ extern const char STR_BG[];
 extern const char STR_MENUTOSTART[];
 extern const char STR_SETMIDPOINT[];
 extern const char STR_MOVESTICKSPOTS[];
-extern const char STR_MOVESTICKSPOTS_BOUNDARY[];
-extern const char STR_MOVESTICKSPOTS_AGAIN[];
+#if defined(PCBTANGO)
+extern const char STR_LEFT[];
+extern const char STR_RIGHT[];
+extern const char STR_MOVESTICK_P0[];
+extern const char STR_MOVESTICK_P1[];
+extern const char STR_MOVESTICK_P2[];
+extern const char STR_MOVESTICK_P3[];
+extern const char STR_MOVESTICK_P4[];
+extern const char STR_MOVESTICK_P5[];
+extern const char STR_MOVESTICK_P6[];
+extern const char STR_MOVESTICK_P7[];
+extern const char STR_MOVESTICK_P8[];
+extern const char STR_CAL_POINTS[];
+extern const char STR_BE_PATIENT[];
+#endif
 extern const char STR_RXBATT[];
 extern const char STR_TX[];
 #define STR_RX (STR_TX+OFS_RX)

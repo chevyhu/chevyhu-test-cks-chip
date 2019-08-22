@@ -65,7 +65,8 @@ struct CrossfireKeyData {
 struct CrossfireSharedData {
   struct CrossfireKeyData keys;
   int16_t sticks[NUM_STICKS];
-  uint8_t stick_state;
+  uint8_t stick_state:6;
+  uint8_t gim_select:2;
   int32_t channels[CROSSFIRE_CHANNELS_COUNT];
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_tx;   //from XF to OpenTX
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_rx;   //from OpenTX to XF

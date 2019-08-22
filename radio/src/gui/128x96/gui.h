@@ -92,7 +92,7 @@ void drawStick(coord_t centrex, int16_t xval, int16_t yval);
 void drawAlertBox(const char * title, const char * text, const char * action);
 void showAlertBox(const char * title, const char * text, const char * action, uint8_t sound);
 
-void doMainScreenGraphics();
+void doMainScreenGraphics( uint32_t ptr );
 void drawProgressScreen(const char * title, const char * message, int num, int den);
 void drawSleepBitmap();
 #if defined(PCBTANGO)
