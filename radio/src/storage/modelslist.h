@@ -42,7 +42,7 @@ class ModelCell
 public:
   char modelFilename[LEN_MODEL_FILENAME+1];
   char modelName[LEN_MODEL_NAME+1];
-#if !defined(PCBTANGO)
+#if !defined(PCBTANGO) && !defined(PCBMAMBO)
   BitmapBuffer * buffer;
 #endif
   bool             valid_rfData;
@@ -62,7 +62,7 @@ public:
 
   bool  fetchRfData();
   void  loadBitmap();
-#if !defined(PCBTANGO)
+#if !defined(PCBTANGO) && !defined(PCBMAMBO)
   const BitmapBuffer * getBuffer();
 #endif
   void  resetBuffer();

@@ -7,7 +7,6 @@ set(GUI_SRC
   widgets.cpp
   menus.cpp
   menu_model.cpp
-  model_select.cpp
   model_setup.cpp
   model_failsafe.cpp
   model_logical_switches.cpp
@@ -15,23 +14,33 @@ set(GUI_SRC
   model_telemetry.cpp
   model_telemetry_sensor.cpp
   menu_radio.cpp
-  radio_setup.cpp
   radio_version.cpp
   radio_calibration.cpp
+  radio_setup.cpp
   view_main.cpp
   view_statistics.cpp
   )
 
-if (NOT PCB STREQUAL TANGO)
+if (NOT PCB STREQUAL TANGO AND NOT PCB STREQUAL MAMBO)
   set(GUI_SRC
      ${GUI_SRC}
+     model_select.cpp
      model_module_options.cpp
      model_receiver_options.cpp
      radio_trainer.cpp
      )
+elseif (PCB STREQUAL MAMBO)
+  set(GUI_SRC
+      ${GUI_SRC}
+      model_select_mambo.cpp
+     )
+else()
+  set(GUI_SRC
+      ${GUI_SRC}
+          )
 endif()
 
-if (PCB STREQUAL TANGO)
+if (PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   set(GUI_SRC
      ${GUI_SRC}
      model_crossfire_setup.cpp

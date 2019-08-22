@@ -54,7 +54,7 @@ void ModelCell::setModelId(uint8_t moduleIdx, uint8_t id)
   modelId[moduleIdx] = id;
 }
 
-#if !defined(PCBTANGO)
+#if !defined(PCBTANGO) && !defined(PCBMAMBO)
 void ModelCell::resetBuffer()
 {
   if (buffer) {

@@ -63,24 +63,24 @@ void rotaryEncoderCheck()
   uint32_t newpos = ROTARY_ENCODER_POSITION();
   if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
     if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
         static uint32_t count = 0;
         if(++count > 1){
             count = 0;
 #endif
             --rotencValue;
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
         }
 #endif
     }
     else {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
         static uint32_t count = 0;
         if(++count > 1){
             count = 0;
 #endif
             ++rotencValue;
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
         }
 #endif
     }

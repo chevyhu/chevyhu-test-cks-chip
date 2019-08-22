@@ -322,7 +322,7 @@ void copyRadioData(A * dest, B * src)
   dest->spareRadio = src->spareRadio;
   dest->stickMode = src->stickMode;
   dest->telemetryBaudrate = src->telemetryBaudrate;
-#if !defined(PCBTANGO)
+#if !defined(PCBTANGO) && !defined(PCBMAMBO)
   dest->splashSpares = src->splashSpares;
 #endif
   dest->switchesDelay = src->switchesDelay;

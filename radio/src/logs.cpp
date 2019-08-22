@@ -29,7 +29,7 @@ void writeHeader();
 
 #if defined(PCBTARANIS) || defined(PCBHORUS)
   #define GET_2POS_STATE(sw) (switchState(SW_ ## sw ## 0) ? -1 : 1)
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   #define GET_2POS_STATE(sw) (switchState(SW_ ## sw ## 0) ? -1 : 1)
 #else
   #define GET_2POS_STATE(sw) (switchState(SW_ ## sw) ? -1 : 1)
@@ -315,7 +315,7 @@ f_printf(&g_oLogFile, "%d,%d,%d,%d,0x%08X%08X,",
           GET_2POS_STATE(SH),
           getLogicalSwitchesStates(32),
           getLogicalSwitchesStates(0));
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
       f_printf(&g_oLogFile, "%d,%d,%d,%d,%d,%d,0x%08X%08X,",
            GET_2POS_STATE(SA),
            GET_3POS_STATE(SB),

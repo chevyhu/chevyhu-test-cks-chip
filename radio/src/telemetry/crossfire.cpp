@@ -174,7 +174,7 @@ void processCrossfireTelemetryFrame()
   }
 }
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 bool isCrossfireOutputBufferAvailable()
 {
   return outputTelemetryBufferSize == 0;

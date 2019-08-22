@@ -382,7 +382,7 @@ extern uint8_t channel_order(uint8_t x);
 
 #if defined(COLORLCD)
   #define SPLASH_NEEDED()              (false)
-#elif defined(PCBTARANIS) || defined(PCBTANGO)
+#elif defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO)
   #define SPLASH_NEEDED()              (g_eeGeneral.splashMode != 3)
 #else
   #define SPLASH_NEEDED()              (g_model.moduleData[EXTERNAL_MODULE].type != MODULE_TYPE_DSM2 && !g_eeGeneral.splashMode)
@@ -390,7 +390,7 @@ extern uint8_t channel_order(uint8_t x);
 
 #if defined(PCBHORUS)
   #define SPLASH_TIMEOUT               0 /* we use the splash duration to load stuff from the SD */
-#elif defined(PCBTARANIS) || defined(PCBTANGO)
+#elif defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO)
   #define SPLASH_TIMEOUT               (g_eeGeneral.splashMode==-4 ? 1500 : (g_eeGeneral.splashMode<=0 ? (400-g_eeGeneral.splashMode*200) : (400-g_eeGeneral.splashMode*100)))
 #else
   #define SPLASH_TIMEOUT               (4*100)  // 4 seconds
@@ -452,7 +452,7 @@ bool cmpStrWithZchar(const char * charString, const char * zcharString, int size
 #include "keys.h"
 #include "pwr.h"
 
-#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO) || defined(PCBMAMBO)
 div_t switchInfo(int switchPosition);
 extern uint8_t potsPos[NUM_XPOTS];
 #endif
@@ -519,7 +519,7 @@ void evalLogicalSwitches(bool isCurrentFlightmode=true);
 void logicalSwitchesCopyState(uint8_t src, uint8_t dst);
 #define LS_RECURSIVE_EVALUATION_RESET()
 
-#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO) || defined(PCBMAMBO)
   void getSwitchesPosition(bool startup);
 #else
   #define getSwitchesPosition(...)
@@ -554,7 +554,7 @@ bool setTrimValue(uint8_t phase, uint8_t idx, int trim);
 
 #if defined(PCBSKY9X)
   #define ROTARY_ENCODER_GRANULARITY (2 << g_eeGeneral.rotarySteps)
-#elif defined(PCBHORUS) || defined(PCBTANGO)
+#elif defined(PCBHORUS) || defined(PCBTANGO) || defined(PCBMAMBO)
   #define ROTARY_ENCODER_GRANULARITY (1)
 
 #else
@@ -1003,7 +1003,7 @@ enum AUDIO_SOUNDS {
   AU_STICK2_MIDDLE,
   AU_STICK3_MIDDLE,
   AU_STICK4_MIDDLE,
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   AU_AILERON_TRIM,
   AU_ELEVATOR_TRIM,
   AU_THROTTLE_TRIM,
@@ -1314,7 +1314,7 @@ void varioWakeup();
 
 #if defined(PCBTARANIS)
   extern const unsigned char logo_taranis[];
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   extern const unsigned char logo_tango[];
 #endif
 

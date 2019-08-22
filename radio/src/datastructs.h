@@ -290,7 +290,7 @@ PACK(struct FrSkyLineData {
   source_t sources[NUM_LINE_ITEMS];
 });
 
-#if defined(PCBTARANIS) || defined(PCBTANGO)
+#if defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO)
 PACK(struct TelemetryScriptData {
   char    file[LEN_SCRIPT_FILENAME];
   int16_t inputs[MAX_TELEM_SCRIPT_INPUTS];
@@ -300,7 +300,7 @@ PACK(struct TelemetryScriptData {
 union TelemetryScreenData {
   FrSkyBarData  bars[4];
   FrSkyLineData lines[4];
-#if defined(PCBTARANIS) || defined(PCBTANGO)
+#if defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO)
   TelemetryScriptData script;
 #endif
 };
@@ -507,7 +507,7 @@ typedef uint32_t swarnenable_t;
 typedef uint16_t swconfig_t;
 typedef uint16_t swarnstate_t;
 typedef uint8_t swarnenable_t;
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
 typedef uint16_t swconfig_t;
 typedef uint16_t swarnstate_t;
 typedef uint8_t swarnenable_t;
@@ -552,7 +552,7 @@ PACK(struct CustomScreenData {
 #define TOPBAR_DATA
 #endif
 
-#if defined(PCBHORUS) || defined(PCBTARANIS) || defined(PCBTANGO)
+#if defined(PCBHORUS) || defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO)
 #define SCRIPT_DATA \
     NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);
 #else
@@ -694,7 +694,7 @@ PACK(struct TrainerData {
     char anaNames[NUM_STICKS+NUM_POTS+NUM_SLIDERS][LEN_ANA_NAME]; \
     NOBACKUP(char currModelFilename[LEN_MODEL_FILENAME+1]); \
     BLUETOOTH_FIELDS
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
   #if defined(BLUETOOTH)
   #define BLUETOOTH_FIELDS \
         uint8_t spare; \

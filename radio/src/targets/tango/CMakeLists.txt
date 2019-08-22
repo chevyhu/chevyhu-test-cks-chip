@@ -75,8 +75,6 @@ elseif(PCB STREQUAL TANGO)
   set(FONTS_TARGET tango_fonts_1bit)
   set(LCD_DRIVER lcd_driver_spi.cpp)
   set(GVAR_SCREEN model_gvars.cpp)
-  #set(OS_TYPE FREE_RTOS)
-  #set(OS_TYPE COOS)
 elseif(PCB STREQUAL X9D+)
   set(CPU_TYPE STM32F2)
   set(CPU_TYPE_FULL STM32F205xE)  # for size report

@@ -1,13 +1,7 @@
 include(CMakeForceCompiler)
 include(Bitmaps)
-set(PROJECT_TYPE TBS_TANGO)
 
-if (PROJECT_TYPE STREQUAL TBS_TANGO)
-  set(PCB_TYPES X3 X7 XLITE XLITES X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X TANGO)
-else()
-  set(PCB_TYPES X3 X7 XLITE XLITES X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X)
-endif()
-
+set(PCB_TYPES X3 X7 XLITE XLITES X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X TANGO MAMBO)
 set(GUI_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL)
 set(TTS_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL RU)
 
@@ -30,7 +24,7 @@ set_property(CACHE FONT PROPERTY STRINGS SQT5)
 option(HELI "Heli menu" ON)
 option(FLIGHT_MODES "Flight Modes" ON)
 option(CURVES "Curves" ON)
-if (PCB STREQUAL TANGO)
+if (PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   option(GVARS "Global variables" OFF)
 else()
   option(GVARS "Global variables" ON)
@@ -49,7 +43,7 @@ option(WATCHDOG_DISABLED "Disable hardware Watchdog" OFF)
 if(SDL_FOUND)
   option(SIMU_AUDIO "Enable simulator audio." ON)
 endif()
-if (PCB STREQUAL TANGO)
+if (PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   option(LUA "Enable LUA support" OFF)
 else()
   option(LUA "Enable LUA support" ON)
@@ -60,7 +54,7 @@ option(SIMU_LUA_COMPILER "Pre-compile and save Lua scripts in simulator." ON)
 option(FAS_PROTOTYPE "Support of old FAS prototypes (different resistors)" OFF)
 option(RAS "RAS (SWR) enabled" ON)
 option(TEMPLATES "Model templates menu" OFF)
-if (PCB STREQUAL TANGO)
+if (PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   option(TRACE_SIMPGMSPACE "Turn on traces in simpgmspace.cpp" OFF)
 else()
   option(TRACE_SIMPGMSPACE "Turn on traces in simpgmspace.cpp" ON)
@@ -100,7 +94,7 @@ set(EEPROM_VARIANT  0)
 set(GVARS_VARIANT   1)
 set(FRSKY_VARIANT   2)
 set(3POS_VARIANT    4)
-if (PCB STREQUAL TANGO)
+if (PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   set(MAVLINK_VARIANT 8)
   set(M2561_VARIANT   16384)
   set(M128_VARIANT    32768)
@@ -122,6 +116,8 @@ elseif(PCB STREQUAL SKY9X OR PCB STREQUAL 9XRPRO OR PCB STREQUAL AR9X)
   include(targets/sky9x/CMakeLists.txt)
 elseif(PCB STREQUAL TANGO)
   include(targets/tango/CMakeLists.txt)
+elseif(PCB STREQUAL MAMBO)
+  include(targets/mambo/CMakeLists.txt)
 else()
   message(FATAL_ERROR "Unknown PCB '${PCB}'")
 endif()
@@ -147,13 +143,6 @@ endif()
 
 if(ARCH STREQUAL ARM)
   include(targets/common/arm/CMakeLists.txt)
-elseif(ARCH STREQUAL PIC)
-  add_definitions(-DRTOS)
-  # TODO this is duplicated
-  foreach(LANGUAGE ${TTS_LANGUAGES})
-    string(TOLOWER ${LANGUAGE} lang_lower)
-    set(SRC ${SRC} translations/tts_${lang_lower}.cpp)
-  endforeach()
 elseif(ARCH STREQUAL AVR)
   include(targets/common/avr/CMakeLists.txt)
 endif()
@@ -197,7 +186,7 @@ if(RAMBACKUP)
 endif()
 
 #TODO need be deleted, because 2.3 have no this
-if(PCB STREQUAL TANGO)
+if(PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   if(TEMPLATES)
     add_definitions(-DTEMPLATES)
     set(SRC ${SRC} templates.cpp)
@@ -364,7 +353,7 @@ if(NIGHTLY_BUILD_WARNING)
   add_definitions(-DNIGHTLY_BUILD_WARNING)
 endif()
 
-if(PCB STREQUAL TANGO)
+if(PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   #TODO need be deleted, because 2.3 have no this
   if(USEHORUSBT)
     add_definitions(-DUSEHORUSBT)
@@ -379,7 +368,7 @@ if(FRSKY_RELEASE)
   add_definitions(-DFRSKY_RELEASE)
 endif()
 
-if(PCB STREQUAL TANGO)
+if(PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
   set(SRC
           ${SRC}
           opentx.cpp
@@ -529,7 +518,7 @@ if(NOT MSVC)
       set(SRC ${SRC} bin_allocator.cpp)
     endif()
 
-    if(PCB STREQUAL XLITE OR PCB STREQUAL XLITES OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X3 OR PCB STREQUAL X10 OR PCB STREQUAL X12S  OR PCB STREQUAL TANGO)
+    if(PCB STREQUAL XLITE OR PCB STREQUAL XLITES OR PCB STREQUAL X9D OR PCB STREQUAL X9D+ OR PCB STREQUAL X9E OR PCB STREQUAL X7 OR PCB STREQUAL X3 OR PCB STREQUAL X10 OR PCB STREQUAL X12S  OR PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)
       add_subdirectory(targets/common/arm/stm32/bootloader)
       include_directories(${CMAKE_CURRENT_BINARY_DIR}/targets/common/arm/stm32/bootloader)
       set(FIRMWARE_DEPENDENCIES ${FIRMWARE_DEPENDENCIES} bootloader)
@@ -595,65 +584,6 @@ if(NOT MSVC)
               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
               )
     endif()
-  elseif(ARCH STREQUAL PIC)
-    set(CMAKE_C_COMPILER xc32-gcc)
-    set(CMAKE_CXX_COMPILER xc32-g++)
-    set(CMAKE_ASM_COMPILER xc32-g++)
-    enable_language(ASM)
-    set(MICROCHIP_MCU 32MX470F512L)
-    set(LINKER_SCRIPT targets/tango/p32MX470F512L.ld)
-    set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER> -c -mprocessor=${MICROCHIP_MCU} <INCLUDES> -o <OBJECT> <SOURCE>")
-    set(CMAKE_EXE_LINKER_FLAGS "-lm -lc -T${RADIO_SRC_DIRECTORY}/${LINKER_SCRIPT} -Wl,--defsym=__MPLAB_BUILD=1,--defsym=_min_heap_size=20000,-Map=firmware.map,--cref,--no-warn-mismatch,--gc-sections,--no-code-in-dinit,--no-dinit-in-serial-mem")
-    set(COMMON_FLAGS "-O${OPT} -gdwarf-2 -fno-exceptions -mprocessor=${MICROCHIP_MCU} ${WARNING_FLAGS} -fno-inline-small-functions -ffunction-sections -fdata-sections") # -flto  -fwhole-program  -fno-inline-small-functions
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -Wimplicit")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
-
-    add_definitions(-DRTOS_FREERTOS)
-
-    include_directories(
-            ${CMAKE_SOURCE_DIR}/radio/src/targets/tango/
-            ${CMAKE_SOURCE_DIR}/radio/src/targets/tango/firmware/src/system_config/tango
-            ${HARMONY_DIR}/framework/
-            ${FREERTOS_DIR}/Source/include
-            ${FREERTOS_DIR}/Source/portable/MPLAB/PIC32MX
-    )
-
-    set(SRC
-            ${SRC}
-            ${HARMONY_DIR}/framework/driver/sdcard/src/dynamic/drv_sdcard.c
-            ${HARMONY_DIR}/framework/driver/spi/src/dynamic/drv_spi.c
-            ${HARMONY_DIR}/framework/driver/spi/src/drv_spi_sys_queue_fifo.c
-            ${HARMONY_DIR}/framework/driver/tmr/src/dynamic/drv_tmr.c
-            ${HARMONY_DIR}/framework/driver/usb/usbfs/src/dynamic/drv_usbfs.c
-            ${HARMONY_DIR}/framework/driver/usb/usbfs/src/dynamic/drv_usbfs_device.c
-            ${HARMONY_DIR}/framework/osal/src/osal_freertos.c
-            ${HARMONY_DIR}/framework/system/int/src/sys_int_pic32.c
-            ${HARMONY_DIR}/framework/system/tmr/src/sys_tmr.c
-            ${HARMONY_DIR}/framework/usb/src/dynamic/usb_device.c
-            ${HARMONY_DIR}/framework/usb/src/dynamic/usb_device_cdc.c
-            ${HARMONY_DIR}/framework/usb/src/dynamic/usb_device_cdc_acm.c
-            ${HARMONY_DIR}/framework/usb/src/dynamic/usb_device_hid.c
-            ${HARMONY_DIR}/framework/usb/src/dynamic/usb_device_msd.c
-            ${FREERTOS_DIR}/Source/event_groups.c
-            ${FREERTOS_DIR}/Source/portable/MPLAB/PIC32MX/port.c
-            ${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c
-            ${FREERTOS_DIR}/Source/list.c
-            ${FREERTOS_DIR}/Source/timers.c
-            ${FREERTOS_DIR}/Source/queue.c
-            ${FREERTOS_DIR}/Source/croutine.c
-            ${FREERTOS_DIR}/Source/tasks.c
-            ${FREERTOS_DIR}/Source/portable/MPLAB/PIC32MX/port_asm.S
-            )
-
-    add_executable(firmware ${SRC} ${FIRMWARE_HEADERS})
-    link_libraries(firmware -lstdc++)
-    add_dependencies(firmware ${FIRMWARE_DEPENDENCIES})
-
-    add_custom_command(
-            TARGET firmware POST_BUILD
-            COMMAND xc32-bin2hex firmware.elf
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
   endif()  # ARM
 
   if(CPU_FAMILY STREQUAL STM32)
@@ -682,22 +612,6 @@ if(NOT MSVC)
     add_custom_target(flash-stlink
             COMMAND ST-LINK_CLI -c SWD -P firmware.bin 0x8000000 -Rst -Q
             DEPENDS firmware-size
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            )
-  elseif(ARCH STREQUAL PIC)
-    add_custom_target(firmware-size
-            COMMAND xc32-size firmware.elf
-            DEPENDS firmware
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            )
-    add_custom_target(flash
-            COMMAND /opt/microchip/mplabx/v4.15/mplab_ipe/ipecmd.sh -TPICD3 -P${MICROCHIP_MCU} -OL -M -F./firmware.hex
-            DEPENDS firmware
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            )
-    add_custom_target(jtag-flash
-            COMMAND JLinkExe -device PIC${MICROCHIP_MCU} -if ICSP -speed 4000 loadfile firmware.hex
-            DEPENDS firmware
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             )
   else()

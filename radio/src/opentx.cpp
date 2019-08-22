@@ -191,7 +191,7 @@ void per10ms()
   sdPoll10ms();
 #endif
 
-#if !defined(PCBTANGO)
+#if !defined(PCBTANGO) && !defined(PCBMAMBO)
   outputTelemetryBuffer.per10ms();
 #endif
 
@@ -475,7 +475,7 @@ void modelDefault(uint8_t id)
 
   memcpy(g_model.modelRegistrationID, g_eeGeneral.ownerRegistrationID, PXX2_LEN_REGISTRATION_ID);
 
-#if defined(LUA) && (defined(PCBTARANIS) || defined(PCBTANGO))//Horus uses menuModelWizard() for wizard
+#if defined(LUA) && (defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO))//Horus uses menuModelWizard() for wizard
   if (isFileAvailable(WIZARD_PATH "/" WIZARD_NAME)) {
     f_chdir(WIZARD_PATH);
     luaExec(WIZARD_NAME);
@@ -760,7 +760,7 @@ void doSplash()
     inputsMoved();
 
     tmr10ms_t tgtime = get_tmr10ms() + SPLASH_TIMEOUT;
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
     tmr10ms_t tgtime_opentx = get_tmr10ms() + SPLASH_TIMEOUT / 2;
 #endif
     while (tgtime > get_tmr10ms()) {
@@ -1183,12 +1183,12 @@ tmr10ms_t jitterResetTime = 0;
 #endif
 
 #if !defined(SIMU)
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 #include "./io/crsf/crossfire.h"
 #endif
 uint16_t anaIn(uint8_t chan)
 {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   if( chan <= STICK4 )
 	  return crossfireSharedData.sticks[chan];
 #endif
@@ -1792,11 +1792,11 @@ void opentxInit()
 #if defined(SDCARD) && !defined(PCBMEGA2560)
 // SDCARD related stuff, only done if not unexpectedShutdown
 if (!unexpectedShutdown) {
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
     if(!sdMounted()){
 #endif
        sdInit();
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
     }
 #endif
   logsInit();
@@ -1958,7 +1958,7 @@ int main()
   // lcdSetRefVolt(25);
 #endif
 
-#if defined(SPLASH) && (defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBHORUS))
+#if defined(SPLASH) && (defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO) || defined(PCBHORUS))
   drawSplash();
 #endif
 
