@@ -34,7 +34,7 @@ void onUSBConnectMenu(const char *result)
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
 #if defined(PCBTANGO)
-  else if (result == STR_USB_AGENT) {
+  else if (result == STR_USB_TANGO2) {
     setSelectedUsbMode(USB_AGENT_MODE);
   }
 #endif
@@ -58,7 +58,7 @@ void handleUsbConnection()
     if (g_eeGeneral.USBMode == USB_UNSELECTED_MODE && popupMenuItemsCount == 0) {
       POPUP_MENU_ADD_ITEM(STR_USB_JOYSTICK);
 #if defined(PCBTANGO)
-      POPUP_MENU_ADD_ITEM(STR_USB_AGENT);
+      POPUP_MENU_ADD_ITEM(STR_USB_TANGO2);
 #endif
       POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
 #if defined(DEBUG)

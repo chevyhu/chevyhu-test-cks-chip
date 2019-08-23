@@ -456,7 +456,9 @@ const char STR_RESET_TELEMETRY[]  = TR_RESET_TELEMETRY;
 const char STR_STATISTICS[]  = TR_STATISTICS;
 const char STR_ABOUT_US[]  = TR_ABOUT_US;
 const char STR_USB_JOYSTICK[]  = TR_USB_JOYSTICK;
-const char STR_USB_AGENT[]  = TR_USB_AGENT;
+#if defined(PCBTANGO)
+const char STR_USB_TANGO2[]  = TR_USB_TANGO2;
+#endif
 const char STR_USB_MASS_STORAGE[]  = TR_USB_MASS_STORAGE;
 const char STR_USB_SERIAL[]  = TR_USB_SERIAL;
 const char STR_SETUP_SCREENS[]  = TR_SETUP_SCREENS;

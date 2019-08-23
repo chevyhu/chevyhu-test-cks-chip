@@ -7,6 +7,7 @@ set(GUI_SRC
   widgets.cpp
   menus.cpp
   menu_model.cpp
+  model_select.cpp
   model_setup.cpp
   model_failsafe.cpp
   model_logical_switches.cpp
@@ -24,7 +25,6 @@ set(GUI_SRC
 if (NOT PCB STREQUAL TANGO AND NOT PCB STREQUAL MAMBO)
   set(GUI_SRC
      ${GUI_SRC}
-     model_select.cpp
      model_module_options.cpp
      model_receiver_options.cpp
      radio_trainer.cpp

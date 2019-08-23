@@ -158,7 +158,7 @@ void CRSF_This_Device( uint8_t *p_arr )
 						drawDownload();
 #endif
 						uint32_t delayCount = 0;
-						while(++delayCount < 1000000UL);
+						while(++delayCount < 100000UL);
 						boot2bootloader(1, libCrsf_MyHwID, libCrsf_MySerialNo);
 					}
 				}

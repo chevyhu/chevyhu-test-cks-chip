@@ -33,7 +33,7 @@ _main_stack_start = _estack - _Main_Stack_Size;
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K
+  FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 768K
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 88K
   SHAREDRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 1K 
   CCM (xrw)       : ORIGIN = 0x10000400, LENGTH = 63K  
@@ -54,7 +54,7 @@ SECTIONS
 
     KEEP(*(.bootloader)) /* Bootloader code */
       
-    . = 0x9000;          /* Set the start of the main program */
+    . = 0xC000;          /* Set the start of the main program */
     _stext = .;          /* Provide the name for the start of this section */
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
