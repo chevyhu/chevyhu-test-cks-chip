@@ -285,7 +285,7 @@ void luaDoGc(lua_State * L, bool full)
         uint32_t gc = luaGetMemUsed(L);
         if (gc > (lastgcSctipts + GC_REPORT_TRESHOLD) || (gc + GC_REPORT_TRESHOLD) < lastgcSctipts) {
           lastgcSctipts = gc;
-          TRACE("GC Use Scripts: %u bytes", gc);
+          //TRACE("GC Use Scripts: %u bytes", gc);
         }
       }
 #if defined(COLORLCD)
@@ -893,6 +893,7 @@ void luaDoOneRunStandalone(event_t evt)
     }
 
     if (standaloneScript.state != SCRIPT_OK) {
+      TRACE("***here got it 1\n");
       luaError(lsScripts, standaloneScript.state);
       luaState = INTERPRETER_RELOAD_PERMANENT_SCRIPTS;
     }

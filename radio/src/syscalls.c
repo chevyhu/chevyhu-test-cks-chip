@@ -34,6 +34,15 @@ unsigned char * heap = (unsigned char *)&_end;
 
 extern caddr_t _sbrk(int nbytes)
 {
+  if (nbytes >= 0)
+  {
+    serialPrint("*** malloc %d bytes\n", nbytes);
+  }
+  else if (nbytes < 0)
+  {
+    serialPrint("*** free %d bytes\n", nbytes);
+  }
+#if 1
   if (heap + nbytes < (unsigned char *)&_heap_end) {
     unsigned char * prev_heap = heap;
     heap += nbytes;
@@ -43,6 +52,7 @@ extern caddr_t _sbrk(int nbytes)
     errno = ENOMEM;
     return ((void *)-1);
   }
+#endif
 }
 
 #if !defined(SEMIHOSTING)

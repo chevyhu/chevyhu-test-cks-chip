@@ -1958,7 +1958,7 @@ int main()
 #endif
 
 
-#if defined(GUI) && !defined(PCBTARANIS) && !defined(PCBHORUS)
+#if defined(GUI) && !defined(PCBTARANIS) && !defined(PCBHORUS) && !defined(PCBMAMBO)
   // TODO remove this
   lcdInit();
 #endif

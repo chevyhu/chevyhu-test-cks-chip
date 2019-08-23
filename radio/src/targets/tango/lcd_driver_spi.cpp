@@ -199,7 +199,8 @@ void lcdDisplayInit(void)
 
   spiWriteCommandWithArg(0x0ab, 0x001),		  /* Enable internal VDD regulator (RESET) */
   //spiWriteCommandWithArg(0x081, 0x070),		/* contrast, brightness, 0..128 */
-  spiWriteCommandWithArg(0x081, 0x053),		  /* contrast, brightness, 0..128 */
+  //spiWriteCommandWithArg(0x081, 0x053),		  /* contrast, brightness, 0..128 */
+  spiWriteCommandWithArg(0x081, 0xFF),		  /* contrast, brightness, 0..128 */
   //spiWriteCommandWithArg(0x0b1, 0x055),   /* phase length */
   spiWriteCommandWithArg(0x0b1, 0x051),     /* phase length */
   //spiWriteCommandWithArg(0x0b3, 0x091),		/* set display clock divide ratio/oscillator frequency (set clock as 135 frames/sec) */
@@ -216,6 +217,9 @@ void lcdDisplayInit(void)
   spiWriteCommandWithArg(0x0be, 0x007),     /* VCOMH voltage */
   spiWriteCommandWithArg(0x0b6, 0x001),		  /* second precharge */
   spiWriteCommandWithArg(0x0d5, 0x062),		  /* enable second precharge, internal vsl (bit0 = 0) */
+
+  spiWriteCommandWithArg(0xb8, 0x0F);
+  spiWriteCommandWithArg(0xb9, 0X0F);
 
   spiWriteCommand(0x0a4);				            /* normal display mode */
 

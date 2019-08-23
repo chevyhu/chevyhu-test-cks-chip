@@ -74,7 +74,7 @@ void * bin_realloc(void * ptr, size_t size)
       // TRACE("bin_malloc [%lu] FAILURE", size);
       res = malloc(size);
       if (res == 0) {
-        TRACE("libc malloc [%lu] FAILURE", size);  
+        TRACE("*** libc malloc [%lu] FAILURE", size);
         return 0;
       }
     }

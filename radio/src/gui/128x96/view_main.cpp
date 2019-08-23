@@ -269,6 +269,11 @@ void displayBattVoltage()
 // #define EVT_KEY_TELEMETRY              EVT_KEY_LONG(KEY_DOWN)
 // #define EVT_KEY_STATISTICS             EVT_KEY_LONG(KEY_UP)
 
+#include "malloc.h"
+
+void *malloc_prt = NULL;
+
+
 uint8_t  test_watchdog_flag = 0;
 void onMainViewMenu(const char *result)
 {
@@ -313,6 +318,17 @@ void onMainViewMenu(const char *result)
     test_watchdog_flag = 1;
     chainMenu(menuAboutView);
   }
+  else if (result == "memory_malloc") {
+    malloc_prt = NULL;
+    TRACE("before malloc(), heap free size 0x%x bytes\n", (int)((unsigned char *)&_heap_end - heap));
+    malloc_prt = malloc(0x2000);
+    TRACE("after  malloc(), heap free size 0x%x bytes, malloc_prt = 0x%x\n", (int)((unsigned char *)&_heap_end - heap), malloc_prt);
+  }
+  else if (result == "memory_free") {
+    TRACE("before free(),   heap free size 0x%x  bytes\n", (int)((unsigned char *)&_heap_end - heap));
+    void *retPtr = malloc_prt = realloc(malloc_prt, 0);
+    TRACE("after  free(),   heap free size 0x%x  bytes, malloc_prt = 0x%x, retPtr = 0x%x\n", (int)((unsigned char *)&_heap_end - heap), malloc_prt, retPtr);
+  }
 }
 
 
@@ -347,6 +363,8 @@ void menuMainView(event_t event)
       POPUP_MENU_ADD_ITEM(STR_RESET_SUBMENU);
       POPUP_MENU_ADD_ITEM(STR_STATISTICS);
       POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
+      POPUP_MENU_ADD_ITEM("memory_malloc");
+      POPUP_MENU_ADD_ITEM("memory_free");
       POPUP_MENU_START(onMainViewMenu);
       break;
 #endif

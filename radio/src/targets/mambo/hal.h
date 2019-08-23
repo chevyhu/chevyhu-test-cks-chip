@@ -1131,7 +1131,7 @@
 #endif
 
 // LCD driver
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if defined(PCBTANGO)
   #define LCD_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA1)
   #define LCD_RCC_APB1Periph            RCC_APB1Periph_SPI3
   #define LCD_SPI_GPIO                  GPIOB
@@ -1145,6 +1145,28 @@
   #define LCD_RST_GPIO_PIN              GPIO_Pin_3 // PD.3
   #define LCD_DC_GPIO                   GPIOD
   #define LCD_DC_GPIO_PIN               GPIO_Pin_6 // PD.6
+  #define LCD_DMA                       DMA1
+  #define LCD_DMA_Stream                DMA1_Stream7
+  #define LCD_DMA_Stream_IRQn           DMA1_Stream7_IRQn
+  #define LCD_DMA_Stream_IRQHandler     DMA1_Stream7_IRQHandler
+  #define LCD_DMA_FLAGS                 (DMA_HIFCR_CTCIF7 | DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 | DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7)
+  #define LCD_DMA_FLAG_INT              DMA_HIFCR_CTCIF7
+  #define LCD_SPI                       SPI3
+  #define LCD_GPIO_AF                   GPIO_AF_SPI3
+#elif defined(PCBMAMBO)
+  #define LCD_RCC_AHB1Periph            (RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_DMA1)
+  #define LCD_RCC_APB1Periph            RCC_APB1Periph_SPI3
+  #define LCD_SPI_GPIO                  GPIOB
+  #define LCD_MOSI_GPIO_PIN             GPIO_Pin_5 // PB.5
+  #define LCD_MOSI_GPIO_PinSource       GPIO_PinSource5
+  #define LCD_CLK_GPIO_PIN              GPIO_Pin_3 // PB.3
+  #define LCD_CLK_GPIO_PinSource        GPIO_PinSource3
+  #define LCD_A0_GPIO                   GPIOD
+  #define LCD_A0_GPIO_PIN               GPIO_Pin_6 // PD.6
+  #define LCD_NCS_GPIO                  GPIOD
+  #define LCD_NCS_GPIO_PIN              GPIO_Pin_1 // PD.1
+  #define LCD_RST_GPIO                  GPIOD
+  #define LCD_RST_GPIO_PIN              GPIO_Pin_3 // PD.3
   #define LCD_DMA                       DMA1
   #define LCD_DMA_Stream                DMA1_Stream7
   #define LCD_DMA_Stream_IRQn           DMA1_Stream7_IRQn

@@ -24,12 +24,13 @@ set(GUI_SRC
 if (NOT PCB STREQUAL TANGO AND NOT PCB STREQUAL MAMBO)
   set(GUI_SRC
      ${GUI_SRC}
-     model_select.cpp
      model_module_options.cpp
      model_receiver_options.cpp
      radio_trainer.cpp
      )
-elseif (PCB STREQUAL MAMBO)
+endif()
+
+if (PCB STREQUAL MAMBO)
   set(GUI_SRC
       ${GUI_SRC}
       model_select_mambo.cpp
@@ -37,7 +38,8 @@ elseif (PCB STREQUAL MAMBO)
 else()
   set(GUI_SRC
       ${GUI_SRC}
-          )
+      model_select.cpp
+     )
 endif()
 
 if (PCB STREQUAL TANGO OR PCB STREQUAL MAMBO)

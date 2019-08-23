@@ -307,22 +307,74 @@ void scheduleNextMixerCalculation(uint8_t module, uint16_t period_ms)
 bool perMainEnabled = true;
 #endif
 
+#include "malloc.h"
+
+int cliMemoryInfo(const char ** argv)
+{
+  // struct mallinfo {
+  //   int arena;    /* total space allocated from system */
+  //   int ordblks;  /* number of non-inuse chunks */
+  //   int smblks;   /* unused -- always zero */
+  //   int hblks;    /* number of mmapped regions */
+  //   int hblkhd;   /* total space in mmapped regions */
+  //   int usmblks;  /* unused -- always zero */
+  //   int fsmblks;  /* unused -- always zero */
+  //   int uordblks; /* total allocated space */
+  //   int fordblks; /* total non-inuse space */
+  //   int keepcost; /* top-most, releasable (via malloc_trim) space */
+  // };
+  struct mallinfo info = mallinfo();
+#if 1
+  serialPrint("mallinfo:");
+  serialPrint("\tarena    %d bytes", info.arena);
+  serialPrint("\tordblks  %d bytes", info.ordblks);
+  serialPrint("\tuordblks %d bytes", info.uordblks);
+  serialPrint("\tfordblks %d bytes", info.fordblks);
+  serialPrint("\tkeepcost %d bytes", info.keepcost);
+
+  serialPrint("\nHeap:");
+  serialPrint("\tstart %p", (unsigned char *)&_end);
+  serialPrint("\tend   %p", (unsigned char *)&_heap_end);
+  serialPrint("\tcurr  %p", heap);
+  serialPrint("\tused  %d bytes", (int)(heap - (unsigned char *)&_end));
+  serialPrint("\tfree  %d bytes", (int)((unsigned char *)&_heap_end - heap));
+
+#if defined(LUA)
+  serialPrint("\nLua:");
+  uint32_t s = luaGetMemUsed(lsScripts);
+  serialPrint("\tScripts %u", s);
+#if defined(COLORLCD)
+  uint32_t w = luaGetMemUsed(lsWidgets);
+  uint32_t e = luaExtraMemoryUsage;
+  serialPrint("\tWidgets %u", w);
+  serialPrint("\tExtra   %u", e);
+  serialPrint("------------");
+  serialPrint("\tTotal   %u", s + w + e);
+#endif
+#endif
+
+#else
+  serialPrint("\tmemory free  %d bytes", (int)((unsigned char *)&_heap_end - heap));
+#endif
+  return 0;
+}
+
 TASK_FUNCTION(menusTask)
 {
   TRACE("menu task started\r\n");
   opentxInit();
 
+  static uint32_t memCalcTime = RTOS_GET_MS();
 #if defined(PCBTANGO)
   getDefaultSwConfig();
 #endif
 
-#if defined(PCBTANGO) && defined(LUA)
-    // Start crossfire for TANGO
-    //luaExec("/CROSSFIRE/crossfire.lua");
-#endif
-
 #if defined(PWR_BUTTON_PRESS)
   while (1) {
+    if ((RTOS_GET_MS()- memCalcTime) > 1000) {
+      cliMemoryInfo(0);
+      memCalcTime = RTOS_GET_MS();
+    }
     uint32_t pwr_check = pwrCheck();
     if (pwr_check == e_power_off) {
       break;

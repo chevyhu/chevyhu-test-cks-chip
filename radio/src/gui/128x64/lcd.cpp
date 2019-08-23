@@ -20,7 +20,11 @@
 
 #include "opentx.h"
 
-display_t displayBuf[DISPLAY_BUFFER_SIZE];
+#if defined(PCBMAMBO)
+  display_t displayBuf[DISPLAY_BUFFER_SIZE] __DMA;
+#else
+  display_t displayBuf[DISPLAY_BUFFER_SIZE];
+#endif
 
 void lcdClear()
 {
