@@ -478,6 +478,7 @@ extern const char STR_MOVESTICKSPOTS[];
 #if defined(PCBTANGO)
 extern const char STR_LEFT[];
 extern const char STR_RIGHT[];
+extern const char STR_BOTH[];
 extern const char STR_MOVESTICK_P0[];
 extern const char STR_MOVESTICK_P1[];
 extern const char STR_MOVESTICK_P2[];

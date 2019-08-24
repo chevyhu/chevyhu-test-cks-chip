@@ -715,6 +715,7 @@
   #define TR_MENUTOSTART               CENTER "\010" TR_ENTER " TO START"
   #define TR_LEFT                      "\005LEFT"
   #define TR_RIGHT                     "\005RIGHT"
+  #define TR_BOTH                      "\005BOTH"
   #define TR_SETMIDPOINT               TR(CENTER "\004SET STICKS MIDPOINT", CENTER "\004CENTER STICKS/SLIDERS")
   #define TR_MOVESTICKSPOTS            CENTER "\006MOVE STICKS/POTS"
   #define TR_MOVESTICK_P0              CENTER "\004HOLD STICK AT CENTER"
