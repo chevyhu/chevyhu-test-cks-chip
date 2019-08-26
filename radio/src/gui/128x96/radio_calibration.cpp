@@ -46,8 +46,24 @@ enum CalibrationState {
 };
 
 #if defined(PCBTANGO)
+enum{
+    GIMBAL_LEFT = 0,
+    GIMBAL_RIGHT,
+    GIMBAL_COUNT
+};
+
+enum{
+    GIMBAL_LEFT_SEL = 0,
+    GIMBAL_BOTH_SEL,
+    GIMBAL_RIGHT_SEL,
+    GIMBAL_SEL_COUNT
+};
 #define CALIB_POINT_COUNT   (CALIB_SET_P8 - CALIB_SET_P0 + 1)
 const int16_t point_pos[CALIB_POINT_COUNT][2] = {{0,0}, {1024,0}, {1024,1024}, {0,1024}, {-1024,1024}, {-1024,0}, {-1024,-1024}, {0,-1024}, {1024,-1024}};
+#define LLABEL_CENTERX            (15)
+#define BOTHLABEL_CENTERX         (53)
+#define RLABEL_CENTERX            (90)
+#define POINT_CAL_COUNTDOWN       (3)
 #endif
 
 void menuCommonCalib(event_t event)
@@ -61,8 +77,10 @@ void menuCommonCalib(event_t event)
 
   uint8_t i;
   static bool isCalValid = false;
-  bool gim_select = crossfireSharedData.gim_select;
+  uint8_t gim_select = crossfireSharedData.gim_select;
   int16_t force_point_pos[4];
+  int16_t *countdown_timer = &reusableBuffer.calib.midVals[0];
+  int16_t *count = &reusableBuffer.calib.midVals[1];
 #else
   for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) { // get low and high vals for sticks and trims
     int16_t vt = anaIn(i);
@@ -129,42 +147,59 @@ void menuCommonCalib(event_t event)
 
 #if defined(PCBTANGO)
     case EVT_ROTARY_LEFT:
+      if( reusableBuffer.calib.state == CALIB_START ){
+        if( gim_select == GIMBAL_RIGHT_SEL )
+          gim_select = GIMBAL_LEFT_SEL;
+        else
+          gim_select = ( gim_select + 1 % 3 );
+      }
+      break;
+
     case EVT_ROTARY_RIGHT:
-      if( reusableBuffer.calib.state == CALIB_START )
-        gim_select = !gim_select;
+      if( reusableBuffer.calib.state == CALIB_START ){
+        if( gim_select )
+          gim_select = ( gim_select - 1 % 3 );
+        else
+          gim_select = GIMBAL_RIGHT_SEL;
+      }
       break;
 #endif
   }
 
-#define LLABEL_CENTERX            (32)
-#define RLABEL_CENTERX            (72)
   switch (reusableBuffer.calib.state) {
     case CALIB_START:
       // START CALIBRATION
       if (!READ_ONLY()) {
         lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+2*FH, STR_MENUTOSTART);
-        for (uint8_t j=0; j<2; j++) {
+        for (uint8_t j = 0; j < GIMBAL_SEL_COUNT; j++) {
           switch (j) {
             case 0:
-              lcdDrawTextAtIndex(LLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_LEFT, 0, (gim_select==0 ? INVERS : 0));
+              lcdDrawTextAtIndex(LLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_LEFT, 0, (gim_select == GIMBAL_LEFT_SEL ? INVERS : 0));
               break;
             case 1:
-              lcdDrawTextAtIndex(RLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_RIGHT, 0, (gim_select==1 ? INVERS : 0));
+              lcdDrawTextAtIndex(BOTHLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_BOTH, 0, (gim_select == GIMBAL_BOTH_SEL ? INVERS : 0));
+              break;
+            case 2:
+              lcdDrawTextAtIndex(RLABEL_CENTERX, MENU_HEADER_HEIGHT+4*FH, STR_RIGHT, 0, (gim_select == GIMBAL_RIGHT_SEL ? INVERS : 0));
               break;
           }
         }
-        crossfireSharedData.gim_select = gim_select;
       }
+#if defined(PCBTANGO)
+      crossfireSharedData.gim_select = gim_select;
+      *countdown_timer = get_tmr10ms();
+      *count = POINT_CAL_COUNTDOWN;
+#endif
       break;
 
 #if defined(PCBTANGO)
     case CALIB_SET_P0 ... CALIB_SET_P8:
       crossfireSharedData.stick_state = reusableBuffer.calib.state;
-      if( gim_select == 0 ){
+      if( gim_select == GIMBAL_LEFT_SEL || gim_select == GIMBAL_BOTH_SEL ){
         force_point_pos[0] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][0];
         force_point_pos[1] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][1];
       }
-      else{
+      if( gim_select == GIMBAL_RIGHT_SEL || gim_select == GIMBAL_BOTH_SEL ){
         force_point_pos[2] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][1];
         force_point_pos[3] = point_pos[reusableBuffer.calib.state - CALIB_SET_P0][0];
       }
@@ -187,6 +222,20 @@ void menuCommonCalib(event_t event)
       else if( reusableBuffer.calib.state == CALIB_SET_P8 )
         lcdDrawText(0*FW, MENU_HEADER_HEIGHT+FH, STR_MOVESTICK_P8, INVERS);
       lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+2*FH, STR_MENUWHENDONE);
+      if( gim_select == GIMBAL_BOTH_SEL ){
+        if( *count == -1 ){
+          AUDIO_KEY_ERROR();
+          *countdown_timer = get_tmr10ms();
+          *count = POINT_CAL_COUNTDOWN;
+          reusableBuffer.calib.state++;
+        }
+        else if( get_tmr10ms() - *countdown_timer > 100 ){
+          if( *count != 0 )
+            playNumber( *count, 0, 0, 0 );
+          (*count)--;
+          *countdown_timer = get_tmr10ms();
+        }
+      }
       break;
     case CALIB_CAL_POINTS:
       crossfireSharedData.stick_state = reusableBuffer.calib.state;

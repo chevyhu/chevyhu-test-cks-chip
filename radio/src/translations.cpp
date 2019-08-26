@@ -267,6 +267,7 @@ const char STR_MOVESTICKSPOTS[]  = TR_MOVESTICKSPOTS;
 #if defined(PCBTANGO)
 const char STR_LEFT[] = TR_LEFT;
 const char STR_RIGHT[] = TR_RIGHT;
+const char STR_BOTH[] = TR_BOTH;
 const char STR_MOVESTICK_P0[] = TR_MOVESTICK_P0;
 const char STR_MOVESTICK_P1[] = TR_MOVESTICK_P1;
 const char STR_MOVESTICK_P2[] = TR_MOVESTICK_P2;
