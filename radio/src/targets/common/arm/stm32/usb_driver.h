@@ -30,7 +30,7 @@ enum usbMode {
 #endif
   USB_MASS_STORAGE_MODE,
   USB_SERIAL_MODE,
-#if defined(USB_SERIAL)
+#if defined(DEBUG) || defined(CLI) || defined(USB_SERIAL)
   USB_MAX_MODE=USB_SERIAL_MODE
 #else
   USB_MAX_MODE=USB_MASS_STORAGE_MODE

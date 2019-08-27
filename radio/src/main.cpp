@@ -61,7 +61,7 @@ void handleUsbConnection()
       POPUP_MENU_ADD_ITEM(STR_USB_TANGO2);
 #endif
       POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
-#if defined(DEBUG)
+#if defined(DEBUG) || defined(CLI) || defined(USB_SERIAL)
       POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
 #endif
       POPUP_MENU_START(onUSBConnectMenu);
