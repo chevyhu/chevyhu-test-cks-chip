@@ -103,17 +103,21 @@ void lcdHardwareInit()
 #if LCD_W == 128
 void lcdStart()
 {
-  lcdWriteCommand(0xe2); // (14) Soft reset
-  lcdWriteCommand(0xa0); // Set seg
-  lcdWriteCommand(0xc8); // Set com
-  lcdWriteCommand(0xf8); // Set booster
-  lcdWriteCommand(0x00); // 5x
-  lcdWriteCommand(0xa3); // Set bias=1/6
-  lcdWriteCommand(0x22); // Set internal rb/ra=5.0
-  lcdWriteCommand(0x2f); // All built-in power circuits on
-  lcdWriteCommand(0x81); // Set contrast
-  lcdWriteCommand(0x36); // Set Vop
-  lcdWriteCommand(0xa6); // Set display mode
+  lcdWriteCommand(0xAE);	//Display OFF
+  lcdWriteCommand(0xA2);	//1/64 Duty 1/9 Bias
+  lcdWriteCommand(0xA0);	//ADC select S0->S131(?????????S1-S128)
+  lcdWriteCommand(0xC8);	//com1 --> com64
+  lcdWriteCommand(0x23);	//Rb/Ra
+  lcdWriteCommand(0x81);	//Sets V0
+  lcdWriteCommand(0x3F);
+  lcdWriteCommand(0x2F);	//voltage follower ON  regulator ON  booster ON
+  lcdWriteCommand(0xA6);	//Normal Display (not reverse dispplay)
+  lcdWriteCommand(0xA4);	//Entire Display Disable
+  lcdWriteCommand(0x40);	//Set Display Start Line = com0
+  lcdWriteCommand(0xB0);	//Set Page Address = 0
+  lcdWriteCommand(0x10);	//Set Column Address 4 higher bits = 0
+  lcdWriteCommand(0x01);	//Set Column Address 4 lower bits = 1 , from IC SEG1 -> SEG128
+  lcdWriteCommand(0xAF);	//Display ON
 }
 #else
 void lcdStart()
@@ -180,8 +184,9 @@ void lcdRefresh(bool wait)
   uint8_t * p = displayBuf;
   for (uint8_t y=0; y < 8; y++, p+=LCD_W) {
     lcdWriteCommand(0x10); // Column addr 0
+    lcdWriteCommand(0x00);
     lcdWriteCommand(0xB0 | y); // Page addr y
-    lcdWriteCommand(0x04);
+    //lcdWriteCommand(0x04);
 
     LCD_NCS_LOW();
     LCD_A0_HIGH();
