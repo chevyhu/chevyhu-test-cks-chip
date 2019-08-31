@@ -324,7 +324,7 @@ int cliMemoryInfo(const char ** argv)
   //   int keepcost; /* top-most, releasable (via malloc_trim) space */
   // };
   struct mallinfo info = mallinfo();
-#if 1
+#if 0
   serialPrint("mallinfo:");
   serialPrint("\tarena    %d bytes", info.arena);
   serialPrint("\tordblks  %d bytes", info.ordblks);
@@ -354,7 +354,7 @@ int cliMemoryInfo(const char ** argv)
 #endif
 
 #else
-  serialPrint("\tmemory free  %d bytes", (int)((unsigned char *)&_heap_end - heap));
+  //serialPrint("\tmemory free  %d bytes", (int)((unsigned char *)&_heap_end - heap));
 #endif
   return 0;
 }
@@ -372,7 +372,7 @@ TASK_FUNCTION(menusTask)
 #if defined(PWR_BUTTON_PRESS)
   while (1) {
     if ((RTOS_GET_MS()- memCalcTime) > 1000) {
-      cliMemoryInfo(0);
+      //cliMemoryInfo(0);
       memCalcTime = RTOS_GET_MS();
     }
     uint32_t pwr_check = pwrCheck();

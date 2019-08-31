@@ -219,7 +219,7 @@ void simuSetKey(uint8_t key, bool state)
     KEY_CASE(KEY_MINUS, KEYS_GPIO_REG_MINUS, KEYS_GPIO_PIN_MINUS)
     KEY_CASE(KEY_PLUS, KEYS_GPIO_REG_PLUS, KEYS_GPIO_PIN_PLUS)
   #endif
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
     KEY_CASE(KEY_MENU, KEYS_GPIO_REG_MENU, KEYS_GPIO_PIN_MENU)
     KEY_CASE(KEY_EXIT, KEYS_GPIO_REG_EXIT, KEYS_GPIO_PIN_EXIT)
     KEY_CASE(KEY_ENTER, KEYS_GPIO_REG_ENTER, KEYS_GPIO_PIN_ENTER)
@@ -599,7 +599,7 @@ void adcPrepareBandgap()
 
 uint8_t backlightLevel = 0;
 
-#if defined(PCBTARANIS) || defined(PCBTANGO)
+#if defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO)
 void lcdOff()
 {
 }

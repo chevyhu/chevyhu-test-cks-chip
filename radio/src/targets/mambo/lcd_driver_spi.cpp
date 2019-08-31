@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 
-#define LCD_CONTRAST_OFFSET            160
+#define LCD_CONTRAST_OFFSET            10
 #define RESET_WAIT_DELAY_MS            300 // Wait time after LCD reset before first command
 #define WAIT_FOR_DMA_END()             do { } while (lcd_busy)
 
@@ -105,11 +105,11 @@ void lcdStart()
 {
   lcdWriteCommand(0xAE);	//Display OFF
   lcdWriteCommand(0xA2);	//1/64 Duty 1/9 Bias
-  lcdWriteCommand(0xA0);	//ADC select S0->S131(?????????S1-S128)
+  lcdWriteCommand(0xA0);	//ADC select S0->S131(S1-S128)
   lcdWriteCommand(0xC8);	//com1 --> com64
-  lcdWriteCommand(0x23);	//Rb/Ra
+  lcdWriteCommand(0x24);	//Rb/Ra
   lcdWriteCommand(0x81);	//Sets V0
-  lcdWriteCommand(0x3F);
+  lcdWriteCommand(32);
   lcdWriteCommand(0x2F);	//voltage follower ON  regulator ON  booster ON
   lcdWriteCommand(0xA6);	//Normal Display (not reverse dispplay)
   lcdWriteCommand(0xA4);	//Entire Display Disable
