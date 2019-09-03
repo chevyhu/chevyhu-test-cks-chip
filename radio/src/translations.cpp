@@ -36,7 +36,7 @@ const char STR_OPEN9X[]  =
 #endif
     ISTR(TRNMODE)
     ISTR(TRNCHN)
-#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO) || defined(PCBMAMBO)
     ISTR(UART3MODES)
     ISTR(SWTYPES)
     ISTR(POTTYPES)
@@ -264,7 +264,7 @@ const char STR_BG[]  = TR_BG;
 const char STR_MENUTOSTART[]  = TR_MENUTOSTART;
 const char STR_SETMIDPOINT[]  = TR_SETMIDPOINT;
 const char STR_MOVESTICKSPOTS[]  = TR_MOVESTICKSPOTS;
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 const char STR_MOVESTICKSPOTS_BOUNDARY[] = TR_MOVESTICKSPOTS_BOUNDARY;
 const char STR_MOVESTICKSPOTS_AGAIN[] = TR_MOVESTICKSPOTS_AGAIN;
 #endif

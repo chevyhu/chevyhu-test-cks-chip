@@ -267,7 +267,7 @@ void Open9xSim::updateKeysAndSwitches(bool start)
     KEY_BackSpace, KEY_EXIT,
     KEY_Up,        KEY_PLUS,
     KEY_Down,      KEY_MINUS,
-#elif defined(PCBTANGO)
+#elif defined(PCBTANGO) || defined(PCBMAMBO)
     KEY_Page_Up,   KEY_MENU,
   #if defined(KEYS_GPIO_REG_PAGE)
     KEY_Page_Down, KEY_PAGE,

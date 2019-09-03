@@ -87,7 +87,9 @@ enum MenuRadioIndexes
   MENU_RADIO_TOOLS,
 #endif
   MENU_RADIO_SPECIAL_FUNCTIONS,
+#if !defined(PCBMAMBO)
   MENU_RADIO_TRAINER,
+#endif
   MENU_RADIO_HARDWARE,
   MENU_RADIO_VERSION,
   MENU_RADIO_PAGES_COUNT
@@ -113,7 +115,9 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
   menuRadioTools,
 #endif
   menuRadioSpecialFunctions,
-  //menuRadioTrainer,
+#if !defined(PCBMAMBO)
+  menuRadioTrainer,
+#endif
   menuRadioHardware,
   menuRadioVersion
 };
