@@ -1050,3 +1050,19 @@ void drawShutdownAnimation(uint32_t index, const char * message)
   lcdRefresh();
 }
 #endif
+
+#if defined(PCBMAMBO)
+const unsigned char downloaddata[]  = {
+        'S','F','S',0,
+#include "bitmaps/128x64/download.lbm"
+        'S','F','E',0 };
+
+const unsigned char * const download_lbm = downloaddata+4;
+
+void drawDownload()
+{
+  lcdClear();
+  lcdDraw1bitBitmap(0, 0, download_lbm, 0, 0);
+  lcdRefresh();
+}
+#endif

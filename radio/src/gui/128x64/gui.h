@@ -81,6 +81,10 @@ extern int8_t s_editMode;       // global editmode
 #define TITLE_ROW      READONLY_ROW
 #define HIDDEN_ROW     ((uint8_t)-2)
 
+#if defined(PCBMAMBO)
+void drawDownload();
+#endif
+
 struct CheckIncDecStops {
   const int count;
   const int stops[];

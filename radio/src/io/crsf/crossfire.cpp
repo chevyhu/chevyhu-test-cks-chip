@@ -153,7 +153,7 @@ void CRSF_This_Device( uint8_t *p_arr )
 				//     , ( p_arr_read + LIBCRSF_PAYLOAD_START_ADD + 4 ) );
 				if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 2 ) == LIBCRSF_GENERAL_CMD){
 					if(*( p_arr + LIBCRSF_PAYLOAD_START_ADD + 3 ) == LIBCRSF_GENERAL_START_BOOTLOADER_SUBCMD){
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
 						drawDownload();
 #endif
 						uint32_t delayCount = 0;

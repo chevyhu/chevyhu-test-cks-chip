@@ -269,7 +269,7 @@ void boardInit()
   init2MhzTimer();
   init5msTimer();
   init1msTimer();
-  //CRSF_Init();
+  CRSF_Init();
   __enable_irq();
   i2cInit();
   usbInit();
@@ -521,7 +521,7 @@ RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr)
 // 	}
 // }
 
-#if !defined(SIMU) && !defined(PCBMAMBO)
+#if !defined(SIMU)
 TASK_FUNCTION(systemTask)
 {
   static uint32_t get_modelid_delay = 0;

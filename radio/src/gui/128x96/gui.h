@@ -95,7 +95,7 @@ void showAlertBox(const char * title, const char * text, const char * action, ui
 void doMainScreenGraphics();
 void drawProgressScreen(const char * title, const char * message, int num, int den);
 void drawSleepBitmap();
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if defined(PCBTANGO)
 void drawDownload();
 #endif
 
