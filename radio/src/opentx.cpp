@@ -1524,22 +1524,9 @@ void opentxStart(const uint8_t startType = OPENTX_START_DEFAULT_ARGS)
     return;
   }
 
-//Because I can't do the calibration, here modified to make the doSplash working, by Chevy 2019/03/26
-#if 0
-#if defined(PCBTANGO)
-  uint8_t calibration_needed = 1; //either full calibration or synchronization of calibrated values
-#else
   uint8_t calibration_needed = (g_eeGeneral.chkSum != evalChkSum());
-#endif
 
 #if defined(GUI)
-  if (!calibration_needed && !(startType & OPENTX_START_NO_SPLASH)) {
-    doSplash();
-  }
-#endif
-#else
-  uint8_t calibration_needed = 0;
-
   if (!calibration_needed && !(startType & OPENTX_START_NO_SPLASH)) {
     doSplash();
   }

@@ -62,6 +62,7 @@ static uint8_t isOpentxBufSet = 0;
 uint8_t enableOpentxSdWriteHandler = 0;
 uint8_t enableOpentxSdReadHandler = 0;
 uint8_t enableOpentxSdEraseHandler = 0;
+uint8_t enableOpentxSdGetSizeHandler = 0;
 uint8_t current_crsf_model_id = 0;
 
 static void SetOpentxBuf(uint8_t* p_arr){
@@ -157,7 +158,7 @@ void CRSF_This_Device( uint8_t *p_arr )
 						drawDownload();
 #endif
 						uint32_t delayCount = 0;
-						while(++delayCount < 1000000UL);
+						while(++delayCount < 100000UL);
 						boot2bootloader(1, libCrsf_MyHwID, libCrsf_MySerialNo);
 					}
 				}
@@ -185,6 +186,10 @@ void CRSF_This_Device( uint8_t *p_arr )
       else if( *(p_arr + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_ERASE ){
     	  SetOpentxBuf(p_arr);
 		  enableOpentxSdEraseHandler = 1;
+      }
+      else if( *(p_arr + CRSF_SD_SUBCMD_ADD) == CRSF_SD_SUBCMD_GETSIZE ){
+          SetOpentxBuf(p_arr);
+          enableOpentxSdGetSizeHandler = 1;
       }
 #endif
       break;
@@ -425,6 +430,156 @@ static void crsfSdUnpackFrame(CrsfSd_t* crsfSd){
 	crsfSd->calCrc = libCRC8_Get_CRC_Arr(&crsfSd->rxBuf[2], crsfSd->length-1, POLYNOM_1);
 }
 
+static void crsfSdGetSizeHandler(){
+    static CrsfSd_t CrsfSdOpentx;
+    static uint8_t state = CRSF_SD_START;
+    static uint16_t stateRepeatCount = 0;
+    static uint8_t prevState = CRSF_SD_START;
+
+    switch(state){
+        case CRSF_SD_START:
+        {
+            if(isOpentxBufSet){
+                isOpentxBufSet = 0;
+                memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
+                crsfSdUnpackFrame(&CrsfSdOpentx);
+                #ifdef DEBUG_CRSF_SD_ERASE
+                TRACE("crsfSdEraseHandler:CRSF_SD_START:sync:%x:length:%d:cmd:%x:subcmd:%d:flag:%d:chunk:%ld:crc:%d:calCrc:%d", CrsfSdOpentx.sync, CrsfSdOpentx.length, CrsfSdOpentx.cmd, CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.chunk, CrsfSdOpentx.crc, CrsfSdOpentx.calCrc);
+                #endif
+
+                if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_START){
+                    state = CRSF_SD_WRITE;
+                    CrsfSdOpentx.targetDst = CrsfSdOpentx.org;
+                    CrsfSdOpentx.result = f_stat((char*)CrsfSdOpentx.payload, &CrsfSdOpentx.fileInfo);
+//                  delay_us(CRSF_SD_DELAY);
+                    if( CrsfSdOpentx.result == FR_OK ){
+                        #if defined(DEBUG_CRSF_SD_ERASE)
+                        TRACE("crsfSdEraseHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
+                        TRACE("crsfSdEraseHandler:CRSF_SD_START:del %s successful", CrsfSdOpentx.payload);
+                        #endif
+                    }
+                    else{
+                        #ifdef DEBUG_CRSF_SD_ERASE
+                        TRACE("crsfSdEraseHandler:CRSF_SD_START:result:%x", CrsfSdOpentx.result);
+                        TRACE("crsfSdEraseHandler:CRSF_SD_START:del failed");
+                        #endif
+                        state = CRSF_SD_IDLE;
+                    }
+                }
+                else{
+                    CrsfSdOpentx.dst = CrsfSdOpentx.org;
+                    CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
+                    CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_GETSIZE;
+                    CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY_START;
+                    CrsfSdOpentx.requestDataLength = 0;
+                    CrsfSdOpentx.numOfBytesRead = 0;
+                    crsfSdPackFrame(&CrsfSdOpentx);
+                    CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
+                    state = CRSF_SD_START;
+                    #ifdef DEBUG_CRSF_SD_ERASE
+                    TRACE("crsfSdEraseHandler:CRSF_SD_START:retry to write start");
+                    #endif
+                }
+            }
+            break;
+        }
+
+        case CRSF_SD_WRITE:
+        {
+            if(crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE)){
+                CrsfSdOpentx.dst = CrsfSdOpentx.targetDst;
+                CrsfSdOpentx.org = LIBCRSF_REMOTE_ADD;
+                CrsfSdOpentx.subcmd = CRSF_SD_SUBCMD_GETSIZE;
+                CrsfSdOpentx.flag = CRSF_SD_FLAG_OK;
+                CrsfSdOpentx.requestDataLength = CrsfSdOpentx.fileInfo.fsize;
+                crsfSdPackFrame(&CrsfSdOpentx);
+                CRSF_to_Shared_FIFO(CrsfSdOpentx.txBuf);
+                state = CRSF_SD_ACK;
+                #ifdef DEBUG_CRSF_SD_ERASE
+                TRACE("crsfSdEraseHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%ld", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
+                #endif
+            }
+            break;
+        }
+
+        case CRSF_SD_ACK:
+        {
+            if(isOpentxBufSet){
+                isOpentxBufSet = 0;
+                memcpy(CrsfSdOpentx.rxBuf, OpentxBuf, LIBCRSF_MAX_BUFFER_SIZE);
+                crsfSdUnpackFrame(&CrsfSdOpentx);
+                #ifdef DEBUG_CRSF_SD_ERASE
+                TRACE("crsfSdEraseHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%ld:numOfBytesRead:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk, CrsfSdOpentx.numOfBytesRead);
+                #endif
+                if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH){
+                    state = CRSF_SD_FLAG_FINISH;
+                    #if defined(DEBUG_CRSF_SD_ERASE)
+                    TRACE("crsfSdEraseHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%ld", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk);
+                    #endif
+                }
+                else{
+                    CrsfSdOpentx.flag = CRSF_SD_FLAG_RETRY;
+                    state = CRSF_SD_WRITE;
+                    #ifdef DEBUG_CRSF_SD_ERASE
+                    TRACE("crsfSdEraseHandler:CRSF_SD_ACK:retry to write");
+                    #endif
+                }
+            }
+            break;
+        }
+
+        case CRSF_SD_FINISH:
+        {
+            #if defined(DEBUG_CRSF_SD_ERASE)
+            TRACE("crsfSdEraseHandler:CRSF_SD_FINISH");
+            #endif
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
+            state = CRSF_SD_START;
+            enableOpentxSdEraseHandler = 0;
+            break;
+        }
+
+        case CRSF_SD_ERROR:
+        {
+            #ifdef DEBUG_CRSF_SD_ERASE
+            TRACE("crsfSdEraseHandler:CRSF_SD_ERROR:%d", CrsfSdOpentx.result);
+            #endif
+            f_close(&CrsfSdOpentx.file);
+            state = CRSF_SD_IDLE;
+
+            break;
+        }
+
+        case CRSF_SD_IDLE:
+        {
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
+            state = CRSF_SD_START;
+            enableOpentxSdEraseHandler = 0;
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+
+    if(state == prevState){
+        if(stateRepeatCount++ > 1000){
+            enableOpentxSdEraseHandler = 0;
+            stateRepeatCount = 0;
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
+            state = CRSF_SD_START;
+//            TRACE("OPENTX CRSF_SD_ERASE KILL\r\n");
+        }
+    }
+    else{
+        stateRepeatCount = 0;
+    }
+    prevState = state;
+}
+
+
 static void crsfSdEraseHandler(){
 	static CrsfSd_t CrsfSdOpentx;
 	static uint8_t state = CRSF_SD_START;
@@ -446,7 +601,7 @@ static void crsfSdEraseHandler(){
 					state = CRSF_SD_WRITE;
 					CrsfSdOpentx.targetDst = CrsfSdOpentx.org;
 					CrsfSdOpentx.result = f_unlink((char*)CrsfSdOpentx.payload);
-					delay_us(CRSF_SD_DELAY);
+//					delay_us(CRSF_SD_DELAY);
 					if( CrsfSdOpentx.result == FR_OK ){
 						#if defined(DEBUG_CRSF_SD_ERASE)
 						TRACE("crsfSdEraseHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
@@ -527,6 +682,7 @@ static void crsfSdEraseHandler(){
 			#if defined(DEBUG_CRSF_SD_ERASE)
 			TRACE("crsfSdEraseHandler:CRSF_SD_FINISH");
 			#endif
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
 			state = CRSF_SD_START;
 			enableOpentxSdEraseHandler = 0;
 			break;
@@ -545,6 +701,7 @@ static void crsfSdEraseHandler(){
 
 		case CRSF_SD_IDLE:
 		{
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
 			state = CRSF_SD_START;
 			enableOpentxSdEraseHandler = 0;
 			break;
@@ -560,8 +717,9 @@ static void crsfSdEraseHandler(){
         if(stateRepeatCount++ > 1000){
         	enableOpentxSdEraseHandler = 0;
             stateRepeatCount = 0;
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
             state = CRSF_SD_START;
-            TRACE("OPENTX CRSF_SD_ERASE KILL\r\n");
+//            TRACE("OPENTX CRSF_SD_ERASE KILL\r\n");
         }
     }
     else{
@@ -595,16 +753,16 @@ static void crsfSdWriteHandler(){
 					#endif
 
 					CrsfSdOpentx.result = f_open(&CrsfSdOpentx.file, (char*)CrsfSdOpentx.payload, FA_READ);
-					delay_us(CRSF_SD_DELAY);
+//					delay_us(CRSF_SD_DELAY);
 					CrsfSdOpentx.result = f_lseek(&CrsfSdOpentx.file, (uint32_t)CrsfSdOpentx.chunk);
-					delay_us(CRSF_SD_DELAY);
+//					delay_us(CRSF_SD_DELAY);
 					if( CrsfSdOpentx.result == FR_OK ){
 						#if defined(DEBUG_CRSF_SD_WRITE) || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
 						TRACE("crsfSdWriteHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
 						TRACE("crsfSdWriteHandler:CRSF_SD_START:open %s successful", CrsfSdOpentx.payload);
 						#endif
 						CrsfSdOpentx.result = f_stat((char*)CrsfSdOpentx.payload, &CrsfSdOpentx.fileInfo);
-						delay_us(CRSF_SD_DELAY);
+//						delay_us(CRSF_SD_DELAY);
 						if( CrsfSdOpentx.result == FR_OK ){
 							#if defined(DEBUG_CRSF_SD_WRITE) || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
 							TRACE("crsfSdWriteHandler:CRSF_SD_START:get info successful:fsize:%d", CrsfSdOpentx.fileInfo.fsize);
@@ -651,14 +809,14 @@ static void crsfSdWriteHandler(){
 			#ifdef DEBUG_CRSF_SD_WRITE
 			TRACE("crsfSdWriteHandler:CRSF_SD_WRITE:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%ld:numOfBytesRead:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk, CrsfSdOpentx.numOfBytesRead);
 			#endif
-			if(CrsfSdOpentx.bytesPendingToSend <= 0 && CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH){
+            if(CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH){
 				state = CRSF_SD_FINISH;
 				CrsfSdOpentx.result = f_close(&CrsfSdOpentx.file);
-				delay_us(CRSF_SD_DELAY);
+//				delay_us(CRSF_SD_DELAY);
 			}
 			else if((CrsfSdOpentx.bytesPendingToSend > 0  && (CrsfSdOpentx.flag == CRSF_SD_FLAG_START || CrsfSdOpentx.flag == CRSF_SD_FLAG_ACK) && crossfireSharedData.crsf_rx.hasSpace(LIBCRSF_MAX_BUFFER_SIZE))){
 				CrsfSdOpentx.result = f_read(&CrsfSdOpentx.file, CrsfSdOpentx.payload, CrsfSdOpentx.requestDataLength, (UINT*)&CrsfSdOpentx.numOfBytesRead);
-				delay_us(CRSF_SD_READ_DELAY);
+//				delay_us(CRSF_SD_READ_DELAY);
 				if( CrsfSdOpentx.result == FR_OK ){
 					CrsfSdOpentx.chunk = CrsfSdOpentx.bytesPendingToSend / CrsfSdOpentx.numOfBytesRead;
 					if(CrsfSdOpentx.chunk == 1 && (CrsfSdOpentx.bytesPendingToSend - CrsfSdOpentx.numOfBytesRead == 0)){
@@ -700,7 +858,7 @@ static void crsfSdWriteHandler(){
 				#ifdef DEBUG_CRSF_SD_WRITE
 				TRACE("crsfSdWriteHandler:CRSF_SD_ACK:subcmd:%d:flag:%d:bytesPendingToSend:%d:chunk:%ld:numOfBytesRead:%d", CrsfSdOpentx.subcmd, CrsfSdOpentx.flag, CrsfSdOpentx.bytesPendingToSend, CrsfSdOpentx.chunk, CrsfSdOpentx.numOfBytesRead);
 				#endif
-				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdOpentx.flag == CRSF_SD_FLAG_ACK || CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH)){
+				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdOpentx.flag == CRSF_SD_FLAG_START || CrsfSdOpentx.flag == CRSF_SD_FLAG_ACK || CrsfSdOpentx.flag == CRSF_SD_FLAG_FINISH)){
 					CrsfSdOpentx.bytesPendingToSend -= CrsfSdOpentx.numOfBytesRead;
 					state = CRSF_SD_WRITE;
 					#if defined(DEBUG_CRSF_SD_WRITE)
@@ -726,6 +884,7 @@ static void crsfSdWriteHandler(){
 			#if defined(DEBUG_CRSF_SD_WRITE) || defined(DEBUG_CRSF_SD_WRITE_COMPARE)
 			TRACE("crsfSdWriteHandler:CRSF_SD_FINISH");
 			#endif
+			memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
 			state = CRSF_SD_START;
 			enableOpentxSdWriteHandler = 0;
 			break;
@@ -744,6 +903,7 @@ static void crsfSdWriteHandler(){
 
 		case CRSF_SD_IDLE:
 		{
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
 			state = CRSF_SD_START;
 			enableOpentxSdWriteHandler = 0;
 			break;
@@ -759,8 +919,9 @@ static void crsfSdWriteHandler(){
         if(stateRepeatCount++ > 1000){
         	enableOpentxSdWriteHandler = 0;
             stateRepeatCount = 0;
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
             state = CRSF_SD_START;
-            TRACE("OPENTX CRSF_SD_WRITE KILL\r\n");
+//            TRACE("OPENTX CRSF_SD_WRITE KILL\r\n");
         }
     }
     else{
@@ -787,14 +948,14 @@ static void crsfSdReadHandler(){
 				#endif
 				if(CrsfSdOpentx.sync == LIBCRSF_UART_SYNC && CrsfSdOpentx.crc == CrsfSdOpentx.calCrc && CrsfSdOpentx.cmd == LIBCRSF_OPENTX_RELATED && (CrsfSdOpentx.flag == CRSF_SD_FLAG_START || CrsfSdOpentx.flag == CRSF_SD_FLAG_RETRY_START)){
 					CrsfSdOpentx.result = f_open(&CrsfSdOpentx.file, (const char*)CrsfSdOpentx.payload, FA_OPEN_ALWAYS | FA_WRITE);
-					delay_us(CRSF_SD_DELAY);
+//					delay_us(CRSF_SD_DELAY);
 					#if defined(DEBUG_CRSF_SD_READ) || defined(DEBUG_CRSF_SD_READ_COMPARE)
 					TRACE("crsfSdReadHandler:CRSF_SD_START:open:%s", CrsfSdOpentx.payload);
 					TRACE("crsfSdReadHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
 					#endif
 					if(CrsfSdOpentx.result == FR_OK){
 						CrsfSdOpentx.result = f_lseek(&CrsfSdOpentx.file, (uint32_t)CrsfSdOpentx.requestDataLength);
-						delay_us(CRSF_SD_DELAY);
+//						delay_us(CRSF_SD_DELAY);
 						#if defined(DEBUG_CRSF_SD_READ) || defined(DEBUG_CRSF_SD_READ_COMPARE)
 						TRACE("crsfSdReadHandler:CRSF_SD_START:offset:%d", (uint32_t)CrsfSdOpentx.requestDataLength);
 						TRACE("crsfSdReadHandler:CRSF_SD_START:result:%d", CrsfSdOpentx.result);
@@ -845,7 +1006,7 @@ static void crsfSdReadHandler(){
 						uint16_t actualReceviedLength = CrsfSdOpentx.length - CRSF_SD_DATA_START_ADD + 1;
 						CrsfSdOpentx.bytesReceived += actualReceviedLength;
 						CrsfSdOpentx.result = f_write(&CrsfSdOpentx.file, CrsfSdOpentx.payload, actualReceviedLength, (UINT*)&CrsfSdOpentx.numOfBytesWritten);
-						delay_us(CRSF_SD_WRITE_DELAY);
+//						delay_us(CRSF_SD_WRITE_DELAY);
 						#ifdef DEBUG_CRSF_SD_READ
 						TRACE("crsfSdReadHandler:CRSF_SD_READ:result:%d:numOfBytesWritten:%d", CrsfSdOpentx.result, CrsfSdOpentx.numOfBytesWritten);
 						TRACE("crsfSdReadHandler:CRSF_SD_READ:written in buffer");
@@ -895,13 +1056,14 @@ static void crsfSdReadHandler(){
 		case CRSF_SD_FINISH:
 		{
 			CrsfSdOpentx.result = f_sync(&CrsfSdOpentx.file);
-			delay_us(CRSF_SD_DELAY);
+//			delay_us(CRSF_SD_DELAY);
 			CrsfSdOpentx.result = f_close(&CrsfSdOpentx.file);
-			delay_us(CRSF_SD_DELAY);
+//			delay_us(CRSF_SD_DELAY);
 			#if defined(DEBUG_CRSF_SD_READ) || defined(DEBUG_CRSF_SD_READ_COMPARE)
 			TRACE("crsfSdReadHandler:CRSF_SD_FINISH:result:%d", CrsfSdOpentx.result);
 			TRACE("crsfSdReadHandler:CRSF_SD_FINISH");
 			#endif
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
 			state = CRSF_SD_START;
 			enableOpentxSdReadHandler = 0;
 			break;
@@ -946,6 +1108,7 @@ static void crsfSdReadHandler(){
 
 		case CRSF_SD_IDLE:
 		{
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
 			state = CRSF_SD_START;
 			enableOpentxSdReadHandler = 0;
 			break;
@@ -961,8 +1124,9 @@ static void crsfSdReadHandler(){
         if(stateRepeatCount++ > 1000){
         	enableOpentxSdReadHandler = 0;
             stateRepeatCount = 0;
+            memset(&CrsfSdOpentx, 0, sizeof(CrsfSdOpentx));
             state = CRSF_SD_START;
-            TRACE("OPENTX CRSF_SD_READ KILL\r\n");
+//            TRACE("OPENTX CRSF_SD_READ KILL\r\n");
         }
     }
     else{
@@ -973,7 +1137,9 @@ static void crsfSdReadHandler(){
 
 void crsfSdHandler() {
 
-	crsfSharedFifoHandler();
+    for(uint8_t i = 0; i < LIBCRSF_MAX_BUFFER_SIZE; i++){
+        crsfSharedFifoHandler();
+    }
 
     if(enableOpentxSdWriteHandler){
 //          TRACE("OPENTX CRSF_SD_WRITE\r\n");
@@ -988,6 +1154,11 @@ void crsfSdHandler() {
     if(enableOpentxSdEraseHandler){
 //          TRACE("OPENTX CRSF_SD_ERASE\r\n");
 	  crsfSdEraseHandler();
+    }
+
+    if(enableOpentxSdGetSizeHandler){
+//          TRACE("OPENTX CRSF_SD_ERASE\r\n");
+      crsfSdGetSizeHandler();
     }
 }
 

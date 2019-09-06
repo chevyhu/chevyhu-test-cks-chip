@@ -65,7 +65,8 @@ struct CrossfireKeyData {
 struct CrossfireSharedData {
   struct CrossfireKeyData keys;
   int16_t sticks[NUM_STICKS];
-  uint8_t stick_state;
+  uint8_t stick_state:6;
+  uint8_t gim_select:2;
   int32_t channels[CROSSFIRE_CHANNELS_COUNT];
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_tx;   //from XF to OpenTX
   Fifo<uint8_t, CROSSFIRE_FIFO_SIZE> crsf_rx;   //from OpenTX to XF
@@ -82,6 +83,7 @@ struct CrossfireSharedData {
 #if defined(CRSF_SD)
 #define CRSF_OPENTX_FLAG_EEPROM_SAVE						0x02
 #endif
+#define CRSF_OPENTX_FLAG_BOOTUP                             0x04
 #endif
 
 #if defined(CRSF_OPENTX) && defined(CRSF_SD)
@@ -115,7 +117,8 @@ typedef enum {
 typedef enum {
 	CRSF_SD_SUBCMD_READ = 0x01,
 	CRSF_SD_SUBCMD_WRITE = 0x02,
-	CRSF_SD_SUBCMD_ERASE = 0x03
+	CRSF_SD_SUBCMD_ERASE = 0x03,
+    CRSF_SD_SUBCMD_GETSIZE = 0x04
 } CRSF_SD_SUBCMD;
 
 typedef enum {

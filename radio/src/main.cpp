@@ -34,7 +34,7 @@ void onUSBConnectMenu(const char *result)
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
 #if defined(PCBTANGO)
-  else if (result == STR_USB_AGENT) {
+  else if (result == STR_USB_TANGO2) {
     setSelectedUsbMode(USB_AGENT_MODE);
   }
 #endif
@@ -58,10 +58,10 @@ void handleUsbConnection()
     if (g_eeGeneral.USBMode == USB_UNSELECTED_MODE && popupMenuItemsCount == 0) {
       POPUP_MENU_ADD_ITEM(STR_USB_JOYSTICK);
 #if defined(PCBTANGO)
-      POPUP_MENU_ADD_ITEM(STR_USB_AGENT);
+      POPUP_MENU_ADD_ITEM(STR_USB_TANGO2);
 #endif
       POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
-#if defined(DEBUG)
+#if defined(DEBUG) || defined(CLI) || defined(USB_SERIAL)
       POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
 #endif
       POPUP_MENU_START(onUSBConnectMenu);
@@ -230,6 +230,10 @@ void checkBattery()
       // TRACE("checkBattery(): g_vbat100mV = %d", g_vbat100mV);
     }
   }
+#if  defined(PCBTANGO) && !defined(SIMU)
+  // limit the display voltage
+  g_vbat100mV = limit<int8_t>(g_eeGeneral.vBatMin + 90, g_vbat100mV, g_eeGeneral.vBatMax +120);
+#endif
 }
 
 void periodicTick_1s()

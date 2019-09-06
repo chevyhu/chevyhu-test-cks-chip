@@ -94,8 +94,8 @@ extern "C" {
 }
 #endif
 
-#define FLASHSIZE                       0x60000
-#define BOOTLOADER_SIZE                 0x9000
+#define FLASHSIZE                       0xC0000
+#define BOOTLOADER_SIZE                 0xC000
 #define FIRMWARE_ADDRESS                0x08000000
 
 #define LUA_MEM_MAX                     (0)    // max allowed memory usage for complete Lua  (in bytes), 0 means unlimited
@@ -837,7 +837,7 @@ void checkTrainerSettings(void);
 
 #define CROSSFIRE_STACK_SIZE   			700
 #define CROSSFIRE_TASK_PRIORITY  		0
-#define CROSSFIRE_TASK_ADDRESS 			0x8060010
+#define CROSSFIRE_TASK_ADDRESS 			0x080C0020
 #define SYSTEM_STACK_SIZE      			500
 #define RTOS_SYS_TASK_PRIORITY  		10
 

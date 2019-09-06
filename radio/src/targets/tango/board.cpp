@@ -34,6 +34,7 @@ RTOS_DEFINE_STACK(systemStack, SYSTEM_STACK_SIZE);
 
 static uint32_t DIO_INT_TRAMPOLINE;
 static uint32_t NT_INT_TRAMPOLINE;
+static uint32_t UART_INT_TRAMPOLINE;
 RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr);
 
 #if defined(__cplusplus) && !defined(SIMU)
@@ -115,6 +116,12 @@ void interrupt5ms()
 #if defined(ROTARY_ENCODER_NAVIGATION) && !defined(ROTARY_ENCODER_EXTI_IRQHandler1)
 	checkRotaryEncoder();
 #endif
+
+    if(!(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_BOOTUP) &&
+            (crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON)){
+        drawDownload();
+        crossfireSharedData.crsfFlag &= ~CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON;
+    }
 }
 
 #if !defined(SIMU)
@@ -243,7 +250,7 @@ void boardInit()
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph | INTERRUPT_1MS_RCC_APB1Periph, ENABLE);
   KernelApiInit();
-#if !defined(PCBX9E) || !defined(PCBTANGO)
+#if !defined(PCBX9E)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();
 #endif
@@ -456,6 +463,10 @@ void checkTrainerSettings()
 
 uint16_t getBatteryVoltage()
 {
+  // set the flag when opentx finish bootup
+  if(!(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_BOOTUP)){
+      crossfireSharedData.crsfFlag |= CRSF_OPENTX_FLAG_BOOTUP;
+  }
   int32_t instant_vbat = anaIn(TX_VOLTAGE); // using filtered ADC value on purpose
   instant_vbat = (instant_vbat * BATT_SCALE * (128 + g_eeGeneral.txVoltageCalibration) ) / 26214;
 //  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
@@ -469,7 +480,9 @@ uint32_t readBackupReg(uint8_t index){
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_BKPSRAM, ENABLE);
     PWR_BackupAccessCmd(ENABLE);
     while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
-    return *(__IO uint32_t *) (BKPSRAM_BASE + index*4);
+    uint32_t value = *(__IO uint32_t *) (BKPSRAM_BASE + index*4);
+    PWR_BackupAccessCmd(DISABLE);
+    return value;
 }
 
 void writeBackupReg(uint8_t index, uint32_t data){
@@ -479,6 +492,7 @@ void writeBackupReg(uint8_t index, uint32_t data){
 	PWR_BackupAccessCmd(ENABLE);
 	while(PWR_GetFlagStatus(PWR_FLAG_BRR) == RESET);
 	*(__IO uint32_t *) (BKPSRAM_BASE + index*4) = data;
+    PWR_BackupAccessCmd(DISABLE);
 }
 
 void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn){
@@ -504,22 +518,13 @@ void PrintData(char* header, uint8_t* data){
 	TRACE_NOCRLF("\r\n");
 }
 
-typedef bool ( *XF_UART_IRQ_HANDLER_TYPE )( uint8_t, uint8_t );
-XF_UART_IRQ_HANDLER_TYPE crossfire_uart_irq_handler;
 RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr)
 {
   DIO_INT_TRAMPOLINE = ptr[0];
   NT_INT_TRAMPOLINE = ptr[1];
-  crossfire_uart_irq_handler = (XF_UART_IRQ_HANDLER_TYPE)ptr[2];
+  UART_INT_TRAMPOLINE = ptr[2];
   return crossfireTaskId;
 };
-
-// #define CROSSFIRE_API_UART_IRQ_HANLDER	1
-// void Crossfire_Get_Func_Addr( uint8_t type, uint32_t addr ){
-// 	if( type == CROSSFIRE_API_UART_IRQ_HANLDER ){
-// 		crossfire_uart_irq_handler = (XF_UART_IRQ_HANDLER_TYPE)addr;
-// 	}
-// }
 
 #if !defined(SIMU)
 TASK_FUNCTION(systemTask)
@@ -581,15 +586,23 @@ extern "C" void SERIAL_USART_IRQHandler(void)
 {
   DEBUG_INTERRUPT(INT_SER2);
   bool xf_active = false;
-  bool xf_valid = crossfire_uart_irq_handler ? true : false;
+	bool (*uart_cb)( uint8_t, uint8_t );
+  bool xf_valid = false;
   uint8_t data;
+
+  if ( UART_INT_TRAMPOLINE ){
+    uart_cb = (bool (*)( uint8_t, uint8_t ))UART_INT_TRAMPOLINE;
+    xf_valid = true;
+  }
+
   // Send
   if (USART_GetITStatus(SERIAL_USART, USART_IT_TXE) != RESET) {
     if( xf_valid )
-    	xf_active = crossfire_uart_irq_handler( UART_INT_MODE_TX, 0);
+    	xf_active = uart_cb( UART_INT_MODE_TX, 0);
     if( !xf_active ){
-      if (serial2TxFifo.pop(data)) {
+      if ( !serial2TxFifo.isEmpty() ) {
         /* Write one byte to the transmit data register */
+        serial2TxFifo.pop(data);
         USART_SendData(SERIAL_USART, data);
       }
       else {
@@ -602,7 +615,7 @@ extern "C" void SERIAL_USART_IRQHandler(void)
     if ( xf_valid ) {
       // Receive
       data = USART_ReceiveData(SERIAL_USART);
-      crossfire_uart_irq_handler( UART_INT_MODE_RX, data);
+      uart_cb( UART_INT_MODE_RX, data);
     }
     else
       data = USART_ReceiveData(SERIAL_USART);
@@ -617,9 +630,11 @@ void EXTI15_10_IRQHandler(void)
 {
 	CoEnterISR();
 	void (*exti_cb)(void);
-	exti_cb = (void (*)(void))DIO_INT_TRAMPOLINE;
-	/* call DIOCN handler of crossfire */
-	exti_cb();
+  if (DIO_INT_TRAMPOLINE ){
+    exti_cb = (void (*)(void))DIO_INT_TRAMPOLINE;
+    /* call DIOCN handler of crossfire */
+    exti_cb();
+  }
   CoExitISR();
 }
 
@@ -630,9 +645,11 @@ void TIM8_UP_TIM13_IRQHandler()
   {
     TIM13->SR &= ~TIM_SR_UIF;
     void (*timer_cb)(void);
-    timer_cb = (void (*)(void))NT_INT_TRAMPOLINE;
-	  /* call notification timer handler of crossfire */
-	  timer_cb();
+    if( NT_INT_TRAMPOLINE ){
+      timer_cb = (void (*)(void))NT_INT_TRAMPOLINE;
+      /* call notification timer handler of crossfire */
+      timer_cb();
+    }
   }
   CoExitISR();
 }

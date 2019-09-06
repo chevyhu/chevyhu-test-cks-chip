@@ -79,7 +79,7 @@
 
 //#define USBD_AGENT_PID                       0x5750
 #define USBD_AGENT_PID                       0xf94c
-#define USBD_AGENT_PRODUCT_FS_STRING         USB_NAME " Agent"
+#define USBD_AGENT_PRODUCT_FS_STRING         USB_NAME " Tango II"
 #define USBD_AGENT_CONFIGURATION_FS_STRING   "HID Config"
 #define USBD_AGENT_INTERFACE_FS_STRING       "HID Interface"
 
