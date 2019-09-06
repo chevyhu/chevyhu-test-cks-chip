@@ -94,8 +94,8 @@ extern "C" {
 }
 #endif
 
-#define FLASHSIZE                       0x60000
-#define BOOTLOADER_SIZE                 0x9000
+#define FLASHSIZE                       0xC0000
+#define BOOTLOADER_SIZE                 0xC000
 #define FIRMWARE_ADDRESS                0x08000000
 
 #define LUA_MEM_MAX                     (0)    // max allowed memory usage for complete Lua  (in bytes), 0 means unlimited

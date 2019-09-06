@@ -21,7 +21,7 @@ ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
 _estack = 0x10010000;    /* end of 64K CCM */
-_heap_end = 0x20017800;  /* end of first 91KB of 128K SRAM */
+_heap_end = 0x20016000;  /* end of first 88KB of 128K SRAM */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
@@ -33,10 +33,10 @@ _main_stack_start = _estack - _Main_Stack_Size;
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 384K
-  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 94K
-  SHAREDRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 1K 
-  CCM (xrw)       : ORIGIN = 0x10000400, LENGTH = 63K  
+  FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 768K
+  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 88K
+  SHAREDRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 1K
+  CCM (xrw)       : ORIGIN = 0x10000400, LENGTH = 63K
   MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
 }
 
@@ -49,12 +49,12 @@ SECTIONS
   .text :
   {
     FILL(0xFFFF)
-      
+
     CREATE_OBJECT_SYMBOLS
 
     KEEP(*(.bootloader)) /* Bootloader code */
-      
-    . = 0x9000;          /* Set the start of the main program */
+
+    . = 0xC000;          /* Set the start of the main program */
     _stext = .;          /* Provide the name for the start of this section */
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
@@ -145,7 +145,7 @@ SECTIONS
     _eram = .;
     /* __ccm_end__ = _eccm; */
   } >RAM
-  
+
   .sharedram (NOLOAD) :
   {
     . = ALIGN(4);
@@ -153,7 +153,7 @@ SECTIONS
     *(.sharedram*)          /* .data* sections */
     . = ALIGN(4);
   } >SHAREDRAM
-  
+
   PROVIDE ( end = _eram );
   PROVIDE ( _end = _eram );
 
@@ -175,7 +175,7 @@ SECTIONS
     *(.mb1rodata)      /* read-only data (constants) */
     *(.mb1rodata*)
   } >MEMORY_B1
-  
+
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {
