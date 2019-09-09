@@ -54,7 +54,11 @@ int getSelectedUsbMode()
 
 void setSelectedUsbMode(int mode)
 {
+#if defined(PCBTANGO)
+  static int prev_mode = USB_AGENT_MODE;
+#else
   static int prev_mode = USB_UNSELECTED_MODE;
+#endif
   selectedUsbMode = usbMode(mode);
 
   // for disconnecting usb from host without unplugging

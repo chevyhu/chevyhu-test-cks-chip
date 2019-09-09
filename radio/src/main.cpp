@@ -55,9 +55,10 @@ void handleUsbConnection()
     }
   }
 #if defined(PCBTANGO)
-  static uint8_t usbFirstUnplugged = 0;
+  static uint8_t usbFirstPluggedStage = 2;
   if ((!usbStarted() && usbPlugged() && getSelectedUsbMode() == USB_UNSELECTED_MODE) ||
-          (!usbFirstUnplugged && usbPlugged() && getSelectedUsbMode() == USB_AGENT_MODE)) {
+          (usbFirstPluggedStage > 0 && usbPlugged() && getSelectedUsbMode() == USB_AGENT_MODE)) {
+      usbFirstPluggedStage = 1;
 #else
   if (!usbStarted() && usbPlugged() && getSelectedUsbMode() == USB_UNSELECTED_MODE) {
 #endif
@@ -72,14 +73,16 @@ void handleUsbConnection()
 #endif
       POPUP_MENU_START(onUSBConnectMenu);
     }
+#if defined(PCBTANGO)
+    if(getSelectedUsbMode() != USB_UNSELECTED_MODE){
+      usbFirstPluggedStage = 0;
+    }
+#endif
     if (g_eeGeneral.USBMode != USB_UNSELECTED_MODE) {
       setSelectedUsbMode(g_eeGeneral.USBMode);
     }
   }
   if (usbStarted() && !usbPlugged()) {
-#if defined(PCBTANGO)
-    usbFirstUnplugged = 1;
-#endif
     usbStop();
     if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
       opentxResume();

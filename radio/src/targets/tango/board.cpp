@@ -303,7 +303,6 @@ void boardInit()
   __enable_irq();
   i2cInit();
   usbInit();
-  usbStart();
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
