@@ -34,7 +34,7 @@ void onUSBConnectMenu(const char *result)
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
 #if defined(PCBTANGO)
-  else if (result == STR_USB_TANGO2) {
+  else if (result == STR_USB_AGENT) {
     setSelectedUsbMode(USB_AGENT_MODE);
   }
 #endif
@@ -54,11 +54,17 @@ void handleUsbConnection()
       usbPluggedIn();
     }
   }
+#if defined(PCBTANGO)
+  static uint8_t usbFirstUnplugged = 0;
+  if ((!usbStarted() && usbPlugged() && getSelectedUsbMode() == USB_UNSELECTED_MODE) ||
+          (!usbFirstUnplugged && usbPlugged() && getSelectedUsbMode() == USB_AGENT_MODE)) {
+#else
   if (!usbStarted() && usbPlugged() && getSelectedUsbMode() == USB_UNSELECTED_MODE) {
+#endif
     if (g_eeGeneral.USBMode == USB_UNSELECTED_MODE && popupMenuItemsCount == 0) {
       POPUP_MENU_ADD_ITEM(STR_USB_JOYSTICK);
 #if defined(PCBTANGO)
-      POPUP_MENU_ADD_ITEM(STR_USB_TANGO2);
+      POPUP_MENU_ADD_ITEM(STR_USB_AGENT);
 #endif
       POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
 #if defined(DEBUG) || defined(CLI) || defined(USB_SERIAL)
@@ -71,6 +77,9 @@ void handleUsbConnection()
     }
   }
   if (usbStarted() && !usbPlugged()) {
+#if defined(PCBTANGO)
+    usbFirstUnplugged = 1;
+#endif
     usbStop();
     if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
       opentxResume();

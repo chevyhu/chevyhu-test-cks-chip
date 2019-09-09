@@ -21,6 +21,7 @@
 #include "opentx.h"
 #include "io/crsf/crossfire.h"
 #include "rtos.h"
+#include "stm32f4xx_flash.h"
 
 bool set_model_id_needed = false;
 
@@ -255,6 +256,28 @@ void boardInit()
   pwrInit();
 #endif
 
+  if(FLASH_OB_GetBOR() != OB_BOR_LEVEL1){
+      FLASH_Unlock();
+      FLASH_OB_Unlock();
+      FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR |
+              FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR | FLASH_FLAG_RDERR);
+      FLASH_OB_BORConfig(OB_BOR_LEVEL1);
+      FLASH_Lock();
+      FLASH_OB_Launch();
+  }
+
+#if defined(READ_PROTECTION)
+  if(FLASH_OB_GetRDP() != SET){
+      FLASH_Unlock();
+      FLASH_OB_Unlock();
+      FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR |
+              FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR | FLASH_FLAG_RDERR);
+      FLASH_OB_RDPConfig(OB_RDP_Level_1);
+      FLASH_Lock();
+      FLASH_OB_Launch();
+  }
+#endif
+
 #if defined(STATUS_LEDS)
   ledInit();
   ledGreen();
@@ -280,6 +303,7 @@ void boardInit()
   __enable_irq();
   i2cInit();
   usbInit();
+  usbStart();
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
@@ -533,8 +557,6 @@ TASK_FUNCTION(systemTask)
   set_model_id_needed = true;
 
   while(1) {
-#warning "remove when merge to chevy's branch"
-	wdt_reset();
 
 	if(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_SHOW_BOOTLOADER_ICON){
 		drawDownload();

@@ -679,7 +679,7 @@ extern const char STR_PERSISTENT_MAH[];
   extern const char STR_ABOUT_US[];
   extern const char STR_USB_JOYSTICK[];
 #if defined(PCBTANGO)
-  extern const char STR_USB_TANGO2[];
+  extern const char STR_USB_AGENT[];
 #endif
   extern const char STR_USB_MASS_STORAGE[];
   extern const char STR_USB_SERIAL[];

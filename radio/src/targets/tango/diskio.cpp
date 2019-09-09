@@ -256,9 +256,7 @@ DRESULT __disk_write(
 
     Status = SD_WaitWriteOperation(500*count); // Check if the Transfer is finished
 
-    while((State = SD_GetStatus()) == SD_TRANSFER_BUSY){ // BUSY, OK (DONE), ERROR (FAIL)
-        delay_us(10);
-    }
+    while((State = SD_GetStatus()) == SD_TRANSFER_BUSY); // BUSY, OK (DONE), ERROR (FAIL)
     if ((State == SD_TRANSFER_ERROR) || (Status != SD_OK)) {
       TRACE("__disk_write() err, st:%d,%d, s:%u c: %u", Status, State, sector, (uint32_t)count);
       res = RES_ERROR;
@@ -407,7 +405,6 @@ void sdMount()
 #if defined(DISK_CACHE)
   diskCache.clear();
 #endif
-  uint8_t failed_count = 0;
   for(uint8_t i = 0; i < 10; i++){
       if (f_mount(&g_FATFS_Obj, "", 1) == FR_OK) {
         // call sdGetFreeSectors() now because f_getfree() takes a long time first time it's called
@@ -422,7 +419,6 @@ void sdMount()
         break;
       }
       else {
-          failed_count++;
         TRACE("f_mount() failed");
       }
   }

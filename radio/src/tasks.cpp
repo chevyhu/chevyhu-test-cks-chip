@@ -358,7 +358,7 @@ TASK_FUNCTION(menusTask)
 #if defined(PCBTANGO) && defined(CRSF_OPENTX) && defined(CRSF_SD)
     crossfireSharedData.crsfFlag |= CRSF_OPENTX_FLAG_EEPROM_SAVE;
     while(crossfireSharedData.crsfFlag & CRSF_OPENTX_FLAG_EEPROM_SAVE){
-    	delay_ms(1);
+        RTOS_WAIT_TICKS(1);
     }
 #endif
 
