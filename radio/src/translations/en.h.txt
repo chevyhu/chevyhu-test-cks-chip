@@ -100,7 +100,7 @@
 
 #if defined(PCBTANGO) || defined(PCBMAMBO)
 #define LEN_USBMODES                   TR("\006", "\010")
-#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Tango2""SDCard""Serial", "Ask\0    ""Joystick""Tango2\0 ""Storage\0""Serial\0 ")
+#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Agent\0""SDCard""Serial", "Ask\0    ""Joystick""Agent\0 ""Storage\0""Serial\0 ")
 #else
 #define LEN_USBMODES                   TR("\006", "\010")
 #define TR_USBMODES                    TR("Ask\0  ""Joyst\0""SDCard""Serial", "Ask\0    ""Joystick"ls"Storage\0""Serial\0 ")
@@ -1047,7 +1047,7 @@
 #define TR_STATISTICS                  "Statistics"
 #define TR_ABOUT_US                    "About"
 #define TR_USB_JOYSTICK                "USB Joystick (HID)"
-#define TR_USB_TANGO2                  "TBS Tango II"
+#define TR_USB_AGENT                   "USB Agent (HID)"
 #define TR_USB_MASS_STORAGE            "USB Storage (SD)"
 #define TR_USB_SERIAL                  "USB Serial (Debug)"
 #define TR_SETUP_SCREENS               "Setup screens"
