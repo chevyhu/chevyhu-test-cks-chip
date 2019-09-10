@@ -74,9 +74,7 @@ void handleUsbConnection()
       POPUP_MENU_START(onUSBConnectMenu);
     }
 #if defined(PCBTANGO)
-    if(getSelectedUsbMode() != USB_UNSELECTED_MODE){
-      usbFirstPluggedStage = 0;
-    }
+    usbFirstPluggedStage = 0;
 #endif
     if (g_eeGeneral.USBMode != USB_UNSELECTED_MODE) {
       setSelectedUsbMode(g_eeGeneral.USBMode);
