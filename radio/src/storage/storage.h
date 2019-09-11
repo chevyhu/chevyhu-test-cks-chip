@@ -40,7 +40,11 @@ extern tmr10ms_t storageDirtyTime10ms;
 #if defined(RAMBACKUP)
 extern uint8_t   rambackupDirtyMsk;
 extern tmr10ms_t rambackupDirtyTime10ms;
+#if defined(PCBTANGO)
+#define TIME_TO_RAMBACKUP()            ((rambackupDirtyMsk && (tmr10ms_t)(get_tmr10ms() - rambackupDirtyTime10ms) >= (tmr10ms_t)100) && (getSelectedUsbMode() != USB_MASS_STORAGE_MODE))
+#else
 #define TIME_TO_RAMBACKUP()            (rambackupDirtyMsk && (tmr10ms_t)(get_tmr10ms() - rambackupDirtyTime10ms) >= (tmr10ms_t)100)
+#endif
 #endif
 
 void storageEraseAll(bool warn);
