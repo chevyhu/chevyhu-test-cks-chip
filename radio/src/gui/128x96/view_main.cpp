@@ -440,7 +440,7 @@ void menuMainView(event_t event)
           if (view_base == VIEW_INPUTS)
             g_eeGeneral.view ^= ALTERNATE_VIEW;
           else
-            g_eeGeneral.view = (g_eeGeneral.view + (4*ALTERNATE_VIEW) + ((event==EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (4*ALTERNATE_VIEW);
+            g_eeGeneral.view = (g_eeGeneral.view + (4*ALTERNATE_VIEW) + (((event==EVT_ROTARY_RIGHT) || (event==EVT_KEY_FIRST(KEY_RIGHT))) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (4*ALTERNATE_VIEW);
           storageDirty(EE_GENERAL);
           AUDIO_KEY_PRESS();
         }
@@ -517,7 +517,6 @@ void menuMainView(event_t event)
 #else
     lcdDrawSolidHorizontalLine((g_eeGeneral.view & ALTERNATE_VIEW) ? 64 : 38, 34, 26, SOLID);
 #endif
-
     for (uint8_t i=0; i<8; i++) {
       uint8_t x0,y0;
 #if defined(CPUARM)
