@@ -679,7 +679,7 @@ PACK(struct TrainerData {
   #if defined(BLUETOOTH)
     #define BLUETOOTH_FIELDS \
       uint8_t spare; \
-      char bluetoothName[LEN_BLUETOOTH_NAME];ls
+      char bluetoothName[LEN_BLUETOOTH_NAME];
   #else
     #define BLUETOOTH_FIELDS
   #endif

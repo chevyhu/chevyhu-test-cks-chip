@@ -123,7 +123,11 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
 };
 
 enum MenuModelIndexes {
+#if defined(PCBMAMBO)
   MENU_MODEL_CROSSFIRE,
+#else
+  MENU_MODEL_SELECT,
+#endif
   MENU_MODEL_SETUP,
   CASE_HELI(MENU_MODEL_HELI)
   CASE_FLIGHT_MODES(MENU_MODEL_FLIGHT_MODES)
@@ -167,7 +171,11 @@ void menuModelTemplates(event_t event);
 void menuModelGVarOne(event_t event);
 
 static const MenuHandlerFunc menuTabModel[]  = {
+#if defined(PCBMAMBO)
   menuCrossfireSetup,
+#else
+  menuModelSelect,
+#endif
   menuModelSetup,
   CASE_HELI(menuModelHeli)
   CASE_FLIGHT_MODES(menuModelFlightModesAll)

@@ -19,8 +19,9 @@
  */
 
 #include <opentx.h>
+#if defined(PCBMAMBO)
 #include "storage/modelslist.h"
-
+#endif
 // TODO find why we need this (for REGISTER at least)
 #if defined(PCBXLITE)
   #define EVT_BUTTON_PRESSED() EVT_KEY_FIRST(KEY_ENTER)
@@ -515,6 +516,7 @@ void onBluetoothConnectMenu(const char * result)
 }
 #endif
 
+#if defined(PCBMAMBO)
 void checkModelIdUnique(uint8_t moduleIdx)
 {
   if(isModulePXX(moduleIdx) && IS_D8_RX(moduleIdx))
@@ -531,6 +533,7 @@ void checkModelIdUnique(uint8_t moduleIdx)
     }
   }
 }
+#endif
 
 void menuModelSetup(event_t event)
 {
