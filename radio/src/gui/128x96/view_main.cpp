@@ -324,6 +324,7 @@ void onMainViewMenu(const char *result)
     test_watchdog_flag = 1;
     chainMenu(menuAboutView);
   }
+#if !defined(SIMU)
   else if (result == "memory_malloc") {
     malloc_prt = NULL;
     TRACE("before malloc(), heap free size 0x%x bytes\n", (int)((unsigned char *)&_heap_end - heap));
@@ -335,6 +336,7 @@ void onMainViewMenu(const char *result)
     void *retPtr = malloc_prt = realloc(malloc_prt, 0);
     TRACE("after  free(),   heap free size 0x%x  bytes, malloc_prt = 0x%x, retPtr = 0x%x\n", (int)((unsigned char *)&_heap_end - heap), malloc_prt, retPtr);
   }
+#endif
 }
 
 
@@ -369,8 +371,10 @@ void menuMainView(event_t event)
       POPUP_MENU_ADD_ITEM(STR_RESET_SUBMENU);
       POPUP_MENU_ADD_ITEM(STR_STATISTICS);
       POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
+#if !defined(SIMU)
       POPUP_MENU_ADD_ITEM("memory_malloc");
       POPUP_MENU_ADD_ITEM("memory_free");
+#endif
       POPUP_MENU_START(onMainViewMenu);
       break;
 #endif

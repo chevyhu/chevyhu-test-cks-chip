@@ -68,13 +68,12 @@ const int16_t point_pos[CALIB_POINT_COUNT][2] = {{0,0}, {1024,0}, {1024,1024}, {
 
 void menuCommonCalib(event_t event)
 {
-
-#if defined(PCBTANGO)
 #if defined(SIMU)
   reusableBuffer.calib.state = CALIB_FINISHED;
   return;
-#endif  //#if defined(SIMU)
+#else
 
+#if defined(PCBTANGO)
   uint8_t i;
   static bool isCalValid = false;
   uint8_t gim_select = crossfireSharedData.gim_select;
@@ -344,12 +343,13 @@ void menuCommonCalib(event_t event)
       break;
   }
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) && !defined(SIMU)
   if( reusableBuffer.calib.state >= CALIB_SET_P0 && reusableBuffer.calib.state <= CALIB_SET_P8 )
     doMainScreenGraphics( (uint32_t)force_point_pos );
   else
 #endif
     doMainScreenGraphics( 0 );
+#endif
 }
 
 void menuRadioCalibration(event_t event)
