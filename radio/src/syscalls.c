@@ -34,6 +34,7 @@ unsigned char * heap = (unsigned char *)&_end;
 
 extern caddr_t _sbrk(int nbytes)
 {
+#if defined(PCBTAMGO)
   if (nbytes >= 0)
   {
     serialPrint("*** malloc %d bytes\n", nbytes);
@@ -42,7 +43,8 @@ extern caddr_t _sbrk(int nbytes)
   {
     serialPrint("*** free %d bytes\n", nbytes);
   }
-#if 1
+#endif
+
   if (heap + nbytes < (unsigned char *)&_heap_end) {
     unsigned char * prev_heap = heap;
     heap += nbytes;
@@ -52,7 +54,6 @@ extern caddr_t _sbrk(int nbytes)
     errno = ENOMEM;
     return ((void *)-1);
   }
-#endif
 }
 
 #if !defined(SEMIHOSTING)
