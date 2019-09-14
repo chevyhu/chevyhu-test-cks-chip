@@ -541,6 +541,11 @@ void PrintData(char* header, uint8_t* data){
 	TRACE_NOCRLF("\r\n");
 }
 
+uint32_t getTime(void)
+{
+  return (uint32_t)CoGetOSTime();
+}
+
 RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr)
 {
   DIO_INT_TRAMPOLINE = ptr[0];

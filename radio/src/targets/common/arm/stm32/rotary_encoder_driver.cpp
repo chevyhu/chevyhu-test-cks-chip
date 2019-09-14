@@ -63,24 +63,34 @@ void rotaryEncoderCheck()
   uint32_t newpos = ROTARY_ENCODER_POSITION();
   if (newpos != rotencPosition && !keyState(KEY_ENTER)) {
     if ((rotencPosition & 0x01) ^ ((newpos & 0x02) >> 1)) {
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if !defined(BOOT) && (defined(PCBTANGO) || defined(PCBMAMBO))
         static uint32_t count = 0;
-        if(++count > 1){
+        static uint32_t prevTick = 0;
+        uint32_t tick = getTime();
+        uint32_t delTicks = tick - prevTick;
+        prevTick = tick;
+        ++count;
+        if((delTicks < 30 && count > 1) || (delTicks >= 30 && count > 0)){
             count = 0;
 #endif
             --rotencValue;
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if !defined(BOOT) && (defined(PCBTANGO) || defined(PCBMAMBO))
         }
 #endif
     }
     else {
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if !defined(BOOT) && (defined(PCBTANGO) || defined(PCBMAMBO))
         static uint32_t count = 0;
-        if(++count > 1){
+        static uint32_t prevTick = 0;
+        uint32_t tick = getTime();
+        uint32_t delTicks = tick - prevTick;
+        prevTick = tick;
+        ++count;
+        if((delTicks < 30 && count > 1) || (delTicks >= 30 && count > 0)){
             count = 0;
 #endif
             ++rotencValue;
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if !defined(BOOT) && (defined(PCBTANGO) || defined(PCBMAMBO))
         }
 #endif
     }
