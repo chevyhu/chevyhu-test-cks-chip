@@ -323,8 +323,9 @@ int cliMemoryInfo(const char ** argv)
   //   int fordblks; /* total non-inuse space */
   //   int keepcost; /* top-most, releasable (via malloc_trim) space */
   // };
-  struct mallinfo info = mallinfo();
 #if 0
+  struct mallinfo info = mallinfo();
+
   serialPrint("mallinfo:");
   serialPrint("\tarena    %d bytes", info.arena);
   serialPrint("\tordblks  %d bytes", info.ordblks);

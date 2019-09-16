@@ -20,11 +20,11 @@
 
 #include "opentx.h"
 
-#define MODEL_SPECIAL_FUNC_1ST_COLUMN          (4*FW+2)
-#define MODEL_SPECIAL_FUNC_2ND_COLUMN          (8*FW+2)
-#define MODEL_SPECIAL_FUNC_3RD_COLUMN          (21*FW)
-#define MODEL_SPECIAL_FUNC_4TH_COLUMN          (33*FW-3)
-#define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF    (34*FW-3)
+#define MODEL_SPECIAL_FUNC_1ST_COLUMN          (2*FW-1)
+#define MODEL_SPECIAL_FUNC_2ND_COLUMN          (5*FW+3)
+#define MODEL_SPECIAL_FUNC_3RD_COLUMN          (16*FW-3)
+#define MODEL_SPECIAL_FUNC_4TH_COLUMN          (20*FW-4)
+#define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF    (20*FW-1)
 
 void onCustomFunctionsFileSelectionMenu(const char * result)
 {
@@ -56,7 +56,7 @@ void onCustomFunctionsFileSelectionMenu(const char * result)
       POPUP_WARNING(func==FUNC_PLAY_SCRIPT ? STR_NO_SCRIPTS_ON_SD : STR_NO_SOUNDS_ON_SD);
     }
   }
-  else {
+  else if (result != STR_EXIT) {
     // The user choosed a file in the list
     memcpy(cfn->play.name, result, sizeof(cfn->play.name));
     storageDirty(eeFlags);
@@ -129,19 +129,19 @@ void onAdjustGvarSourceLongEnterPress(const char * result)
     CFN_PARAM(cfn) = 0;
     storageDirty(EE_MODEL);
   }
-  else {
+  else if (result != STR_EXIT) {
     onSourceLongEnterPress(result);
   }
 }
 
 enum CustomFunctionsItems {
-    ITEM_CUSTOM_FUNCTIONS_SWITCH,
-    ITEM_CUSTOM_FUNCTIONS_FUNCTION,
-    ITEM_CUSTOM_FUNCTIONS_PARAM1,
-    ITEM_CUSTOM_FUNCTIONS_PARAM2,
-    ITEM_CUSTOM_FUNCTIONS_REPEAT,
-    ITEM_CUSTOM_FUNCTIONS_COUNT,
-    ITEM_CUSTOM_FUNCTIONS_LAST = ITEM_CUSTOM_FUNCTIONS_COUNT-1
+  ITEM_CUSTOM_FUNCTIONS_SWITCH,
+  ITEM_CUSTOM_FUNCTIONS_FUNCTION,
+  ITEM_CUSTOM_FUNCTIONS_PARAM1,
+  ITEM_CUSTOM_FUNCTIONS_PARAM2,
+  ITEM_CUSTOM_FUNCTIONS_REPEAT,
+  ITEM_CUSTOM_FUNCTIONS_COUNT,
+  ITEM_CUSTOM_FUNCTIONS_LAST = ITEM_CUSTOM_FUNCTIONS_COUNT-1
 };
 
 void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomFunctionsContext * functionsContext)
@@ -172,7 +172,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     int k = i+menuVerticalOffset;
 
-    drawStringWithIndex(0, y, functions == g_model.customFn ? STR_SF : STR_GF, k+1, (sub==k && menuHorizontalPosition<0) ? INVERS : 0);
+    drawStringWithIndex(0, y, "", k+1, (sub==k && menuHorizontalPosition<0) ? INVERS : 0);
 
     CustomFunctionData * cfn = &functions[k];
     uint8_t func = CFN_FUNC(cfn);
