@@ -1944,7 +1944,7 @@ int main()
 #endif
 
 
-#if defined(GUI) && !defined(PCBTARANIS) && !defined(PCBHORUS) && !defined(PCBMAMBO)
+#if defined(GUI) && !defined(PCBTARANIS) && !defined(PCBHORUS) && !defined(PCBMAMBO) && !defined(PCBTANGO)
   // TODO remove this
   lcdInit();
 #endif
@@ -1957,7 +1957,7 @@ int main()
   // lcdSetRefVolt(25);
 #endif
 
-#if defined(SPLASH) && (defined(PCBTARANIS) || defined(PCBTANGO) || defined(PCBMAMBO) || defined(PCBHORUS))
+#if defined(SPLASH) && (defined(PCBTARANIS) || defined(PCBHORUS))
   drawSplash();
 #endif
 
