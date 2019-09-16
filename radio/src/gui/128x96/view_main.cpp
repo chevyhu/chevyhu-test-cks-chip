@@ -224,7 +224,7 @@ void displayTrims(uint8_t phase, uint8_t editMode)
   }
 }
 
-void drawTimerWithMode(coord_t x, coord_t y, uint8_t index)
+bool drawTimerWithMode(coord_t x, coord_t y, uint8_t index)
 {
   const TimerData & timer = g_model.timers[index];
   if (timer.mode) {
@@ -240,7 +240,10 @@ void drawTimerWithMode(coord_t x, coord_t y, uint8_t index)
     else {
       drawTimerMode(xLabel, y+FH, timer.mode, RIGHT);
     }
+
+    return true;
   }
+  return false;
 }
 
 void displayBattVoltage()
@@ -348,6 +351,7 @@ void menuMainView(event_t event)
   static int8_t idx = -1;
   static tmr10ms_t enterTime;
   static bool last_enter = false;
+  uint8_t view_cnt = g_model.timers[1].mode ? VIEW_COUNT : VIEW_COUNT - 1;
 
     switch (event) {
 
@@ -426,7 +430,7 @@ void menuMainView(event_t event)
       killEvents(event);
       break;
     case EVT_KEY_BREAK(KEY_PAGE):
-      g_eeGeneral.view = (event == EVT_KEY_PREVIOUS_VIEW ? (view_base == VIEW_COUNT-1 ? 0 : view_base+1) : (view_base == 0 ? VIEW_COUNT-1 : view_base-1));
+      g_eeGeneral.view = (event == EVT_KEY_PREVIOUS_VIEW ? (view_base == view_cnt-1 ? 0 : view_base+1) : (view_base == 0 ? view_cnt-1 : view_base-1));
       storageDirty(EE_GENERAL);
       break;
     case EVT_KEY_FIRST(KEY_RIGHT):
@@ -595,7 +599,6 @@ void menuMainView(event_t event)
 #endif
     }
     else {
-
       // Logical Switches
       uint8_t index = 0;
       uint8_t y = LCD_H-40;
@@ -615,7 +618,7 @@ void menuMainView(event_t event)
     // Timer2
     drawTimerWithMode(87, 5*FH, 1);
   }
-  // And ! in case of unexpected shutdown
+  // And ! in case of unexpected shutdown_
 #if defined(LOG_TELEMETRY) || defined(WATCHDOG_DISABLED) && !defined(PCBTANGO)
   lcdDrawChar(REBOOT_X, 0*FH, '!', INVERS);
 #else
