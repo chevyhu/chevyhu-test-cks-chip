@@ -328,13 +328,13 @@ void onMainViewMenu(const char *result)
     chainMenu(menuAboutView);
   }
 #if !defined(SIMU)
-  else if (result == "memory_malloc") {
+  else if (result == (const char *)("memory_malloc")) {
     malloc_prt = NULL;
     TRACE("before malloc(), heap free size 0x%x bytes\n", (int)((unsigned char *)&_heap_end - heap));
     malloc_prt = malloc(0x2000);
     TRACE("after  malloc(), heap free size 0x%x bytes, malloc_prt = 0x%x\n", (int)((unsigned char *)&_heap_end - heap), malloc_prt);
   }
-  else if (result == "memory_free") {
+  else if (result == (const char *)("memory_free")) {
     TRACE("before free(),   heap free size 0x%x  bytes\n", (int)((unsigned char *)&_heap_end - heap));
     void *retPtr = malloc_prt = realloc(malloc_prt, 0);
     TRACE("after  free(),   heap free size 0x%x  bytes, malloc_prt = 0x%x, retPtr = 0x%x\n", (int)((unsigned char *)&_heap_end - heap), malloc_prt, retPtr);

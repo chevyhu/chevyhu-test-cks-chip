@@ -609,6 +609,7 @@ void checkSwitches()
         }
       }
     }
+  #if !defined(PCBTANGO)
     if (g_model.potsWarnMode) {
       evalFlightModeMixes(e_perout_mode_normal, 0);
       bad_pots = 0;
@@ -622,6 +623,7 @@ void checkSwitches()
         }
       }
     }
+  #endif
 #else
     for (int i=0; i<NUM_SWITCHES-1; i++) {
       if (!(g_model.switchWarningEnable & (1<<i))) {

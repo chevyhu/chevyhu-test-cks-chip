@@ -365,12 +365,13 @@ TASK_FUNCTION(menusTask)
   TRACE("menu task started\r\n");
   opentxInit();
 
-  static uint32_t memCalcTime = RTOS_GET_MS();
 #if defined(PCBTANGO)
   getDefaultSwConfig();
 #endif
 
 #if defined(PWR_BUTTON_PRESS)
+  static uint32_t memCalcTime = RTOS_GET_MS();
+
   while (1) {
     if ((RTOS_GET_MS()- memCalcTime) > 1000) {
       //cliMemoryInfo(0);
