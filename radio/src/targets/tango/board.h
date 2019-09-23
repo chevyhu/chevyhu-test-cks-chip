@@ -879,6 +879,7 @@ void boot2bootloader(uint32_t isNeedFlash, uint32_t HwId, uint32_t sn);
 void getDefaultSwConfig();
 
 void PrintData(char* header, uint8_t* data);
+uint32_t getTime(void);
 
 //#define USB_DEBUG
 
