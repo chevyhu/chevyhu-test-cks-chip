@@ -83,6 +83,7 @@ void drawSplash();
 void drawSecondSplash();
 void drawScreenIndex(uint8_t index, uint8_t count, uint8_t attr);
 void drawVerticalScrollbar(coord_t x, coord_t y, coord_t h, uint16_t offset, uint16_t count, uint8_t visible);
+void drawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t val, int32_t max);
 void displayMenuBar(const MenuItem * menu, int index);
 void drawProgressBar(const char * label, int num, int den);
 void drawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t val, int32_t max);

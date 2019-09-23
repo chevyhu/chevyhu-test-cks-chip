@@ -283,6 +283,19 @@ void displayBattVoltage()
 void *malloc_prt = NULL;
 
 
+void menuMainViewChannelsMonitor(event_t event)
+{
+  switch(event) {
+    case EVT_KEY_BREAK(KEY_PAGE):
+    case EVT_KEY_BREAK(KEY_EXIT):
+      chainMenu(menuMainView);
+      event = 0;
+      break;
+  }
+
+  return menuChannelsView(event);
+}
+
 uint8_t  test_watchdog_flag = 0;
 void onMainViewMenu(const char *result)
 {

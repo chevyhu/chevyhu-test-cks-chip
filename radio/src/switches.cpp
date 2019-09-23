@@ -564,7 +564,7 @@ void checkSwitches()
 
   while (1) {
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
   #define GETADC_COUNT 1
 #endif
 
@@ -647,10 +647,16 @@ void checkSwitches()
     backlightOn();
 
     // first - display warning
-#if defined(PCBTARANIS) || defined(PCBHORUS)
-    if ((last_bad_switches != switches_states) || (last_bad_pots != bad_pots)) {
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
+  #if defined(PCBTANGO)
+    if ((last_bad_switches != switches_states)) {
       drawAlertBox(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP);
-      if (last_bad_switches == 0xff || last_bad_pots == 0xff) {
+      if (last_bad_switches == 0xff) {
+  #else
+      if ((last_bad_switches != switches_states) || (last_bad_pots != bad_pots)) {
+      drawAlertBox(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP);
+      if (last_bad_switches == 0xff || last_bad_pots == 0xff ) {
+  #endif
         AUDIO_ERROR_MESSAGE(AU_SWITCH_ALERT);
       }
       int x = SWITCH_WARNING_LIST_X, y = SWITCH_WARNING_LIST_Y;
@@ -729,7 +735,10 @@ void checkSwitches()
           }
         }
       }
+  #if !defined(PCBTANGO)
       last_bad_pots = bad_pots;
+  #endif
+
 #else
     if (last_bad_switches != switches_states) {
       RAISE_ALERT(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
