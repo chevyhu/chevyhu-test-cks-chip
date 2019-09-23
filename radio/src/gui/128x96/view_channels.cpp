@@ -51,7 +51,6 @@ void menuChannelsView(event_t event)
       break;
     case EVT_ROTARY_RIGHT:
 #endif
-      //secondPage = !secondPage;
       if (++nextPage > 3) {
         nextPage = 0;
         ch = 0;
@@ -76,9 +75,6 @@ void menuChannelsView(event_t event)
     lcdDrawTextAlignedCenter(0, CHANNELS_MONITOR);
 
   lcdInvertLine(11);
-
-  // Column separator
-  //lcdDrawSolidVerticalLine(LCD_W/2, FH, LCD_H-FH);
 
   for (uint8_t col=0; col < 1; col++) {
     const uint8_t x = col * LCD_W / 2 + 1;

@@ -545,7 +545,9 @@ void PrintData(char* header, uint8_t* data){
 
 uint32_t getTime(void)
 {
+#if !defined(SIMU)
   return (uint32_t)CoGetOSTime();
+#endif
 }
 
 RTOS_TASK_HANDLE Crossfire_Sync_Func_Addr(uint32_t *ptr)
