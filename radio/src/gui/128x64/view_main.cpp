@@ -260,7 +260,10 @@ void displayVoltageOrAlarm()
 
 void onMainViewMenu(const char *result)
 {
-  if (result == STR_RESET_TIMER1) {
+  if (result == STR_MODEL_SELECT) {
+    chainMenu(menuModelSelect);
+  }
+  else if (result == STR_RESET_TIMER1) {
     timerReset(0);
   }
   else if (result == STR_RESET_TIMER2) {
@@ -334,7 +337,7 @@ void menuMainView(event_t event)
 
     case EVT_KEY_CONTEXT_MENU:
       killEvents(event);
-
+      POPUP_MENU_ADD_ITEM(STR_MODEL_SELECT);
       if (modelHasNotes()) {
         POPUP_MENU_ADD_ITEM(STR_VIEW_NOTES);
       }
@@ -355,7 +358,11 @@ void menuMainView(event_t event)
 #endif
 
     case EVT_KEY_MODEL_MENU:
+#if defined(PCBMAMBO)
+      pushMenu(menuCrossfireSetup);
+#else
       pushMenu(menuModelSelect);
+#endif
       killEvents(event);
       break;
 

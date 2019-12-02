@@ -1052,7 +1052,7 @@
 #define USB_GPIO_AF                     GPIO_AF_OTG1_FS
 
 // BackLight
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if defined(PCBTANGO)
   // use OLED no backlight
   #define BACKLIGHT_RCC_AHB1Periph      RCC_AHB1Periph_GPIOE
   #define BACKLIGHT_RCC_APB1Periph      0
@@ -1066,6 +1066,16 @@
   #define BACKLIGHT_GPIO_PinSource_2    0
   #define BACKLIGHT_GPIO_AF_1           0
   #define BACKLIGHT_GPIO_AF_2           0
+#elif defined(PCBMAMBO)
+  #define BACKLIGHT_RCC_AHB1Periph      RCC_AHB1Periph_GPIOD
+  #define BACKLIGHT_RCC_APB1Periph      RCC_APB1Periph_TIM4
+  #define BACKLIGHT_RCC_APB2Periph      0
+  #define BACKLIGHT_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
+  #define BACKLIGHT_TIMER               TIM4
+  #define BACKLIGHT_GPIO                GPIOD
+  #define BACKLIGHT_GPIO_PIN            GPIO_Pin_15 // PD.15
+  #define BACKLIGHT_GPIO_PinSource      GPIO_PinSource15
+  #define BACKLIGHT_GPIO_AF             GPIO_AF_TIM4
 #elif defined(PCBX9E)
   #define BACKLIGHT_RCC_AHB1Periph      RCC_AHB1Periph_GPIOE
   #define BACKLIGHT_RCC_APB1Periph      0
@@ -1162,7 +1172,7 @@
   #define LCD_CLK_GPIO_PIN              GPIO_Pin_3 // PB.3
   #define LCD_CLK_GPIO_PinSource        GPIO_PinSource3
   #define LCD_A0_GPIO                   GPIOD
-  #define LCD_A0_GPIO_PIN               GPIO_Pin_6 // PD.6
+  #define LCD_A0_GPIO_PIN               GPIO_Pin_0 // PD.0
   #define LCD_NCS_GPIO                  GPIOD
   #define LCD_NCS_GPIO_PIN              GPIO_Pin_1 // PD.1
   #define LCD_RST_GPIO                  GPIOD
@@ -1336,8 +1346,8 @@
 #define AUDIO_DMA_Stream_IRQHandler     DMA1_Stream5_IRQHandler
 #define AUDIO_TIMER                     TIM6
 #define AUDIO_DMA                       DMA1
-#define AUDIO_MUTE_GPIO                 GPIOD
-#define AUDIO_MUTE_GPIO_PIN             GPIO_Pin_5  // PD.05
+#define AUDIO_MUTE_GPIO                 GPIOE
+#define AUDIO_MUTE_GPIO_PIN             GPIO_Pin_0  // PD.05
 
 // Haptic
 #if defined(PCBTANGO) || defined(PCBMAMBO)

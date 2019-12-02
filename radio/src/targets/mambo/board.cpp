@@ -218,6 +218,14 @@ void getDefaultSwConfig(){
 	}
 }
 
+uint32_t getTime(void)
+{
+#if !defined(SIMU)
+  return (uint32_t)CoGetOSTime();
+#endif
+}
+
+
 void boardInit()
 {
 #if !defined(SIMU)
@@ -269,7 +277,7 @@ void boardInit()
   init2MhzTimer();
   init5msTimer();
   init1msTimer();
-  CRSF_Init();
+  //CRSF_Init();
   __enable_irq();
   i2cInit();
   usbInit();

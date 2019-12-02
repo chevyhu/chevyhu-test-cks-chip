@@ -634,7 +634,8 @@ void backlightInit(void);
 void backlightDisable(void);
 #define BACKLIGHT_DISABLE()             backlightDisable()
 uint8_t isBacklightEnabled(void);
-#if defined(PCBX9E) || defined(PCBX9DP)
+
+#if defined(PCBX9E) || defined(PCBX9DP) || defined(PCBMAMBO)
   void backlightEnable(uint8_t level, uint8_t color);
   #define BACKLIGHT_ENABLE()            backlightEnable(g_eeGeneral.backlightBright, g_eeGeneral.backlightColor)
 #else
@@ -735,6 +736,8 @@ void serial2Putc(char c);
 void serial2SbusInit(void);
 void serial2Stop(void);
 #endif
+
+uint32_t getTime(void);
 
 // BT driver
 #define BT_TX_FIFO_SIZE    64
