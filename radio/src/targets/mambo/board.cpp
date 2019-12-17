@@ -194,6 +194,111 @@ void sportUpdatePowerOff()
 }
 #endif
 
+static void chargerInit(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Pin = CHARGER_STATE_GPIO_PIN | CHARGER_FAULT_GPIO_PIN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(CHARGER_STATE_GPIO, &GPIO_InitStructure);
+}
+
+static void detectChargingMode(void)
+{
+  tmr10ms_t tm10ms = g_tmr10ms;
+  tmr10ms_t tm100ms = g_tmr10ms;
+  uint8_t  wt_cnt = 5;
+  uint8_t  bklight = 20;
+  uint8_t  bklight_bak = g_eeGeneral.backlightBright;
+
+  backlightInit();
+
+  while (wt_cnt > 0) {
+    if ((g_tmr10ms- tm10ms) > 9) {
+      usbPlugged(); //call several times continuously for debouncing and ensure stable connection
+      wt_cnt--;
+      tm10ms = g_tmr10ms;
+    }
+  }
+
+  if (usbPlugged() && !pwrPressed()) {
+    if (!rambackupRestore()) {
+      g_eeGeneral.txVoltageCalibration = -35; //ram backup failed, use the default calibration value for battery voltage
+    }
+  }
+
+  while (IS_CHARGING_STATE() && !IS_CHARGING_FAULT() && usbPlugged() && !pwrPressed()) {
+    if ((g_tmr10ms - tm10ms) > 9) {
+      getADC();
+      tm10ms = g_tmr10ms;
+    }
+    if ((g_tmr10ms- tm100ms) > 49) {
+#if 0
+      bklight += 5;
+      if (bklight > 20) {
+        bklight = 0;
+      }
+      if (bklight % 2) {
+        g_eeGeneral.backlightBright = bklight;
+        BACKLIGHT_ENABLE();
+      }
+      else {
+        BACKLIGHT_DISABLE();
+      }
+#endif
+      lcdClear();
+      checkBattery();
+      drawChargingState();
+      lcdRefresh();
+      lcdRefreshWait();
+      tm100ms = g_tmr10ms;
+    }
+  }
+
+  wt_cnt = 5;
+  while (wt_cnt > 0) {
+    if ((g_tmr10ms - tm10ms) > 9) {
+      getADC();
+      tm10ms = g_tmr10ms;
+    }
+    if ((g_tmr10ms- tm100ms) > 49) {
+      checkBattery();
+      wt_cnt--;
+    }
+  }
+
+  while (!IS_CHARGING_STATE() && usbPlugged() && !pwrPressed() && g_vbat100mV >= 40) {
+    if ((g_tmr10ms - tm10ms) > 9) {
+      getADC();
+      tm10ms = g_tmr10ms;
+    }
+    if ((g_tmr10ms- tm100ms) > 49) {
+#if 0
+      bklight += 5;
+      if (bklight > 20) {
+        bklight = 0;
+      }
+      if (bklight % 2) {
+        g_eeGeneral.backlightBright = bklight;
+        BACKLIGHT_ENABLE();
+      }
+      else {
+        BACKLIGHT_DISABLE();
+      }
+#endif
+      lcdClear();
+      checkBattery();
+      drawFullyCharged();
+      lcdRefresh();
+      lcdRefreshWait();
+      tm100ms = g_tmr10ms;
+    }
+  }
+
+  g_eeGeneral.backlightBright = bklight_bak;
+}
+
 void getDefaultSwConfig(){
 	uint8_t hasMem = 0;
 	for(uint8_t i = 0; i < 6; i++){
@@ -243,7 +348,7 @@ void boardInit()
                          BACKLIGHT_RCC_APB1Periph | HAPTIC_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph |
                          TIMER_2MHz_RCC_APB1Periph | I2C_RCC_APB1Periph |
                          SD_RCC_APB1Periph | TRAINER_RCC_APB1Periph |
-                         TELEMETRY_RCC_APB1Periph | SERIAL_RCC_APB1Periph |
+                         TELEMETRY_RCC_APB1Periph  |
                          INTMODULE_RCC_APB1Periph | BT_RCC_APB1Periph, ENABLE);
 
   RCC_APB2PeriphClockCmd(BACKLIGHT_RCC_APB2Periph | ADC_RCC_APB2Periph |
@@ -281,11 +386,14 @@ void boardInit()
   __enable_irq();
   i2cInit();
   usbInit();
+  chargerInit();
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
   TRACE("Mambo board started :)\r\n");
 #endif
+
+  detectChargingMode();
 
 #if defined(ESP_SERIAL)
   espInit(ESP_UART_BAUDRATE, false);
@@ -465,7 +573,7 @@ void checkTrainerSettings()
 uint16_t getBatteryVoltage()
 {
   int32_t instant_vbat = anaIn(TX_VOLTAGE); // using filtered ADC value on purpose
-  instant_vbat = (instant_vbat * BATT_SCALE * (128 + g_eeGeneral.txVoltageCalibration) ) / 26214;
+  instant_vbat = instant_vbat / BATT_SCALE + g_eeGeneral.txVoltageCalibration;
 //  instant_vbat += 20; // add 0.2V because of the diode TODO check if this is needed, but removal will beak existing calibrations!!!
   return (uint16_t)instant_vbat;
 }

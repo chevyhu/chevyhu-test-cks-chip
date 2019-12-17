@@ -73,7 +73,11 @@ void rotaryEncoderCheck()
         if((delTicks < 30 && count > 1) || (delTicks >= 30 && count > 0)){
             count = 0;
 #endif
-            --rotencValue;
+#if defined(PCBMAMBO)
+        ++rotencValue;
+#else
+        --rotencValue;
+#endif
 #if !defined(BOOT) && (defined(PCBTANGO) || defined(PCBMAMBO))
         }
 #endif
@@ -89,7 +93,11 @@ void rotaryEncoderCheck()
         if((delTicks < 30 && count > 1) || (delTicks >= 30 && count > 0)){
             count = 0;
 #endif
-            ++rotencValue;
+#if defined(PCBMAMBO)
+        --rotencValue;
+#else
+        ++rotencValue;
+#endif
 #if !defined(BOOT) && (defined(PCBTANGO) || defined(PCBMAMBO))
         }
 #endif

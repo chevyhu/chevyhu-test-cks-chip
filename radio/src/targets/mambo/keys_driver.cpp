@@ -38,7 +38,6 @@ uint32_t readKeys()
 
 #if defined(KEYS_GPIO_PIN_MENU)
   if (~KEYS_GPIO_REG_MENU & KEYS_GPIO_PIN_MENU) {
-    //TRACE("menu event\r\n");
     result |= 1 << KEY_MENU;
   }
 #endif
@@ -168,22 +167,36 @@ void readKeysAndTrims()
       xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
       break;
 #endif
+
+#if defined(PCBMAMBO) && !defined (SIMU)
 #define ADD_3POS_CASE(x, i) \
-    case SW_S ## x ## 0: \
-      xxx = (SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H); \
-      if (IS_CONFIG_3POS(i)) { \
-        xxx = xxx && (~SWITCHES_GPIO_REG_ ## x ## _L & SWITCHES_GPIO_PIN_ ## x ## _L); \
-      } \
-      break; \
-    case SW_S ## x ## 1: \
-      xxx = (SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H) && (SWITCHES_GPIO_REG_ ## x ## _L & SWITCHES_GPIO_PIN_ ## x ## _L); \
-      break; \
-    case SW_S ## x ## 2: \
-      xxx = (~SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H); \
-      if (IS_CONFIG_3POS(i)) { \
-        xxx = xxx && (SWITCHES_GPIO_REG_ ## x ## _L & SWITCHES_GPIO_PIN_ ## x ## _L); \
-      } \
-      break
+      case SW_S ## x ## 0: \
+        xxx = (getAnalogValue(SWITCH_ ## x) < 1200)?1:0; \
+        break; \
+      case SW_S ## x ## 1: \
+        xxx = (1200 < getAnalogValue(SWITCH_ ## x) && getAnalogValue(SWITCH_ ## x) < 3000)?1:0; \
+        break; \
+      case SW_S ## x ## 2: \
+        xxx = (getAnalogValue(SWITCH_ ## x) > 3000)?1:0; \
+        break
+#else
+  #define ADD_3POS_CASE(x, i) \
+      case SW_S ## x ## 0: \
+        xxx = (SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H); \
+        if (IS_CONFIG_3POS(i)) { \
+          xxx = xxx && (~SWITCHES_GPIO_REG_ ## x ## _L & SWITCHES_GPIO_PIN_ ## x ## _L); \
+        } \
+        break; \
+      case SW_S ## x ## 1: \
+        xxx = (SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H) && (SWITCHES_GPIO_REG_ ## x ## _L & SWITCHES_GPIO_PIN_ ## x ## _L); \
+        break; \
+      case SW_S ## x ## 2: \
+        xxx = (~SWITCHES_GPIO_REG_ ## x ## _H & SWITCHES_GPIO_PIN_ ## x ## _H); \
+        if (IS_CONFIG_3POS(i)) { \
+          xxx = xxx && (SWITCHES_GPIO_REG_ ## x ## _L & SWITCHES_GPIO_PIN_ ## x ## _L); \
+        } \
+        break
+#endif
 
 uint8_t keyState(uint8_t index)
 {
@@ -196,12 +209,19 @@ uint32_t switchState(uint8_t index)
   uint32_t xxx = 0;
 
   switch (index) {
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if defined(PCBTANGO)
     ADD_2POS_CASE(A);
+    ADD_3POS_CASE(B, 0);
+    ADD_3POS_CASE(C, 0);
+    ADD_3POS_CASE(D, 0);
+    ADD_3POS_CASE(E, 0);
+    ADD_2POS_CASE(F);
+#elif defined(PCBMAMBO)
+    ADD_2POS_CASE(A)
     ADD_3POS_CASE(B, 1);
     ADD_3POS_CASE(C, 2);
-    ADD_2POS_CASE(D);
-    ADD_2POS_CASE(E);
+    ADD_3POS_CASE(D, 3);
+    ADD_3POS_CASE(E, 4);
     ADD_2POS_CASE(F);
 #else
     ADD_3POS_CASE(A, 0);

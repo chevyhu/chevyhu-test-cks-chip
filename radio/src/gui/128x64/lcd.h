@@ -226,4 +226,9 @@ void drawShutdownAnimation(uint32_t index, const char * message);
 
 uint8_t getTextWidth(const char * s, uint8_t len=0, LcdFlags flags=0);
 
+#if defined(PCBMAMBO)
+void drawChargingState(void);
+void drawFullyCharged(void);
+#endif
+
 #endif // _LCD_H_

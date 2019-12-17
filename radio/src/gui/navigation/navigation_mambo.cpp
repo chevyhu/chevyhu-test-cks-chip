@@ -94,6 +94,49 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
 {
   int newval = val;
 
+#if defined(DBLKEYS)
+  uint32_t in = KEYS_PRESSED();
+  if (!(i_flags & NO_DBLKEYS) && (EVT_KEY_MASK(event))) {
+    bool dblkey = true;
+    if (DBLKEYS_PRESSED_RGT_LFT(in)) {
+      if (!isValueAvailable || isValueAvailable(-val)) {
+        newval = -val;
+      }
+    }
+    else if (DBLKEYS_PRESSED_RGT_UP(in)) {
+      newval = (i_max > stops.max() ? stops.max() : i_max);
+      while (isValueAvailable && !isValueAvailable(newval) && newval>i_min) {
+        --newval;
+      }
+    }
+    else if (DBLKEYS_PRESSED_LFT_DWN(in)) {
+      newval = (i_min < stops.min() ? stops.min() : i_min);
+      while (isValueAvailable && !isValueAvailable(newval) && newval<i_max) {
+        ++newval;
+      }
+    }
+    else if (DBLKEYS_PRESSED_UP_DWN(in)) {
+      newval = 0;
+    }
+    else {
+      dblkey = false;
+    }
+
+    if (dblkey) {
+      killEvents(KEY_UP);
+      killEvents(KEY_DOWN);
+      killEvents(KEY_RIGHT);
+      killEvents(KEY_LEFT);
+      killEvents(KEY_PAGE);
+      killEvents(KEY_MENU);
+      killEvents(KEY_ENTER);
+      killEvents(KEY_EXIT);
+      event = 0;
+    }
+  }
+#endif
+
+#if defined(ROTARY_ENCODER_NAVIGATION) && !defined(SIMU)
   if (s_editMode>0 && event==EVT_ROTARY_RIGHT) {
     newval += min<int>(rotencSpeed, i_max-val);
     while (isValueAvailable && !isValueAvailable(newval) && newval<=i_max) {
@@ -114,6 +157,38 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
       AUDIO_KEY_ERROR();
     }
   }
+#else
+  if (s_editMode>0 && (event==EVT_KEY_FIRST(KEY_PLUS) || event==EVT_KEY_REPT(KEY_PLUS))) {
+    do {
+      if (IS_KEY_REPT(event) && (i_flags & INCDEC_REP10)) {
+        newval += min(10, i_max-val);
+      }
+      else {
+        newval++;
+      }
+    } while (isValueAvailable && !isValueAvailable(newval) && newval<=i_max);
+    if (newval > i_max) {
+      newval = val;
+      killEvents(event);
+      AUDIO_KEY_ERROR();
+    }
+  }
+  else if (s_editMode>0 && (event==EVT_KEY_FIRST(KEY_MINUS) || event==EVT_KEY_REPT(KEY_MINUS))) {
+    do {
+      if (IS_KEY_REPT(event) && (i_flags & INCDEC_REP10)) {
+        newval -= min(10, val-i_min);
+      }
+      else {
+        newval--;
+      }
+    } while (isValueAvailable && !isValueAvailable(newval) && newval>=i_min);
+    if (newval < i_min) {
+      newval = val;
+      killEvents(event);
+      AUDIO_KEY_ERROR();
+    }
+  }
+#endif
 
   if (!READ_ONLY() && i_min==0 && i_max==1 && event==EVT_KEY_BREAK(KEY_ENTER)) {
     s_editMode = 0;
@@ -146,6 +221,17 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
 #endif
 
   if (newval != val) {
+#if !defined(ROTARY_ENCODER_NAVIGATION)
+    if (!(i_flags & NO_INCDEC_MARKS) && (newval != i_max) && (newval != i_min) && stops.contains(newval)) {
+      bool pause = (newval > val ? !stops.contains(newval+1) : !stops.contains(newval-1));
+      if (pause) {
+        pauseEvents(event); // delay before auto-repeat continues
+      }
+    }
+    if (!IS_KEY_REPT(event)) {
+      AUDIO_KEY_PRESS();
+    }
+#endif
     storageDirty(i_flags & (EE_GENERAL|EE_MODEL));
     checkIncDec_Ret = (newval > val ? 1 : -1);
   }
@@ -258,7 +344,7 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc * menuTab, uint8_t
       case EVT_KEY_LONG(KEY_PAGE):
         if (s_editMode>0)
           break;
-          
+
         if (curr > 0)
           cc = curr - 1;
         else
@@ -269,7 +355,7 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc * menuTab, uint8_t
       case EVT_KEY_BREAK(KEY_PAGE):
         if (s_editMode>0)
           break;
-          
+
         if (curr < (menuTabSize-1))
           cc = curr + 1;
         else

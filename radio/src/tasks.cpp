@@ -375,6 +375,11 @@ TASK_FUNCTION(menusTask)
   while (1) {
     if ((RTOS_GET_MS()- memCalcTime) > 1000) {
       //cliMemoryInfo(0);
+#if 0
+      TRACE("a0 = %d, a1 = %d, a2 = %d, a3 = %d, a4 = %d, a5 = %d, a6 = %d, a7 = %d, a8 = %d\n", getAnalogValue(0), getAnalogValue(1), getAnalogValue(2), getAnalogValue(3), getAnalogValue(4), getAnalogValue(5), getAnalogValue(6), getAnalogValue(7), getAnalogValue(8));
+#endif
+
+
       memCalcTime = RTOS_GET_MS();
     }
     uint32_t pwr_check = pwrCheck();

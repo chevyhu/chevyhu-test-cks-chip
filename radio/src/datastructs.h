@@ -920,7 +920,7 @@ static inline void check_struct()
   CHKSIZE(TimerData, 11);
 
   CHKSIZE(FlightModeData, 36);
-  CHKSIZE(RadioData, 720);
+  CHKSIZE(RadioData, 738);
 
 #endif /* board specific ifdefs*/
 

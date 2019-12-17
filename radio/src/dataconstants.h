@@ -655,6 +655,10 @@ enum MixSources {
   MIXSRC_SLIDER1 = MIXSRC_FIRST_SLIDER, LUA_EXPORT("ls", "Left slider")
   MIXSRC_SLIDER2,                       LUA_EXPORT("rs", "Right slider")
   MIXSRC_LAST_POT = MIXSRC_SLIDER2,
+#elif defined(PCBMAMBO)
+  MIXSRC_P1 = MIXSRC_FIRST_POT,
+  MIXSRC_P2,
+  MIXSRC_LAST_POT = MIXSRC_P2,
 #else
   MIXSRC_P1 = MIXSRC_FIRST_POT,
   MIXSRC_P2,

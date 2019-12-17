@@ -108,7 +108,7 @@ elseif(PCB STREQUAL MAMBO)
   add_definitions(-DCRSF_OPENTX -DCRSF_SD -DLIBCRSF_ENABLE_COMMAND)
 
   set(GUI_DIR 128x64)
-  set(NAVIGATION_TYPE x7)
+  set(NAVIGATION_TYPE mambo)
   set(BITMAPS_TARGET 9x_bitmaps)
   #set(BITMAPS_TARGET_DIR mambo)
   set(FONTS_TARGET 9x_fonts_1bit)

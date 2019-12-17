@@ -1066,3 +1066,57 @@ void drawDownload()
   lcdRefresh();
 }
 #endif
+
+#if defined(PCBMAMBO)
+#define VBATT_W         (LCD_W - 40)
+#define VBATT_H         (45)
+#define VBATT_X         (((LCD_W - VBATT_W) / 2) - 2)
+#define VBATT_Y         (((LCD_H - VBATT_H) / 2) + 5)
+#define GET_BAT_BARS()  (limit<int8_t>(2, 20 * (g_vbat100mV + 56 - 90) / (30 - 78 + 56), 20))
+#define MAX_BARS()      (limit<int8_t>(2, 20 * (BATTERY_MAX + 56 - 90) / (30 - 78 + 56), 20))
+
+void drawChargingState(void)
+{
+  static uint8_t old_count = 0;
+  static uint8_t blink_count = 0;
+  static uint32_t charging_time = g_tmr10ms;
+
+  putsVBat(VBATT_X + 54, VBATT_Y - 13, RIGHT|MIDSIZE);
+  lcdDrawSolidFilledRect(VBATT_X - 4, VBATT_Y, VBATT_W + 4, VBATT_H);
+  uint8_t count = GET_BAT_BARS();
+
+  for (uint8_t i = 0; i < count; i += 2) {
+    lcdDrawSolidFilledRect(VBATT_X + 2  + (VBATT_W / (MAX_BARS() - 1) * (i )), VBATT_Y + 7,  VBATT_W / MAX_BARS() + 1, VBATT_H - 14);
+  }
+  lcdDrawSolidFilledRect(VBATT_X + VBATT_W , VBATT_Y + 10, 9, VBATT_H - 10 * 2);
+
+  if (old_count != count) {
+    old_count = count;
+    blink_count = (count % 2) ? count + 1: count;
+  }
+  for (uint8_t i = (old_count % 2) ? old_count + 1: old_count; i < blink_count; i += 2) {
+    lcdDrawSolidFilledRect(VBATT_X + 2 + (VBATT_W / (MAX_BARS() - 1) * (i )), VBATT_Y + 7,  VBATT_W / MAX_BARS() + 1, VBATT_H - 14);
+  }
+  if ((g_tmr10ms - charging_time) > 6) {
+    if ((blink_count ++) >= MAX_BARS()) {
+      blink_count = old_count;
+    }
+    charging_time = g_tmr10ms;
+  }
+}
+
+void drawFullyCharged(void)
+{
+  putsVolts(VBATT_X + 54, VBATT_Y - 13, 42, RIGHT|MIDSIZE);
+
+  lcdDrawSolidFilledRect(VBATT_X - 4, VBATT_Y, VBATT_W + 4, VBATT_H);
+  uint8_t count = GET_BAT_BARS();
+
+  for (uint8_t i = 0; i < MAX_BARS(); i += 2) {
+    lcdDrawSolidFilledRect(VBATT_X + 2  + (VBATT_W / (MAX_BARS() - 1) * (i )), VBATT_Y + 7,  VBATT_W / MAX_BARS() + 1, VBATT_H - 14);
+  }
+  lcdDrawSolidFilledRect(VBATT_X + VBATT_W , VBATT_Y + 10, 9, VBATT_H - 10 * 2);
+
+  lcdDrawText(VBATT_X - 8 , VBATT_Y + VBATT_H + 3, "FULLY CHARGED", MIDSIZE);
+}
+#endif

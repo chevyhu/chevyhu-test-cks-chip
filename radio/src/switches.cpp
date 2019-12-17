@@ -129,12 +129,19 @@ uint64_t check3PosSwitchPosition(uint8_t idx, uint8_t sw, bool startup)
 void getSwitchesPosition(bool startup)
 {
   uint64_t newPos = 0;
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if defined(PCBTANGO)
   CHECK_2POS(SW_SA);
   CHECK_3POS(1, SW_SB);
   CHECK_3POS(2, SW_SC);
   CHECK_2POS(SW_SD);
   CHECK_2POS(SW_SE);
+  CHECK_2POS(SW_SF);
+#elif defined(PCBMAMBO)
+  CHECK_2POS(SW_SA);
+  CHECK_3POS(1, SW_SB);
+  CHECK_3POS(2, SW_SC);
+  CHECK_3POS(3, SW_SD);
+  CHECK_3POS(4, SW_SE);
   CHECK_2POS(SW_SF);
 #else
   CHECK_3POS(0, SW_SA);
@@ -181,7 +188,6 @@ void getSwitchesPosition(bool startup)
 
   switchesPos = newPos;
 //  TRACE("%lx", (uint32_t)switchesPos);
-
   for (int i=0; i<NUM_XPOTS; i++) {
     if (IS_POT_MULTIPOS(POT1+i)) {
       StepsCalibData * calib = (StepsCalibData *) &g_eeGeneral.calib[POT1+i];
@@ -512,7 +518,7 @@ swsrc_t getMovedSwitch()
   static tmr10ms_t s_move_last_time = 0;
   swsrc_t result = 0;
 
-#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBTANGO) || defined(PCBMAMBO)
   for (int i=0; i<NUM_SWITCHES; i++) {
     if (SWITCH_EXISTS(i)) {
       swarnstate_t mask = ((swarnstate_t)0x03 << (i*2));

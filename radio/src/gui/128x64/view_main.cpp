@@ -194,15 +194,34 @@ void drawTimerWithMode(coord_t x, coord_t y, uint8_t index)
 
 void displayBattVoltage()
 {
+  static uint8_t old_count = 0;
+  static uint8_t blink_count = 0;
+  static uint32_t charging_time = g_tmr10ms;
 #if defined(BATTGRAPH)
-  putsVBat(VBATT_X-8, VBATT_Y+1, RIGHT);
-  lcdDrawSolidFilledRect(VBATT_X-25, VBATT_Y+9, 21, 5);
-  lcdDrawSolidVerticalLine(VBATT_X-4, VBATT_Y+10, 3);
+  putsVBat(VBATT_X - 8, VBATT_Y + 1, RIGHT);
+  lcdDrawSolidFilledRect(VBATT_X - 25, VBATT_Y + 9, 21, 5);
+  lcdDrawSolidVerticalLine(VBATT_X - 4, VBATT_Y + 10, 3);
   uint8_t count = GET_TXBATT_BARS();
-  for (uint8_t i=0; i<count; i+=2)
-    lcdDrawSolidVerticalLine(VBATT_X-24+i, VBATT_Y+10, 3);
+  for (uint8_t i = 0; i < count; i += 2)
+    lcdDrawSolidVerticalLine(VBATT_X - 24 + i, VBATT_Y + 10, 3);
   if (!IS_TXBATT_WARNING() || BLINK_ON_PHASE)
-    lcdDrawSolidFilledRect(VBATT_X-26, VBATT_Y, 24, 15);
+    lcdDrawSolidFilledRect(VBATT_X - 26, VBATT_Y, 24, 15);
+
+  if (IS_CHARGING_STATE() && !IS_CHARGING_FAULT() && usbPlugged()) {
+    if (old_count != count) {
+      old_count = count;
+      blink_count = (count % 2) ? count + 1: count;
+    }
+    for (uint8_t i = (old_count % 2) ? old_count + 1: old_count; i < blink_count; i += 2) {
+      lcdDrawSolidVerticalLine(VBATT_X - 24 + i, VBATT_Y + 10, 3);
+    }
+    if ((g_tmr10ms - charging_time) > 6) {
+      if ((blink_count ++) >= 20) {
+        blink_count = old_count;
+      }
+      charging_time = g_tmr10ms;
+    }
+  }
 #else
   LcdFlags att = (IS_TXBATT_WARNING() ? BLINK|INVERS : 0) | BIGSIZE;
   putsVBat(VBATT_X-1, VBATT_Y, att|NO_UNIT);

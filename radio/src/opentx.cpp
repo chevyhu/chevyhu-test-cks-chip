@@ -88,6 +88,8 @@ void per10ms()
     wdt_reset();  // Retrigger hardware watchdog
   }
 
+
+
 #if defined(GUI)
   if (lightOffCounter) lightOffCounter--;
   if (flashCounter) flashCounter--;
@@ -118,6 +120,7 @@ void per10ms()
     g_ms100 = 0;
   }
 #endif
+
 
   readKeysAndTrims();
 
@@ -1188,9 +1191,10 @@ tmr10ms_t jitterResetTime = 0;
 #endif
 uint16_t anaIn(uint8_t chan)
 {
-#if defined(PCBTANGO) || defined(PCBMAMBO)
+#if defined(PCBTANGO)
   if( chan <= STICK4 )
 	  return crossfireSharedData.sticks[chan];
+#elif defined(PCBMAMBO)
 #endif
   return ANA_FILT(chan);
 }

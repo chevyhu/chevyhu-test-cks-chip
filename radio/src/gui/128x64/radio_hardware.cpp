@@ -309,7 +309,7 @@ void menuRadioHardware(event_t event)
       }
 
       case ITEM_RADIO_HARDWARE_BATTERY_CALIB:
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBMAMBO)
         lcdDrawTextAlignedLeft(y, STR_BATT_CALIB);
         putsVolts(HW_SETTINGS_COLUMN2, y, getBatteryVoltage(), attr|PREC2|LEFT);
 #elif defined(PCBSKY9X)

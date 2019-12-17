@@ -25,9 +25,13 @@
 #include "menus.h"
 #include "popups.h"
 
+#if defined(PCBMAMBO)
+
+#endif
+
 #define MENUS_SCROLLBAR_WIDTH          0
 
-#if defined(PCBX7) || defined(PCBX3)
+#if defined(PCBX7) || defined(PCBX3) || defined(PCBMAMBO)
   #define HEADER_LINE                  0
   #define HEADER_LINE_COLUMNS
 #else
@@ -145,7 +149,7 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
 #define CHECK_INCDEC_GENVAR(event, var, min, max) \
   var = checkIncDecGen(event, var, min, max)
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined (PCBMAMBO)
 #define CURSOR_ON_LINE()               (menuHorizontalPosition < 0)
 #else
 #define CURSOR_ON_LINE()               (0)
@@ -160,7 +164,7 @@ void title(const char * s);
 
 #define MENU_TAB(...) const uint8_t mstate_tab[] = __VA_ARGS__
 
-#if defined(PCBX7) || defined(PCBX3)
+#if defined(PCBX7) || defined(PCBX3) || defined(PCBMAMBO)
 #define MENU_CHECK(tab, menu, lines_count) \
   check(event, menu, tab, DIM(tab), mstate_tab, DIM(mstate_tab)-1, lines_count)
 #else
@@ -173,7 +177,7 @@ void title(const char * s);
   MENU_CHECK(tab, menu, lines_count); \
   TITLE(title)
 
-#if defined(PCBX7) || defined(PCBX3)
+#if defined(PCBX7) || defined(PCBX3) || defined(PCBMAMBO)
 #define SIMPLE_MENU_NOTITLE(tab, menu, lines_count) \
   check_simple(event, menu, tab, DIM(tab), lines_count);
 #define SUBMENU_NOTITLE(lines_count, ...) \
@@ -293,7 +297,7 @@ void readModelNotes();
 #endif
 
 // TODO enum
-#if defined(PCBX7) || defined(PCBX3)
+#if defined(PCBX7) || defined(PCBX3) || defined(PCBMAMBO)
 #define EDIT_MODE_INIT                 0
 #else
 #define EDIT_MODE_INIT                 -1

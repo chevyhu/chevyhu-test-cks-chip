@@ -80,7 +80,7 @@ void pwrOff()
   __disable_irq();
 
 // To do: Make Improvement
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
   while (1) {
     wdt_reset();
     if (!pwrPressed()) {

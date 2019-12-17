@@ -488,37 +488,23 @@ void watchdogInit(unsigned int duration);
 
 // ADC driver
 enum Analogs {
-  STICK1,
-  STICK2,
-  STICK3,
-  STICK4,
-  POT_FIRST,
-  POT1 = POT_FIRST,
+  SWITCH_B,
+  SWITCH_C,
+  SWITCH_D,
+  SWITCH_E,
+  POT1,
+  POT_FIRST = POT1,
   POT2,
-#if defined(PCBX7) || defined(PCBXLITE)
   POT_LAST = POT2,
-#elif defined(PCBX9E)
-  POT3,
-  POT4,
-  POT_LAST = POT4,
-  SLIDER1,
-  SLIDER2,
-  SLIDER3,
-  SLIDER4,
-#else
-  POT3,
-  POT_LAST = POT3,
-  SLIDER1,
-  SLIDER2,
-#endif
+  TX_TRIM,
   TX_VOLTAGE,
+  TX_RTC_VOLTAGE,
   NUM_ANALOGS,
-  TX_RTC = NUM_ANALOGS
 };
 
-#define NUM_POTS                        0//(POT_LAST-POT_FIRST+1)
-#define NUM_XPOTS                       0//NUM_POTS
-#define NUM_SLIDERS                     0//(TX_VOLTAGE-POT_LAST-1)
+#define NUM_POTS                        (POT_LAST-POT_FIRST+1)
+#define NUM_XPOTS                       NUM_POTS
+#define NUM_SLIDERS                     0
 #define NUM_TRIMS                       4
 #define NUM_MOUSE_ANALOGS               0
 #define NUM_DUMMY_ANAS                  0
@@ -570,7 +556,7 @@ enum CalibratedAnalogs {
 #define IS_SLIDER(x)                    ((x)>POT_LAST && (x)<TX_VOLTAGE)
 void adcInit(void);
 void adcRead(void);
-extern uint16_t adcValues[NUM_ANALOGS + 1/*RTC*/];
+extern uint16_t adcValues[NUM_ANALOGS];
 uint16_t getAnalogValue(uint8_t index);
 
 // Battery driver
@@ -587,9 +573,9 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
   #define BATTERY_MAX                   83 // 8.3V
 #elif defined(PCBTANGO) || defined(PCBMAMBO)
   // 1 x Li-Ion
-  #define BATTERY_WARN                  33 // 3.3V
+  #define BATTERY_WARN                  35 // 3.5V
   #define BATTERY_MIN                   34 // 3.4V
-  #define BATTERY_MAX                   41 // 4.1V
+  #define BATTERY_MAX                   42 // 4.2V
 #else
   // NI-MH 7.2V
   #define BATTERY_WARN                  65 // 6.5V
@@ -601,7 +587,7 @@ uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
 #elif defined(PCBX7)
   #define BATT_SCALE                    123
 #elif defined(PCBTANGO) || defined(PCBMAMBO)
-  #define BATT_SCALE                    99 // 4.1V
+  #define BATT_SCALE                    (4.446f)
 // BATT_SCALE = 410 (max battery reading) * 26214 (fix scale) * 4 (filter scale) / 128 (user scale) / ((4.1 (battery voltage) * 2 / 3 (divider)) * 4096 / 3.3))
 #else
   #define BATT_SCALE                    150
@@ -698,6 +684,10 @@ void sportUpdatePowerOff(void);
 #define SPORT_UPDATE_POWER_ON()
 #define SPORT_UPDATE_POWER_OFF()
 #endif
+
+// Charger
+#define IS_CHARGING_STATE()           (GPIO_ReadInputDataBit( CHARGER_STATE_GPIO, CHARGER_STATE_GPIO_PIN ) == Bit_RESET)
+#define IS_CHARGING_FAULT()           (GPIO_ReadInputDataBit( CHARGER_FAULT_GPIO, CHARGER_FAULT_GPIO_PIN ) == Bit_RESET)
 
 // Audio driver
 void audioInit(void) ;

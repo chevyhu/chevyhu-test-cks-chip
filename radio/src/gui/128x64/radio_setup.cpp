@@ -252,9 +252,17 @@ void menuRadioSetup(event_t event)
         putsVolts(lcdLastRightPos+FW, y, 120+g_eeGeneral.vBatMax, (menuHorizontalPosition>0 ? attr : 0)|LEFT|NO_UNIT);
         if (attr && s_editMode>0) {
           if (menuHorizontalPosition==0)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
+            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMin, -90, g_eeGeneral.vBatMax+29); // min=0.0V
+#else
             CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMin, -50, g_eeGeneral.vBatMax+29); // min=4.0V
+#endif
           else
+#if defined(PCBTANGO) || defined(PCBMAMBO)
             CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMax, g_eeGeneral.vBatMin-29, +40); // max=16.0V
+#else
+            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMax, g_eeGeneral.vBatMin-29, +40); // max=16.0V
+#endif
         }
         break;
 #endif
