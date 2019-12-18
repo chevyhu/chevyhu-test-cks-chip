@@ -75,7 +75,9 @@ void pwrOn()
 void pwrOff()
 {
   GPIO_ResetBits(PWR_ON_GPIO, PWR_ON_GPIO_PIN);
-
+#if defined(HAPTIC) && !defined(BOOT)
+  hapticOff();
+#endif
   // disable interrupts
   __disable_irq();
 

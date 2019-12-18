@@ -523,7 +523,7 @@ void menuMainView(event_t event)
         if (SWITCH_EXISTS(i)) {
           uint8_t x = 2*FW-2, y = 4*FH+i*FH+1;
           if (i >= NUM_SWITCHES/2) {
-            x = 16*FW+1;
+            x = 17*FW+1;
             y -= (NUM_SWITCHES/2)*FH;
           }
           getvalue_t val = getValue(MIXSRC_FIRST_SWITCH+i);

@@ -80,15 +80,35 @@ uint32_t readKeys()
   return result;
 }
 
-
 uint32_t readTrims()
 {
   uint32_t result = 0;
-
 #if defined(PCBTANGO)
   // the trim state from the events of per10ms()
   result = g_trimState;
   g_trimState = 0;
+#elif defined(PCBMAMBO) && !defined(SIMU) && !defined (BOOT)
+  uint16_t trimValue = anaIn(TX_TRIM);
+  if (trimValue > 800) {
+    if ((1077 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1077 + TRIM_ADC_OFFSET))
+      result |= 0x01;
+    if ((1386 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1386 + TRIM_ADC_OFFSET))
+      result |= 0x02;
+    if ((1543 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1543 + TRIM_ADC_OFFSET))
+      result |= 0x04;
+    if ((1637 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1637 + TRIM_ADC_OFFSET))
+      result |= 0x08;
+
+    if ((1755 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1755 + TRIM_ADC_OFFSET))
+      result |= 0x10;
+    if ((1705 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1705 + TRIM_ADC_OFFSET))
+      result |= 0x20;
+    if ((1794 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1794 + TRIM_ADC_OFFSET))
+      result |= 0x40;
+    if ((1824 - TRIM_ADC_OFFSET) < trimValue && trimValue < (1824 + TRIM_ADC_OFFSET))
+      result |= 0x80;
+  }
+
 #else
   if (~TRIMS_GPIO_REG_LHL & TRIMS_GPIO_PIN_LHL)
     result |= 0x01;
@@ -99,10 +119,10 @@ uint32_t readTrims()
   if (~TRIMS_GPIO_REG_LVU & TRIMS_GPIO_PIN_LVU)
     result |= 0x08;
 
- #if defined(PCBXLITE)
+#if defined(PCBXLITE)
   if (IS_SHIFT_PRESSED())
     result = ((result & 0x03) << 6) | ((result & 0x0c) << 2);
- #else
+#else
   if (~TRIMS_GPIO_REG_RVD & TRIMS_GPIO_PIN_RVD)
     result |= 0x10;
   if (~TRIMS_GPIO_REG_RVU & TRIMS_GPIO_PIN_RVU)
@@ -111,7 +131,9 @@ uint32_t readTrims()
     result |= 0x40;
   if (~TRIMS_GPIO_REG_RHR & TRIMS_GPIO_PIN_RHR)
     result |= 0x80;
- #endif
+#endif
+
+  // TRACE("readTrims(): result=0x%02x", result);
 #endif
   return result;
 }
@@ -171,13 +193,13 @@ void readKeysAndTrims()
 #if defined(PCBMAMBO) && !defined (SIMU)
 #define ADD_3POS_CASE(x, i) \
       case SW_S ## x ## 0: \
-        xxx = (getAnalogValue(SWITCH_ ## x) < 1200)?1:0; \
+        xxx = (anaIn(SWITCH_ ## x) < 513) ? 1 : 0; \
         break; \
       case SW_S ## x ## 1: \
-        xxx = (1200 < getAnalogValue(SWITCH_ ## x) && getAnalogValue(SWITCH_ ## x) < 3000)?1:0; \
+        xxx = (anaIn(SWITCH_ ## x) < 1025) ? 1 : 0; \
         break; \
       case SW_S ## x ## 2: \
-        xxx = (getAnalogValue(SWITCH_ ## x) > 3000)?1:0; \
+        xxx = (anaIn(SWITCH_ ## x) < 2049) ? 1 : 0; \
         break
 #else
   #define ADD_3POS_CASE(x, i) \

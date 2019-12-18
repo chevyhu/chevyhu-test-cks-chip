@@ -44,6 +44,23 @@ void drawSplash()
 }
 #endif
 
+
+#if defined(PCBMAMBO)
+const unsigned char splashdata2[]  = {
+  'S','F','S',0,
+  #include "bitmaps/128x64/splash_mambo.lbm"
+  'S','F','E',0 };
+
+const unsigned char * const splash2_lbm = splashdata2+4;
+
+void drawSecondSplash()
+{
+  lcdClear();
+  lcdDraw1bitBitmap(0, 0, splash2_lbm, 0, 0);
+  lcdRefresh();
+}
+#endif
+
 #if defined(FRSKY_RELEASE)
 const unsigned char splashdata2[]  = {
   'S','F','S',0,

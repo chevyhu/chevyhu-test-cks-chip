@@ -47,7 +47,7 @@ const int8_t adcDirection[NUM_ANALOGS] = {-1,1,-1,1,  1,1,  1};
 #elif defined(PCBXLITE)
 const int8_t adcDirection[NUM_ANALOGS] = {1,-1,-1,1,  -1,1,  1,  1};
 #elif defined(PCBMAMBO)
-const int8_t adcDirection[NUM_ANALOGS] = {1,1,1,1,1,1};
+const int8_t adcDirection[NUM_ANALOGS] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 #endif
 
 #if NUM_PWMSTICKS > 0
@@ -98,8 +98,7 @@ void adcInit()
 
   ADC_MAIN->CR1 = ADC_CR1_SCAN;
   ADC_MAIN->CR2 = ADC_CR2_ADON | ADC_CR2_DMA | ADC_CR2_DDS;
-  //ADC_MAIN->SQR1 = (NUM_ANALOGS_ADC - 1) << 20; // bits 23:20 = number of conversions
-  ADC_MAIN->SQR1 = (9) << 20; // bits 23:20 = number of conversions
+  ADC_MAIN->SQR1 = NUM_ANALOGS << 20; // bits 23:20 = number of conversions
 #if defined(PCBX10)
   if (STICKS_PWM_ENABLED()) {
     ADC_MAIN->SQR2 = (ADC_CHANNEL_SLIDER2 << 0) + (ADC_CHANNEL_BATT << 5);
@@ -143,7 +142,7 @@ void adcInit()
   ADC_DMA_Stream->CR = DMA_SxCR_PL | ADC_DMA_SxCR_CHSEL | DMA_SxCR_MSIZE_0 | DMA_SxCR_PSIZE_0 | DMA_SxCR_MINC;
   ADC_DMA_Stream->PAR = CONVERT_PTR_UINT(&ADC_MAIN->DR);
   ADC_DMA_Stream->M0AR = CONVERT_PTR_UINT(&adcValues[FIRST_ANALOG_ADC]);
-  ADC_DMA_Stream->NDTR = 9;
+  ADC_DMA_Stream->NDTR = NUM_ANALOGS;
   ADC_DMA_Stream->FCR = DMA_SxFCR_DMDIS | DMA_SxFCR_FTH_0;
 
 #if defined(PCBX10)

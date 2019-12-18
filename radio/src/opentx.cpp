@@ -88,8 +88,6 @@ void per10ms()
     wdt_reset();  // Retrigger hardware watchdog
   }
 
-
-
 #if defined(GUI)
   if (lightOffCounter) lightOffCounter--;
   if (flashCounter) flashCounter--;
@@ -120,7 +118,6 @@ void per10ms()
     g_ms100 = 0;
   }
 #endif
-
 
   readKeysAndTrims();
 
@@ -772,7 +769,7 @@ void doSplash()
       getADC();
 
       if (keyDown() || inputsMoved()) return;
-#if !defined(PCBTANGO)
+#if !defined(PCBTANGO) && !defined(PCBMAMBO)
 #if defined(PWR_BUTTON_PRESS)
       uint32_t pwr_check = pwrCheck();
       if (pwr_check == e_power_off) {
@@ -792,7 +789,7 @@ void doSplash()
 #endif
 #endif
 
-#if defined(PCBTANGO)
+#if defined(PCBTANGO) || defined(PCBMAMBO)
       if (!refresh) {
           if (tgtime_opentx < get_tmr10ms()) {
             drawSecondSplash();
@@ -1583,7 +1580,6 @@ void opentxClose(uint8_t shutdown)
     hapticOff();
 #endif
   }
-
 #if defined(SDCARD)
   logsClose();
 #endif
@@ -1905,6 +1901,10 @@ if (!unexpectedShutdown) {
   lcdSetContrast();
 #endif
   backlightOn();
+
+#if defined(PCBTANGO) || defined(PCBMAMBO)
+  g_eeGeneral.view = VIEW_INPUTS;
+#endif
 
 #if defined(PCBSKY9X) && !defined(SIMU)
   init_trainer_capture();

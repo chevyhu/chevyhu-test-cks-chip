@@ -309,57 +309,6 @@ bool perMainEnabled = true;
 
 #include "malloc.h"
 
-int cliMemoryInfo(const char ** argv)
-{
-  // struct mallinfo {
-  //   int arena;    /* total space allocated from system */
-  //   int ordblks;  /* number of non-inuse chunks */
-  //   int smblks;   /* unused -- always zero */
-  //   int hblks;    /* number of mmapped regions */
-  //   int hblkhd;   /* total space in mmapped regions */
-  //   int usmblks;  /* unused -- always zero */
-  //   int fsmblks;  /* unused -- always zero */
-  //   int uordblks; /* total allocated space */
-  //   int fordblks; /* total non-inuse space */
-  //   int keepcost; /* top-most, releasable (via malloc_trim) space */
-  // };
-#if 0
-  struct mallinfo info = mallinfo();
-
-  serialPrint("mallinfo:");
-  serialPrint("\tarena    %d bytes", info.arena);
-  serialPrint("\tordblks  %d bytes", info.ordblks);
-  serialPrint("\tuordblks %d bytes", info.uordblks);
-  serialPrint("\tfordblks %d bytes", info.fordblks);
-  serialPrint("\tkeepcost %d bytes", info.keepcost);
-
-  serialPrint("\nHeap:");
-  serialPrint("\tstart %p", (unsigned char *)&_end);
-  serialPrint("\tend   %p", (unsigned char *)&_heap_end);
-  serialPrint("\tcurr  %p", heap);
-  serialPrint("\tused  %d bytes", (int)(heap - (unsigned char *)&_end));
-  serialPrint("\tfree  %d bytes", (int)((unsigned char *)&_heap_end - heap));
-
-#if defined(LUA)
-  serialPrint("\nLua:");
-  uint32_t s = luaGetMemUsed(lsScripts);
-  serialPrint("\tScripts %u", s);
-#if defined(COLORLCD)
-  uint32_t w = luaGetMemUsed(lsWidgets);
-  uint32_t e = luaExtraMemoryUsage;
-  serialPrint("\tWidgets %u", w);
-  serialPrint("\tExtra   %u", e);
-  serialPrint("------------");
-  serialPrint("\tTotal   %u", s + w + e);
-#endif
-#endif
-
-#else
-  //serialPrint("\tmemory free  %d bytes", (int)((unsigned char *)&_heap_end - heap));
-#endif
-  return 0;
-}
-
 TASK_FUNCTION(menusTask)
 {
   TRACE("menu task started\r\n");
@@ -370,18 +319,7 @@ TASK_FUNCTION(menusTask)
 #endif
 
 #if defined(PWR_BUTTON_PRESS)
-  static uint32_t memCalcTime = RTOS_GET_MS();
-
   while (1) {
-    if ((RTOS_GET_MS()- memCalcTime) > 1000) {
-      //cliMemoryInfo(0);
-#if 0
-      TRACE("a0 = %d, a1 = %d, a2 = %d, a3 = %d, a4 = %d, a5 = %d, a6 = %d, a7 = %d, a8 = %d\n", getAnalogValue(0), getAnalogValue(1), getAnalogValue(2), getAnalogValue(3), getAnalogValue(4), getAnalogValue(5), getAnalogValue(6), getAnalogValue(7), getAnalogValue(8));
-#endif
-
-
-      memCalcTime = RTOS_GET_MS();
-    }
     uint32_t pwr_check = pwrCheck();
     if (pwr_check == e_power_off) {
       break;
@@ -431,6 +369,11 @@ TASK_FUNCTION(menusTask)
 
   drawSleepBitmap();
   opentxClose();
+#if defined(PCBTANGO) || defined(PCBMAMBO)
+  if (IS_CHARGING_STATE() && !IS_CHARGING_FAULT() && usbPlugged()) {
+    NVIC_SystemReset();
+  }
+#endif
   boardOff(); // Only turn power off if necessary
 
   TASK_RETURN();

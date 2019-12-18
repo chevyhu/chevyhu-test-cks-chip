@@ -502,7 +502,7 @@
 #define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
 #define ADC_SAMPTIME                    2   // sample time = 28 cycles
 #define ADC_CHANNEL_RTC                 ADC_Channel_18 // ADC1_IN18
-#define ADC_VREF_PREC2                330
+#define ADC_VREF_PREC2                  330
 #if defined(PCBTANGO)
   #if defined(ADC_SAMPTIME)
       #undef ADC_SAMPTIME

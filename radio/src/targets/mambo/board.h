@@ -554,6 +554,9 @@ enum CalibratedAnalogs {
   #define IS_POT(x)                     ((x)>=POT_FIRST && (x)<=POT_LAST)
 #endif
 #define IS_SLIDER(x)                    ((x)>POT_LAST && (x)<TX_VOLTAGE)
+
+#define TRIM_ADC_OFFSET 20
+
 void adcInit(void);
 void adcRead(void);
 extern uint16_t adcValues[NUM_ANALOGS];
