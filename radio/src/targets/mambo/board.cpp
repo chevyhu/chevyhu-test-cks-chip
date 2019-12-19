@@ -333,6 +333,39 @@ uint32_t getTime(void)
 }
 
 
+void jrInit(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_Pin = JR_UART2_RX_PIN;
+  GPIO_Init(JR_UART2_GPIO, &GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = JR_UART6_RX_PIN;
+  GPIO_Init(JR_UART6_GPIO, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  GPIO_InitStructure.GPIO_Pin = JR_UART2_TX_PIN;
+  GPIO_Init(JR_UART2_GPIO, &GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = JR_UART6_TX_PIN;
+  GPIO_Init(JR_UART6_GPIO, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = JR_UART6_POLARITY_TX_PIN | JR_UART6_POLARITY_RX_PIN | JR_UART6_TX_ACTIVE;
+  GPIO_Init(JR_UART6_POLARITY_GPIO, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = JR_6V_EN_PIN;
+  GPIO_Init(JR_6V_EN_GPIO, &GPIO_InitStructure);
+  GPIO_SetBits(JR_6V_EN_GPIO, JR_6V_EN_PIN);
+}
+
+void jrTestting(void)
+{
+  TRACE("UART2 RX = %d, UART6 RX = %d\n", GPIO_ReadInputDataBit(JR_UART2_GPIO, JR_UART2_RX_PIN), GPIO_ReadInputDataBit(JR_UART6_GPIO, JR_UART6_RX_PIN));
+}
+
 void boardInit()
 {
 #if !defined(SIMU)
@@ -389,6 +422,7 @@ void boardInit()
   i2cInit();
   usbInit();
   chargerInit();
+  jrInit();
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
