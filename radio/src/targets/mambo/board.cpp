@@ -209,7 +209,7 @@ static void detectChargingMode(void)
   tmr10ms_t tm10ms = g_tmr10ms;
   tmr10ms_t tm100ms = g_tmr10ms;
   uint8_t  wt_cnt = 5;
-  uint8_t  bklight = 20;
+  uint8_t  bklight = 0;
   uint8_t  bklight_bak = g_eeGeneral.backlightBright;
 
   backlightInit();
@@ -229,24 +229,16 @@ static void detectChargingMode(void)
   }
 
   while (IS_CHARGING_STATE() && !IS_CHARGING_FAULT() && usbPlugged() && !pwrPressed()) {
+    if (bklight == 0) {
+      bklight = 2;
+      g_eeGeneral.backlightBright = 100 - bklight;
+      BACKLIGHT_ENABLE();
+    }
     if ((g_tmr10ms - tm10ms) > 9) {
       getADC();
       tm10ms = g_tmr10ms;
     }
     if ((g_tmr10ms- tm100ms) > 49) {
-#if 0
-      bklight += 5;
-      if (bklight > 20) {
-        bklight = 0;
-      }
-      if (bklight % 2) {
-        g_eeGeneral.backlightBright = bklight;
-        BACKLIGHT_ENABLE();
-      }
-      else {
-        BACKLIGHT_DISABLE();
-      }
-#endif
       lcdClear();
       checkBattery();
       if (g_vbat100mV < 50) {
@@ -270,25 +262,18 @@ static void detectChargingMode(void)
     }
   }
 
+  bklight = 0;
   while (!IS_CHARGING_STATE() && usbPlugged() && !pwrPressed() && g_vbat100mV >= 40) {
+    if (bklight == 0) {
+      bklight = 75;
+      g_eeGeneral.backlightBright = 100 - bklight;
+      BACKLIGHT_ENABLE();
+    }
     if ((g_tmr10ms - tm10ms) > 9) {
       getADC();
       tm10ms = g_tmr10ms;
     }
     if ((g_tmr10ms- tm100ms) > 49) {
-#if 0
-      bklight += 5;
-      if (bklight > 20) {
-        bklight = 0;
-      }
-      if (bklight % 2) {
-        g_eeGeneral.backlightBright = bklight;
-        BACKLIGHT_ENABLE();
-      }
-      else {
-        BACKLIGHT_DISABLE();
-      }
-#endif
       lcdClear();
       checkBattery();
       drawFullyCharged();
@@ -299,6 +284,7 @@ static void detectChargingMode(void)
   }
 
   g_eeGeneral.backlightBright = bklight_bak;
+  BACKLIGHT_ENABLE();
 }
 
 void getDefaultSwConfig(){
@@ -330,40 +316,6 @@ uint32_t getTime(void)
 #if !defined(SIMU)
   return (uint32_t)CoGetOSTime();
 #endif
-}
-
-
-void jrInit(void)
-{
-  GPIO_InitTypeDef GPIO_InitStructure;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
-
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStructure.GPIO_Pin = JR_UART2_RX_PIN;
-  GPIO_Init(JR_UART2_GPIO, &GPIO_InitStructure);
-  GPIO_InitStructure.GPIO_Pin = JR_UART6_RX_PIN;
-  GPIO_Init(JR_UART6_GPIO, &GPIO_InitStructure);
-
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_InitStructure.GPIO_Pin = JR_UART2_TX_PIN;
-  GPIO_Init(JR_UART2_GPIO, &GPIO_InitStructure);
-  GPIO_InitStructure.GPIO_Pin = JR_UART6_TX_PIN;
-  GPIO_Init(JR_UART6_GPIO, &GPIO_InitStructure);
-
-  GPIO_InitStructure.GPIO_Pin = JR_UART6_POLARITY_TX_PIN | JR_UART6_POLARITY_RX_PIN | JR_UART6_TX_ACTIVE;
-  GPIO_Init(JR_UART6_POLARITY_GPIO, &GPIO_InitStructure);
-
-  GPIO_InitStructure.GPIO_Pin = JR_6V_EN_PIN;
-  GPIO_Init(JR_6V_EN_GPIO, &GPIO_InitStructure);
-  GPIO_SetBits(JR_6V_EN_GPIO, JR_6V_EN_PIN);
-}
-
-void jrTestting(void)
-{
-  TRACE("UART2 RX = %d, UART6 RX = %d\n", GPIO_ReadInputDataBit(JR_UART2_GPIO, JR_UART2_RX_PIN), GPIO_ReadInputDataBit(JR_UART6_GPIO, JR_UART6_RX_PIN));
 }
 
 void boardInit()
@@ -422,7 +374,6 @@ void boardInit()
   i2cInit();
   usbInit();
   chargerInit();
-  jrInit();
 
 #if defined(DEBUG) && defined(SERIAL_GPIO)
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
@@ -789,7 +740,6 @@ void hf_printf(const char * TxBuf, ...)
 	uint8_t UartBuf[200];
 	va_list arglist;
 	volatile uint8_t *fp;
-	uint32_t length=0;
 
 	va_start(arglist, TxBuf);
 	vsprintf((char*)UartBuf, (const char*)TxBuf, arglist);

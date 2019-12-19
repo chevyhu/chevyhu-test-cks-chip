@@ -847,24 +847,6 @@
 
 // External Module
 #define EXTMODULE_PULSES
-
-
-#define JR_UART2_GPIO      GPIOD
-#define JR_UART2_TX_PIN    GPIO_Pin_5  //PD.05
-#define JR_UART2_RX_PIN    GPIO_Pin_6  //PD.06
-
-#define JR_UART6_GPIO      GPIOC
-#define JR_UART6_TX_PIN    GPIO_Pin_6  //PC.06
-#define JR_UART6_RX_PIN    GPIO_Pin_7  //PC.07
-
-#define JR_UART6_POLARITY_GPIO      GPIOB
-#define JR_UART6_POLARITY_TX_PIN    GPIO_Pin_2  //PB.02
-#define JR_UART6_POLARITY_RX_PIN    GPIO_Pin_11 //PB.11
-#define JR_UART6_TX_ACTIVE          GPIO_Pin_13 //PB.13
-
-#define JR_6V_EN_GPIO      GPIOE
-#define JR_6V_EN_PIN       GPIO_Pin_2  //PE.02
-
 #if defined(PCBXLITE) || defined(PCBX3)
 #define EXTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM8 | RCC_APB2Periph_USART6)
   #if defined(PCBX3)
@@ -1098,8 +1080,8 @@
   #define HEARTBEAT_RCC_AHB1Periph      RCC_AHB1Periph_GPIOC
   #define HEARTBEAT_RCC_APB2Periph      RCC_APB2Periph_USART6
   #define HEARTBEAT_GPIO                GPIOC
-  #define HEARTBEAT_GPIO_PIN            0//GPIO_Pin_7  // PC.07
-  #define HEARTBEAT_GPIO_PinSource      0//GPIO_PinSource7
+  #define HEARTBEAT_GPIO_PIN            GPIO_Pin_7  // PC.07
+  #define HEARTBEAT_GPIO_PinSource      GPIO_PinSource7
   #define HEARTBEAT_GPIO_AF_SBUS        GPIO_AF_USART6
   #define HEARTBEAT_GPIO_AF_CAPTURE     GPIO_AF_TIM3
   #define HEARTBEAT_USART               USART6

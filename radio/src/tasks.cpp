@@ -319,15 +319,7 @@ TASK_FUNCTION(menusTask)
 #endif
 
 #if defined(PWR_BUTTON_PRESS)
-  static uint32_t memCalcTime = RTOS_GET_MS();
-
   while (1) {
-    if ((RTOS_GET_MS()- memCalcTime) > 1000) {
-      //cliMemoryInfo(0);
-      extern void jrTestting(void);
-      jrTestting();
-      memCalcTime = RTOS_GET_MS();
-    }
     uint32_t pwr_check = pwrCheck();
     if (pwr_check == e_power_off) {
       break;

@@ -279,7 +279,6 @@ void displayVoltageOrAlarm()
 
 void onMainViewMenu(const char *result)
 {
-#if 0
   if (result == STR_MODEL_SELECT) {
     chainMenu(menuModelSelect);
   }
@@ -320,47 +319,6 @@ void onMainViewMenu(const char *result)
   else if (result == STR_ABOUT_US) {
     chainMenu(menuAboutView);
   }
-#endif
-  if (result == "UART2 TX +") {
-    GPIO_SetBits(JR_UART2_GPIO, JR_UART2_TX_PIN);
-    TRACE("UART2 TX +\n");
-  }
-  else if (result == "UART2 TX -") {
-    GPIO_ResetBits(JR_UART2_GPIO, JR_UART2_TX_PIN);
-    TRACE("UART2 TX -\n");
-  }
-  else if (result == "UART6 TX +") {
-    GPIO_SetBits(JR_UART6_GPIO, JR_UART6_TX_PIN);
-    TRACE("UART6 TX +\n");
-  }
-  else if (result == "UART6 TX -") {
-    GPIO_ResetBits(JR_UART6_GPIO, JR_UART6_TX_PIN);
-    TRACE("UART6 TX -\n");
-  }
-  else if (result == "UART6 POLARITY TX +") {
-    GPIO_SetBits(JR_UART6_POLARITY_GPIO, JR_UART6_POLARITY_TX_PIN);
-    TRACE("UART6 POLARITY TX +\n");
-  }
-  else if (result == "UART6 POLARITY TX -") {
-    GPIO_ResetBits(JR_UART6_POLARITY_GPIO, JR_UART6_POLARITY_TX_PIN);
-    TRACE("UART6 POLARITY TX -\n");
-  }
-  else if (result == "UART6 POLARITY RX +") {
-    GPIO_SetBits(JR_UART6_POLARITY_GPIO, JR_UART6_POLARITY_RX_PIN);
-    TRACE("UART6 POLARITY RX +\n");
-  }
-  else if (result == "UART6 POLARITY RX -") {
-    GPIO_ResetBits(JR_UART6_POLARITY_GPIO, JR_UART6_POLARITY_RX_PIN);
-    TRACE("UART6 POLARITY RX -\n");
-  }
-  else if (result == "UART6 ACTIVE +") {
-    GPIO_SetBits(JR_UART6_POLARITY_GPIO, JR_UART6_TX_ACTIVE);
-    TRACE("UART6 ACTIVE +\n");
-  }
-  else if (result == "UART6 ACTIVE -") {
-    GPIO_ResetBits(JR_UART6_POLARITY_GPIO, JR_UART6_TX_ACTIVE);
-    TRACE("UART6 ACTIVE -\n");
-  }
 }
 
 void menuMainView(event_t event)
@@ -398,29 +356,14 @@ void menuMainView(event_t event)
 
     case EVT_KEY_CONTEXT_MENU:
       killEvents(event);
-#if 0
       POPUP_MENU_ADD_ITEM(STR_MODEL_SELECT);
       if (modelHasNotes()) {
         POPUP_MENU_ADD_ITEM(STR_VIEW_NOTES);
       }
-
       POPUP_MENU_ADD_ITEM(STR_RESET_SUBMENU);
-
       POPUP_MENU_ADD_ITEM(STR_STATISTICS);
       POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
-#endif
-#if 1
-      POPUP_MENU_ADD_ITEM("UART2 TX +");
-      POPUP_MENU_ADD_ITEM("UART2 TX -");
-      POPUP_MENU_ADD_ITEM("UART6 TX +");
-      POPUP_MENU_ADD_ITEM("UART6 TX -");
-      POPUP_MENU_ADD_ITEM("UART6 POLARITY TX +");
-      POPUP_MENU_ADD_ITEM("UART6 POLARITY TX -");
-      POPUP_MENU_ADD_ITEM("UART6 POLARITY RX +");
-      POPUP_MENU_ADD_ITEM("UART6 POLARITY RX -");
-      POPUP_MENU_ADD_ITEM("UART6 ACTIVE +");
-      POPUP_MENU_ADD_ITEM("UART6 ACTIVE -");
-#endif
+
       POPUP_MENU_START(onMainViewMenu);
       break;
 
