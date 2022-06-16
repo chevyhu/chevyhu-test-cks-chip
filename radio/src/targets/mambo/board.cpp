@@ -364,7 +364,7 @@ void boardInit()
   }
 #endif
   adcInit();
-  lcdInit(); // delaysInit() must be called before
+  //lcdInit(); // delaysInit() must be called before
   audioInit();
   init2MhzTimer();
   init5msTimer();
@@ -379,6 +379,12 @@ void boardInit()
   serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
   TRACE("Mambo board started :)\r\n");
 #endif
+
+  while (1) {
+    static unsigned int cnt = 0;
+    TRACE("testing cks chip %d", cnt++);
+    delay_ms(500);
+  }
 
   detectChargingMode();
 
