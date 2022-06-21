@@ -342,7 +342,7 @@ void boardInit()
                          HAPTIC_RCC_APB2Periph | INTMODULE_RCC_APB2Periph |
                          EXTMODULE_RCC_APB2Periph | HEARTBEAT_RCC_APB2Periph |
                          BT_RCC_APB2Periph | INTERRUPT_1MS_RCC_APB1Periph, ENABLE);
-  KernelApiInit();
+  //KernelApiInit();
 #if !defined(PCBX9E) || !defined(PCBTANGO) || defined(PCBMAMBO)
   // some X9E boards need that the pwrInit() is moved a little bit later
   pwrInit();
@@ -353,8 +353,19 @@ void boardInit()
   ledGreen();
 #endif
 
-  keysInit();
+  //keysInit();
   delaysInit();
+
+#if defined(DEBUG) && defined(SERIAL_GPIO)
+  serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
+  TRACE("Mambo board started :)\r\n");
+#endif
+
+  while (1) {
+    static unsigned int cnt = 0;
+    TRACE("testing cks chip %d", cnt++);
+    delay_ms(500);
+  } 
 
 #if NUM_PWMSTICKS > 0
   sticksPwmInit();
@@ -374,17 +385,6 @@ void boardInit()
   i2cInit();
   usbInit();
   chargerInit();
-
-#if defined(DEBUG) && defined(SERIAL_GPIO)
-  serial2Init(0, 0); // default serial mode (None if DEBUG not defined)
-  TRACE("Mambo board started :)\r\n");
-#endif
-
-  while (1) {
-    static unsigned int cnt = 0;
-    TRACE("testing cks chip %d", cnt++);
-    delay_ms(500);
-  }
 
   detectChargingMode();
 

@@ -191,6 +191,47 @@ void writeEepromBlock()
 }
 #endif
 
+//#include "stm32f4xx_gpio.h"
+
+#define LED_GPIO        GPIOA
+#define LED2_GPIO_PIN  GPIO_Pin_6
+
+void LedInit()
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  
+  GPIO_InitStructure.GPIO_Pin = LED2_GPIO_PIN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_ResetBits(LED_GPIO, LED2_GPIO_PIN);
+  GPIO_Init(LED_GPIO, &GPIO_InitStructure);
+  
+  GPIO_SetBits(LED_GPIO, LED2_GPIO_PIN);
+}
+
+void delay(uint32_t cnt)
+{
+  uint32_t n = cnt;
+  for (uint32_t i = 0; i < cnt; i++)
+    for (uint32_t j = 0; j < n; j++)
+    ;
+}
+
+void show_address(void)
+{
+  while (1)
+  {
+    GPIO_SetBits(LED_GPIO, LED2_GPIO_PIN);
+    wdt_reset();
+    delay_ms(1000);
+    GPIO_ResetBits(LED_GPIO, LED2_GPIO_PIN);
+    wdt_reset();
+    delay_ms(1000);
+  }
+}
+
 int main()
 {
   BootloaderState state = ST_START;
@@ -218,7 +259,11 @@ int main()
 #if defined(ROTARY_ENCODER_NAVIGATION)
   //rotaryEncoderInit();
 #endif
+  //delaysInit(); // needed for lcdInit()
 
+  //LedInit();
+  //show_address();
+  
   boardPreInit();
 
   // wait for inputs to stabilize
@@ -229,7 +274,7 @@ int main()
   // LHR & RHL trims not pressed simultanously
   if (readTrims() != BOOTLOADER_KEYS) {
     // Start main application
-    jumpTo(APP_START_ADDRESS);
+    jumpTo(APP_START_ADDRESS);      
   }
 
   pwrInit();

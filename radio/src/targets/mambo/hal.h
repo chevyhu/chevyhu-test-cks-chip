@@ -750,6 +750,11 @@
 #define PWR_ON_GPIO_MODER               GPIO_MODER_MODER0
 #define PWR_ON_GPIO_MODER_OUT           GPIO_MODER_MODER0_0
 
+// #define LED_GPIO        GPIOA
+// #define LED2_GPIO_PIN  GPIO_Pin_6
+// #define LED3_GPIO_PIN  GPIO_Pin_7
+
+
 // Charger
 #define CHARGER_STATE_GPIO            GPIOD
 #define CHARGER_STATE_GPIO_PIN        GPIO_Pin_10 // PD.10
