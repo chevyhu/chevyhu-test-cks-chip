@@ -240,6 +240,10 @@ void SystemInit(void)
 
   /* Disable all interrupts */
   RCC->CIR = 0x00000000;
+
+  // __IO uint32_t i_delay = 0;
+  // RCC->CFGR |= RCC_CFGR_HPRE_DIV4;
+  // for(i_delay=0xffff;i_delay>0;i_delay--);
   
 #if defined(SDRAM)
   void SDRAM_Init();
@@ -389,6 +393,8 @@ static void SetSysClock(void)
   {
     /* Select regulator voltage output Scale 1 mode, System frequency up to 168 MHz */
     RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+    __NOP();
+    __NOP();
     PWR->CR |= PWR_CR_VOS;
 
     /* HCLK = SYSCLK / 1*/
